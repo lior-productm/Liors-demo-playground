@@ -630,15 +630,15 @@ export function FinancialOverviewPanel() {
             lampLabel: "Other Operating Income YTD",
           },
         ].map((k) => (
-          <div key={k.title} className={cn("flex flex-col p-6", cardBorder)}>
+          <div key={k.title} className={cn("flex flex-col p-5", cardBorder)}>
             <div className="flex items-start justify-between gap-3">
               <span className="text-[12px] font-semibold text-[#676A6E]">{k.title}</span>
               <WidgetHeaderLamp chatTopic={k.lampTopic} chatLabel={k.lampLabel} />
             </div>
-            <p className="mt-3 text-[28px] font-semibold leading-none tracking-tight text-[#010309]">
+            <p className="mt-2.5 text-[24px] font-semibold leading-none tracking-tight text-[#010309]">
               {k.value}
             </p>
-            <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
               <div className="flex flex-col gap-1">
                 <TrendPill direction={k.trend.direction} pct={k.trend.pct} />
                 <span className="text-[11px] text-[#969A9E]">vs previous year</span>
@@ -694,7 +694,7 @@ export function FinancialOverviewPanel() {
             lampLabel: "CAPEX YTD",
           },
         ].map((m) => (
-          <div key={m.label} className="group flex min-w-0 flex-1 flex-col gap-2 p-6">
+          <div key={m.label} className="group flex min-w-0 flex-1 flex-col gap-1.5 p-5">
             <div className="flex items-start justify-between gap-2">
               <span className="text-[12px] font-semibold text-[#676A6E]">{m.label}</span>
               <WidgetHeaderLamp

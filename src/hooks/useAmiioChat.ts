@@ -15,8 +15,6 @@ export function useAmiioChat(activeTab: TopNavTabId) {
       return ["Explain NOI drivers", "Show debt ratio movement", "Summarize cashflow impact"];
     if (activeTab === "amiio")
       return ["What did Amiio detect today?", "Summarize proactive opportunities", "Ask for recommended next steps"];
-    if (activeTab === "browser")
-      return ["Summarize this page", "Extract key dates from the content", "Compare this to our portfolio context"];
     return ["Which assets expire next?", "Summarize rent variance vs market", "Generate a lease expiry export"];
   }, [activeTab]);
 

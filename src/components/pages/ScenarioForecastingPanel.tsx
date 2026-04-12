@@ -59,7 +59,7 @@ const CM = {
     amiioCardHoverSurface,
   ),
   kpiCard: cn(
-    "flex min-h-[124px] flex-col justify-between gap-2 rounded-xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-4 py-4",
+    "flex min-h-[104px] flex-col justify-between gap-1.5 rounded-xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-4 py-3",
     amiioCardHoverSurface,
   ),
   /** Core DS: P2 bold + Neutral-700 */

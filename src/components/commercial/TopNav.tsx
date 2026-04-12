@@ -20,7 +20,6 @@ export function TopNav({
         { id: "amiio" as const, label: "Insights" },
         { id: "finance" as const, label: "Financial" },
         { id: "commercial" as const, label: "Commercial" },
-        { id: "browser" as const, label: "Browser" },
         { id: "reporting" as const, label: "Reporting" },
       ] as const,
     [],

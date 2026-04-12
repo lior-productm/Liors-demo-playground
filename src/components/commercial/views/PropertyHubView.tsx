@@ -46,6 +46,7 @@ import {
   AmiioExpandableInsightRow,
   AmiioExpandableRecentActionRow,
 } from "@/src/components/commercial/AmiioExpandableRow";
+import { RentRollView } from "@/src/components/commercial/views/RentRollView";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { AMIIO_CHART_MOTION } from "@/src/lib/chartMotion";
 
@@ -114,15 +115,37 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
+function FieldLabel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="text-[12px] font-medium text-[#65686B]">{children}</div>
+    <div className={cn("text-[12px] font-medium text-[#65686B]", className)}>
+      {children}
+    </div>
   );
 }
 
-function FieldValue({ children }: { children: React.ReactNode }) {
+function FieldValue({
+  children,
+  compact,
+  className,
+}: {
+  children: React.ReactNode;
+  compact?: boolean;
+  className?: string;
+}) {
   return (
-    <div className="text-[14px] font-medium text-[#2C2C2C]">
+    <div
+      className={cn(
+        "font-medium text-[#2C2C2C]",
+        compact ? "text-[13px] md:text-[14px]" : "text-[14px]",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -204,20 +227,48 @@ const AnalyseIcon = AmiioAnalyseIcon;
 /*  1. Investment Summary                                              */
 /* ------------------------------------------------------------------ */
 
-function InvestmentSummary() {
+/** Collapsed strip — first column key fields only. */
+const KEY_INFO_ROWS: [string, React.ReactNode][] = [
+  ["SPV", "Wenckebachweg Amsterdam BV"],
+  ["Valuation", "€47,225,000"],
+  ["Asset Manager", "Sandra van Holland"],
+  ["Energy Label", <Pill key="el-strip">A</Pill>],
+];
+
+function InvestmentSummary({ compact = false }: { compact?: boolean }) {
+  const imgClass = compact
+    ? "h-[min(128px,17vw)] w-[min(128px,17vw)] min-h-[104px] min-w-[104px]"
+    : "h-[226px] w-[226px]";
+  const gridGap = compact ? "gap-5 md:gap-7 lg:gap-8" : "gap-10";
+  const colW = compact ? "w-[min(140px,24%)]" : "w-[144px]";
+  const gridMax = compact ? "xl:max-w-[min(720px,100%)]" : "xl:max-w-[693px]";
+  const addressText = compact
+    ? "text-[14px] font-medium leading-[1.5] text-[#2C2C2C] md:text-[15px]"
+    : "text-[14px] font-medium leading-[1.5] text-[#2C2C2C]";
+  const pinClass = compact ? "h-4 w-4 md:h-[18px] md:w-[18px]" : "h-4 w-4";
+
   return (
-    <div className="flex w-full items-start justify-between gap-6">
-      {/* Picture section — Demo Collapsible Summary Table: 226×226, radius 8, 8px gap to location */}
-      <div className="flex shrink-0 flex-col gap-2">
-        <div className="relative h-[226px] w-[226px] shrink-0 overflow-hidden rounded-[8px] bg-[#D9D9D9]">
+    <div
+      className={cn(
+        "flex w-full items-start justify-between",
+        compact ? "gap-3 md:gap-5" : "gap-6",
+      )}
+    >
+      <div className={cn("flex shrink-0 flex-col", compact ? "gap-1.5 md:gap-2" : "gap-2")}>
+        <div
+          className={cn(
+            "relative shrink-0 overflow-hidden rounded-[8px] bg-[#D9D9D9]",
+            imgClass,
+          )}
+        >
           <BuildingThumb
             className="absolute inset-0 h-full w-full rounded-[8px]"
             alt="H.J.E. Wenckebachweg 123"
           />
         </div>
-        <div className="flex items-center gap-[11px]">
-          <MapPin className="h-4 w-4 shrink-0 text-[#2C2C2C]" />
-          <div className="text-[14px] font-medium leading-[1.5] text-[#2C2C2C]">
+        <div className={cn("flex items-center", compact ? "gap-2 md:gap-[11px]" : "gap-[11px]")}>
+          <MapPin className={cn("shrink-0 text-[#2C2C2C]", pinClass)} />
+          <div className={addressText}>
             H.J.E. Wenckebachweg 123
             <br />
             Amsterdam
@@ -225,33 +276,38 @@ function InvestmentSummary() {
         </div>
       </div>
 
-      {/* 4-column info grid */}
-      <div className="min-w-0 flex-1 xl:max-w-[693px]">
-        <div className="flex gap-10 border-b border-[rgba(230,231,232,0.7)] pb-2">
+      <div className={cn("min-w-0 flex-1", gridMax)}>
+        <div
+          className={cn(
+            "flex border-b border-[rgba(230,231,232,0.7)] pb-2",
+            gridGap,
+          )}
+        >
           {["KEY INFO", "CLASSIFICATION", "CHARACTERISTICS", "KEY INFO"].map(
             (h, i) => (
               <div
                 key={`${h}-${i}`}
-                className="w-[144px] text-[12px] font-medium text-[#65686B]"
+                className={cn("text-[12px] font-medium text-[#65686B]", colW)}
               >
                 {h}
               </div>
             ),
           )}
         </div>
-        <div className="mt-3 flex gap-10">
+        <div className={cn("mt-3 flex", gridGap)}>
           <InfoCol
+            compact={compact}
+            colClass={colW}
             rows={[
               ["SPV", "Wenckebachweg Amsterdam BV"],
               ["Valuation", "€47,225,000"],
               ["Asset Manager", "Sandra van Holland"],
-              [
-                "Energy Label",
-                <Pill key="el">A</Pill>,
-              ],
+              ["Energy Label", <Pill key="el">A</Pill>],
             ]}
           />
           <InfoCol
+            compact={compact}
+            colClass={colW}
             rows={[
               ["Asset Use", "Office"],
               ["Type", "Core+"],
@@ -260,6 +316,8 @@ function InvestmentSummary() {
             ]}
           />
           <InfoCol
+            compact={compact}
+            colClass={colW}
             rows={[
               ["Condition", <Pill key="cond">B (Good)</Pill>],
               ["Location", <Pill key="loc">A (Excellent)</Pill>],
@@ -268,6 +326,8 @@ function InvestmentSummary() {
             ]}
           />
           <InfoCol
+            compact={compact}
+            colClass={colW}
             rows={[
               ["Plot Size", "10,757"],
               ["GFA", "€14,423.25"],
@@ -275,8 +335,13 @@ function InvestmentSummary() {
               [
                 "Vacancy",
                 <span key="vac" className="flex items-center gap-2">
-                  <MiniDonut pct={0} size={24} strokeWidth={3} color="#010309" />
-                  <span className="text-[14px] font-medium text-[#121212]">
+                  <MiniDonut pct={0} size={compact ? 22 : 24} strokeWidth={3} color="#010309" />
+                  <span
+                    className={cn(
+                      "font-medium text-[#121212]",
+                      compact ? "text-[13px] md:text-[14px]" : "text-[14px]",
+                    )}
+                  >
                     0%
                   </span>
                 </span>,
@@ -291,17 +356,90 @@ function InvestmentSummary() {
 
 function InfoCol({
   rows,
+  compact = false,
+  colClass = "w-[144px]",
 }: {
   rows: [string, React.ReactNode][];
+  compact?: boolean;
+  colClass?: string;
 }) {
   return (
-    <div className="flex w-[144px] flex-col gap-3">
+    <div className={cn("flex flex-col", colClass, compact ? "gap-2 md:gap-2.5" : "gap-3")}>
       {rows.map(([k, v]) => (
         <div key={k} className="min-w-0">
           <FieldLabel>{k}</FieldLabel>
-          <FieldValue>{v}</FieldValue>
+          <FieldValue compact={compact}>{v}</FieldValue>
         </div>
       ))}
+    </div>
+  );
+}
+
+function InvestmentSummaryStripExpandable() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className={cn(
+        "flex w-full max-w-full flex-col rounded-2xl border border-[rgba(230,231,232,0.75)] bg-[rgba(255,255,255,0.95)] p-1",
+        amiioCardHoverSurface,
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full min-w-0 items-center gap-2.5 rounded-xl px-4 py-2.5 text-left transition-colors hover:bg-[#F3F6FA]/90"
+        aria-expanded={expanded}
+      >
+        {expanded ? (
+          <ChevronUp className="h-5 w-5 shrink-0 text-[#969A9E]" />
+        ) : (
+          <ChevronDown className="h-5 w-5 shrink-0 text-[#969A9E]" />
+        )}
+        <span
+          className={cn(
+            "font-medium text-[#2C2C2C]",
+            expanded ? "text-[15px] md:text-[16px]" : "text-[16px] md:text-[17px]",
+          )}
+        >
+          Investment summary
+        </span>
+      </button>
+
+      {expanded ? (
+        <div className="w-full border-t border-[rgba(230,231,232,0.7)] px-4 pb-3 pt-2.5">
+          <InvestmentSummary compact />
+        </div>
+      ) : (
+        <div className="w-full border-t border-[rgba(230,231,232,0.7)] px-4 pb-3 pt-2.5">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-[#D9D9D9] sm:h-[88px] sm:w-[88px]">
+              <BuildingThumb
+                className="absolute inset-0 h-full w-full rounded-[6px]"
+                alt="H.J.E. Wenckebachweg 123"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="grid w-full grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 sm:gap-x-6">
+                {KEY_INFO_ROWS.map(([k, v], idx) => (
+                  <div
+                    key={k}
+                    className={cn(
+                      "flex min-w-0 flex-col justify-center gap-1.5",
+                      idx > 0 && "sm:border-l sm:border-[rgba(230,231,232,0.9)] sm:pl-6",
+                    )}
+                  >
+                    <FieldLabel className="text-[13px] sm:text-[14px]">{k}</FieldLabel>
+                    <FieldValue compact={false} className="text-[15px] sm:text-[16px]">
+                      {v}
+                    </FieldValue>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -386,91 +524,76 @@ function AmiioSummarySection({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  3. Major Metrics Bar                                               */
-/* ------------------------------------------------------------------ */
-
-function MajorMetricsBar({
+/** Four-up strip for the Property Hub header (includes Total GRI). */
+function MajorMetricsStrip({
   onAnalyse,
 }: {
   onAnalyse?: (topic: string) => void;
 }) {
+  const card =
+    "flex h-full min-h-[108px] flex-col overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-2.5 sm:min-h-[114px] sm:p-3";
+  const valueLg =
+    "text-[15px] font-medium leading-tight text-[#353638] sm:text-[16px] md:text-[17px]";
+  const stripLabel =
+    "text-[11px] font-medium uppercase leading-tight tracking-wide text-[#676A6E] sm:text-[12px]";
+
   return (
-    <div className="flex gap-6">
-      {/* WAULT */}
-      <div
-        className={cn(
-          "flex-1 overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
-          amiioCardHoverSurface,
-        )}
-      >
-        <div className="flex items-start justify-between">
-          <SectionLabel>WAULT</SectionLabel>
-          <AmiioAiDisclaimerTrigger
-            variant="lamp"
-            lampSummary={defaultLampTooltipSummary(
-              "WAULT",
-              "Weighted average unexpired lease term (4.2 yrs) with a short historical sparkline.",
-            )}
-          >
-            <AnalyseIcon
-              onClick={() => onAnalyse?.("WAULT and weighted average lease term trend")}
-            />
-          </AmiioAiDisclaimerTrigger>
-        </div>
-        <div className="mt-2 flex items-end justify-between">
-          <div className="flex min-w-[160px] flex-col justify-between">
-            <div className="text-[24px] font-medium text-[#353638]">
-              4.2 years
-            </div>
-            <TrendBadge value="1.5%" label="vs last period" direction="up" />
+    <div className="grid w-full grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-2.5 lg:items-stretch">
+      <div className={cn(card, amiioCardHoverSurface)}>
+        <div className="flex flex-1 flex-col justify-between gap-1.5">
+          <div className="flex items-start justify-between gap-1">
+            <div className={stripLabel}>WAULT</div>
+            <AmiioAiDisclaimerTrigger
+              variant="lamp"
+              lampSummary={defaultLampTooltipSummary(
+                "WAULT",
+                "Weighted average unexpired lease term (4.2 yrs) with a short historical sparkline.",
+              )}
+            >
+              <AnalyseIcon
+                onClick={() => onAnalyse?.("WAULT and weighted average lease term trend")}
+              />
+            </AmiioAiDisclaimerTrigger>
           </div>
-          <svg
-            width="103"
-            height="42"
-            viewBox="0 0 103 42"
-            fill="none"
-            className="shrink-0"
-          >
-            <defs>
-              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#588CB3" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#588CB3" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M2 34 L14 28 L26 30 L38 18 L50 22 L62 10 L74 14 L86 4 L100 8 L100 42 L2 42 Z"
-              fill="url(#sparkGrad)"
-            />
-            <path
-              d="M2 34 L14 28 L26 30 L38 18 L50 22 L62 10 L74 14 L86 4 L100 8"
-              stroke="#588CB3"
-              strokeWidth="2"
+          <div className="flex items-end justify-between gap-2">
+            <div className="flex min-w-0 flex-col gap-1">
+              <div className={valueLg}>4.2 years</div>
+              <TrendBadge value="1.5%" label="vs last period" direction="up" />
+            </div>
+            <svg
+              width="60"
+              height="22"
+              viewBox="0 0 103 42"
               fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
+              className="shrink-0 self-end opacity-90"
+              aria-hidden
+            >
+              <defs>
+                <linearGradient id="sparkGradHubStrip" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#588CB3" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#588CB3" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M2 34 L14 28 L26 30 L38 18 L50 22 L62 10 L74 14 L86 4 L100 8 L100 42 L2 42 Z"
+                fill="url(#sparkGradHubStrip)"
+              />
+              <path
+                d="M2 34 L14 28 L26 30 L38 18 L50 22 L62 10 L74 14 L86 4 L100 8"
+                stroke="#588CB3"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* Occupancy Rate */}
-      <div
-        className={cn(
-          "flex-1 overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
-          amiioCardHoverSurface,
-        )}
-      >
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-4">
-            <SectionLabel>Occupancy Rate</SectionLabel>
-            <div>
-              <div className="text-[24px] font-medium text-[#353638]">
-                99.5%
-              </div>
-              <TrendBadge value="1.5%" label="vs last period" direction="up" />
-            </div>
-          </div>
-          <div className="flex flex-col items-end justify-between gap-2">
+      <div className={cn(card, amiioCardHoverSurface)}>
+        <div className="flex flex-1 flex-col justify-between gap-1.5">
+          <div className="flex items-start justify-between gap-1">
+            <div className={stripLabel}>Occupancy Rate</div>
             <AmiioAiDisclaimerTrigger
               variant="lamp"
               lampSummary={defaultLampTooltipSummary(
@@ -482,29 +605,23 @@ function MajorMetricsBar({
                 onClick={() => onAnalyse?.("occupancy rate and letting performance")}
               />
             </AmiioAiDisclaimerTrigger>
-            <MiniDonut pct={99.5} size={56} strokeWidth={7} color="#1F9E8B" />
+          </div>
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <div className={valueLg}>99.5%</div>
+              <div className="mt-1">
+                <TrendBadge value="1.5%" label="vs last period" direction="up" />
+              </div>
+            </div>
+            <MiniDonut pct={99.5} size={36} strokeWidth={5} color="#1F9E8B" />
           </div>
         </div>
       </div>
 
-      {/* Vacancy Rate */}
-      <div
-        className={cn(
-          "flex-1 overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
-          amiioCardHoverSurface,
-        )}
-      >
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-4">
-            <SectionLabel>Vacancy Rate</SectionLabel>
-            <div>
-              <div className="text-[24px] font-medium text-[#353638]">
-                0.5%
-              </div>
-              <TrendBadge value="1.5%" label="vs last period" direction="down" />
-            </div>
-          </div>
-          <div className="flex flex-col items-end justify-between gap-2">
+      <div className={cn(card, amiioCardHoverSurface)}>
+        <div className="flex flex-1 flex-col justify-between gap-1.5">
+          <div className="flex items-start justify-between gap-1">
+            <div className={stripLabel}>Vacancy Rate</div>
             <AmiioAiDisclaimerTrigger
               variant="lamp"
               lampSummary={defaultLampTooltipSummary(
@@ -516,9 +633,57 @@ function MajorMetricsBar({
                 onClick={() => onAnalyse?.("vacancy rate and void exposure")}
               />
             </AmiioAiDisclaimerTrigger>
-            <MiniDonut pct={0.5} size={56} strokeWidth={7} color="#588CB3" />
+          </div>
+          <div className="flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <div className={valueLg}>0.5%</div>
+              <div className="mt-1">
+                <TrendBadge value="1.5%" label="vs last period" direction="down" />
+              </div>
+            </div>
+            <MiniDonut pct={0.5} size={36} strokeWidth={5} color="#588CB3" />
           </div>
         </div>
+      </div>
+
+      <div className={cn(card, amiioCardHoverSurface)}>
+        <div className="flex flex-1 flex-col justify-between gap-1.5">
+          <div className="flex items-start justify-between gap-1">
+            <div className={stripLabel}>Total GRI</div>
+            <AmiioAiDisclaimerTrigger
+              variant="lamp"
+              lampSummary={defaultLampTooltipSummary(
+                "Total GRI",
+                "Gross rental income for the asset versus the prior year baseline.",
+              )}
+            >
+              <AnalyseIcon onClick={() => onAnalyse?.("total gross rental income")} />
+            </AmiioAiDisclaimerTrigger>
+          </div>
+          <div>
+            <div className={cn(valueLg, "break-words")}>€3,146,703</div>
+            <div className="mt-1">
+              <TrendBadge value="0%" label="vs previous year" direction="neutral" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PropertyHubKpiStrip({
+  onAnalyse,
+}: {
+  onAnalyse?: (topic: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="min-w-0 w-full">
+        <InvestmentSummaryStripExpandable />
+      </div>
+      <div className="min-w-0 w-full">
+        <MajorMetricsStrip onAnalyse={onAnalyse} />
       </div>
     </div>
   );
@@ -536,11 +701,13 @@ const miniMetrics = [
   { label: "NRI", value: "3%", delta: "0%", sub: "vs previous year", direction: "neutral" as const },
 ];
 
+const LEASING_TAB_METRICS = miniMetrics.filter((_, i) => i !== 3);
+
 function MinorMetricsBar() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
+        "relative overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-5",
         amiioCardHoverSurface,
       )}
     >
@@ -1100,6 +1267,22 @@ function MetricCard({
   );
 }
 
+function ServiceChargesKpiGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <MetricCard label="Advance Payment" value="€892,500" indicator="green" />
+      <MetricCard label="Actual Expenses" value="€847,320" sub="vs previous year" />
+      <MetricCard
+        label="Balance"
+        value="+€45,180"
+        indicator="green"
+        sub="→ Surplus to return"
+      />
+      <MetricCard label="Budget Variance" value="-5.1%" indicator="red" sub="→ Under budget" />
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  7. Financial Performance                                           */
 /* ------------------------------------------------------------------ */
@@ -1119,18 +1302,16 @@ const budgetRows = [
   { label: "OPEX", actual: "€3,149,596", budget: "€3,100,000", actualPct: 55, budgetPct: 50, delta: "↗ 1.5%" },
 ];
 
-function FinancialPerformance() {
+function HistoricalPerformanceCard() {
   return (
-    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:items-stretch">
-      {/* Historical Performance */}
-      <div
-        className={cn(
-          "group flex min-h-0 flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-6 py-6",
-          amiioCardHoverSurface,
-        )}
-      >
+    <div
+      className={cn(
+        "group flex min-h-0 flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-5 py-4",
+        amiioCardHoverSurface,
+      )}
+    >
         <div className="flex shrink-0 items-center justify-between gap-2">
-          <div className="text-[18px] font-medium text-[#2C2C2C]">
+          <div className="text-[17px] font-medium text-[#2C2C2C]">
             Historical Performance
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -1200,16 +1381,23 @@ function FinancialPerformance() {
           </div>
         </div>
       </div>
+  );
+}
+
+function FinancialPerformance() {
+  return (
+    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:items-stretch">
+      <HistoricalPerformanceCard />
 
       {/* Performance vs Budget */}
       <div
         className={cn(
-          "group flex min-h-0 h-full flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-6 py-6",
+          "group flex min-h-0 h-full flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[#FBFBFB] px-5 py-4",
           amiioCardHoverSurface,
         )}
       >
         <div className="flex items-center justify-between gap-2">
-          <div className="text-[18px] font-medium text-[#2C2C2C]">
+          <div className="text-[17px] font-medium text-[#2C2C2C]">
             Performance vs budget
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -1221,7 +1409,7 @@ function FinancialPerformance() {
             </span>
           </div>
         </div>
-        <div className="mt-4 space-y-4">
+        <div className="mt-3 space-y-3">
           {budgetRows.map((r, idx) => (
             <div key={idx}>
               <div className="flex items-center justify-between text-[12px]">
@@ -2035,11 +2223,6 @@ const recentActions: {
   },
 ];
 
-const RECENT_ACTIONS_EXCEL = {
-  columns: ["Title", "Person", "Time", "Status"],
-  rows: recentActions.map((a) => [a.title, a.person, a.time, a.status]),
-};
-
 function RecentActionsSection({
   onNavigateToLeasing,
 }: {
@@ -2068,29 +2251,129 @@ function RecentActionsSection({
   );
 }
 
-function RecentActionsCollapsibleSection({
+/* ================================================================== */
+/*  Property Hub — KPI strip + tabbed panels                           */
+/* ================================================================== */
+
+type PropertyHubTab = "operations" | "finance" | "leasing" | "rent-roll" | "management";
+
+const PROPERTY_HUB_TABS: { id: PropertyHubTab; label: string }[] = [
+  { id: "operations", label: "Operations" },
+  { id: "finance", label: "Finance" },
+  { id: "leasing", label: "Leasing" },
+  { id: "rent-roll", label: "Rent Roll" },
+  { id: "management", label: "Management" },
+];
+
+function OperationsTabPanel({
   onNavigateToLeasing,
+  onAnalyseWithAmiio,
 }: {
   onNavigateToLeasing: () => void;
+  onAnalyseWithAmiio?: (topic: string) => void;
 }) {
-  const exportRef = useRef<HTMLDivElement>(null);
-
   return (
-    <CollapsibleSection
-      title="Recent actions"
-      headerTrailing={
-        <WidgetExportMenu
-          variant="table"
-          fileName="recent-actions"
-          captureRef={exportRef}
-          excel={RECENT_ACTIONS_EXCEL}
-        />
-      }
-    >
-      <div ref={exportRef} className="relative">
-        <RecentActionsSection onNavigateToLeasing={onNavigateToLeasing} />
+    <div className="flex flex-col gap-6">
+      <div
+        className={cn(
+          "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
+          amiioCardHoverSurface,
+        )}
+      >
+        <div className="flex w-full items-center gap-2">
+          <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left">
+            <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
+            <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
+              <Sparkles className="h-5 w-5 shrink-0 text-[#010309]" aria-hidden />
+            </AmiioAiDisclaimerTrigger>
+            <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
+              Amiio&apos;s Property Summary
+            </span>
+          </button>
+        </div>
+        <AmiioSummarySection onAnalyseWithAmiio={onAnalyseWithAmiio} />
       </div>
-    </CollapsibleSection>
+
+      <CollapsibleSection title="Recent actions">
+        <div
+          className="mb-1.5 hidden h-9 items-center border-b border-[rgba(230,231,232,0.7)] pl-4 pr-[52px] text-[12px] font-medium text-[#7E8185] sm:flex"
+          aria-hidden
+        >
+          <span className="min-w-0 flex-1 pl-8">Title</span>
+          <span className="w-[160px] shrink-0">Author</span>
+          <span className="w-[112px] shrink-0">Time</span>
+          <span className="w-[120px] shrink-0 text-right">Status</span>
+        </div>
+        <RecentActionsSection onNavigateToLeasing={onNavigateToLeasing} />
+      </CollapsibleSection>
+    </div>
+  );
+}
+
+function FinanceTabPanel() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h3 className="mb-3 text-[14px] font-semibold text-[#2C2C2C]">Service charge KPIs</h3>
+        <ServiceChargesKpiGrid />
+      </div>
+      <FinancialPerformanceSection />
+    </div>
+  );
+}
+
+function LeasingTabPanel({
+  onAnalyse,
+  onOpenTenantHub,
+}: {
+  onAnalyse?: (topic: string) => void;
+  onOpenTenantHub?: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-6">
+      <MinorMetricsBar />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
+        <LeaseExpiryChart onAnalyse={onAnalyse} />
+        <GriDonutChart onAnalyse={onAnalyse} onOpenTenantHub={onOpenTenantHub} />
+      </div>
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
+          amiioCardHoverSurface,
+        )}
+      >
+        <div className="absolute right-4 top-4 z-10">
+          <WidgetHeaderLamp
+            chatTopic="Explain leasing KPIs: retention, absorption, average rent, and NRI vs prior year."
+            chatLabel="Leasing KPIs"
+          />
+        </div>
+        <div className="flex flex-wrap items-stretch gap-4 pr-10">
+          {LEASING_TAB_METRICS.map((m, idx) => (
+            <div key={m.label} className="flex min-w-[140px] flex-1 items-stretch gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-[14px] font-medium text-[#65686B]">{m.label}</div>
+                <div className="mt-2 text-[18px] font-medium text-[#353638]">{m.value}</div>
+                <div className="mt-2">
+                  <TrendBadge value={m.delta} label={m.sub} direction={m.direction} />
+                </div>
+              </div>
+              {idx < LEASING_TAB_METRICS.length - 1 && (
+                <div className="hidden h-16 w-px shrink-0 bg-[#E6E8EB] sm:block" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ManagementTabPanel() {
+  return (
+    <div className="flex flex-col gap-8">
+      <PropertyManagementUpdatesSection />
+    </div>
   );
 }
 
@@ -2107,57 +2390,63 @@ export function PropertyHubView({
   onAnalyseWithAmiio?: (topic: string) => void;
   onOpenTenantHub?: () => void;
 }) {
+  const [hubTab, setHubTab] = useState<PropertyHubTab>("operations");
+
   return (
     <div className="space-y-3">
-      {/* 1. Investment Summary */}
-      <CollapsibleSection title="Investment Summary">
-        <InvestmentSummary />
-      </CollapsibleSection>
-
-      {/* 2. Amiio's Property Summary */}
       <div
-        className={cn(
-          "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
-          amiioCardHoverSurface,
-        )}
+        className="-mx-2 border-b border-[rgba(230,231,232,0.75)] px-2 py-1.5"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--Secondary-Sea-Salt) 94%, white)",
+        }}
       >
-        <div className="flex w-full items-center gap-2">
-          <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left">
-            <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
-            <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
-              <Sparkles className="h-5 w-5 shrink-0 text-[#010309]" aria-hidden />
-            </AmiioAiDisclaimerTrigger>
-            <span className="text-[18px] font-medium text-[#2C2C2C]">
-              Amiio&apos;s Property Summary
-            </span>
-          </button>
+        <div>
+          <PropertyHubKpiStrip onAnalyse={onAnalyseWithAmiio} />
+          <div
+            className="mt-2.5 flex w-full flex-wrap items-center gap-2"
+            role="tablist"
+            aria-label="Property hub sections"
+          >
+            {PROPERTY_HUB_TABS.map((t) => {
+              const active = hubTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setHubTab(t.id)}
+                  className={
+                    active
+                      ? "h-[36px] rounded-full bg-[#010309] px-5 text-[14px] font-medium leading-[1.25] text-white transition-colors"
+                      : "h-[36px] rounded-full px-4 text-[14px] font-medium leading-[1.25] text-[#969A9E] transition-colors hover:text-[#353638]"
+                  }
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <AmiioSummarySection onAnalyseWithAmiio={onAnalyseWithAmiio} />
       </div>
 
-      {/* 3. Major Metrics Bar */}
-      <MajorMetricsBar onAnalyse={onAnalyseWithAmiio} />
-
-      {/* 4. Minor Metrics Bar */}
-      <MinorMetricsBar />
-
-      {/* 5. Charts Row */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
-        <GriDonutChart onAnalyse={onAnalyseWithAmiio} onOpenTenantHub={onOpenTenantHub} />
-        <LeaseExpiryChart onAnalyse={onAnalyseWithAmiio} />
+      <div className="min-h-[200px] pt-0.5">
+        {hubTab === "operations" && (
+          <OperationsTabPanel
+            onNavigateToLeasing={onNavigateToLeasing}
+            onAnalyseWithAmiio={onAnalyseWithAmiio}
+          />
+        )}
+        {hubTab === "finance" && <FinanceTabPanel />}
+        {hubTab === "leasing" && (
+          <LeasingTabPanel onAnalyse={onAnalyseWithAmiio} onOpenTenantHub={onOpenTenantHub} />
+        )}
+        {hubTab === "rent-roll" && (
+          <RentRollView onOpenTenantHub={onOpenTenantHub} onAnalyseWithAmiio={onAnalyseWithAmiio} />
+        )}
+        {hubTab === "management" && <ManagementTabPanel />}
       </div>
-
-      {/* 6. Service Charges */}
-      <ServiceChargesSection />
-
-      {/* 7. Financial Performance (incl. Indicative Valuation & CAPEX 2026) */}
-      <FinancialPerformanceSection />
-
-      {/* 8. Property Manager Updates (incl. Asset Management Activities) */}
-      <PropertyManagementUpdatesSection />
-
-      {/* 9. Recent Actions */}
-      <RecentActionsCollapsibleSection onNavigateToLeasing={onNavigateToLeasing} />
     </div>
   );
 }
+

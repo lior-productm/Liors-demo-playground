@@ -14,12 +14,11 @@ import { CommercialChatInjectContext } from "./CommercialChatContext";
 import { EntityPropertyFilterBar } from "./EntityPropertyFilterBar";
 import { PropertyHubView } from "./views/PropertyHubView";
 import { TenantHubView } from "./views/TenantHubView";
-import { RentRollView } from "./views/RentRollView";
 import { LeasingToolView } from "./views/LeasingToolView";
 import { PortfolioOverviewView } from "./views/PortfolioOverviewView";
 import { TenantModal } from "./TenantModal";
 
-type CommercialView = "portfolio" | "property" | "tenant" | "rent-roll" | "leasing";
+type CommercialView = "portfolio" | "property" | "tenant" | "leasing";
 
 export function CommercialDashboard({
   activeTab,
@@ -185,7 +184,6 @@ export function CommercialDashboard({
                   { id: "portfolio" as const, label: "Portfolio" },
                   { id: "property" as const, label: "Property Hub" },
                   { id: "tenant" as const, label: "Tenant Hub" },
-                  { id: "rent-roll" as const, label: "Rent Roll" },
                   { id: "leasing" as const, label: "Leasing Tool" },
                 ] as const
               ).map((t) => (
@@ -216,13 +214,6 @@ export function CommercialDashboard({
             {view === "tenant" && (
               <TenantHubView
                 onNavigateToLeasing={handleNavigateToLeaseRenewalProposalPrep}
-                onAnalyseWithAmiio={handleAnalyseWithAmiio}
-              />
-            )}
-
-            {view === "rent-roll" && (
-              <RentRollView
-                onOpenTenantHub={handleOpenTenantModal}
                 onAnalyseWithAmiio={handleAnalyseWithAmiio}
               />
             )}

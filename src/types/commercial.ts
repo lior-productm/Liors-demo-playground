@@ -2,7 +2,6 @@ export type TopNavTabId =
   | "amiio"
   | "finance"
   | "commercial"
-  | "browser"
   | "reporting";
 
 export type LeaseStatus = "Expiring" | "Renewal" | "Active";

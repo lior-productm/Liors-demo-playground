@@ -11,7 +11,6 @@ export const topNavTabs: Array<{ id: TopNavTabId; label: string }> = [
   { id: "amiio", label: "Amiio" },
   { id: "finance", label: "Finance" },
   { id: "commercial", label: "Commercial" },
-  { id: "browser", label: "Browser" },
   { id: "reporting", label: "Reporting" },
 ];
 

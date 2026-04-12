@@ -21,8 +21,5 @@ export function navigateTopNavTab(tab: TopNavTabId, router: RouterWithPush) {
     case "commercial":
       router.push("/commercial");
       break;
-    case "browser":
-      router.push("/browser");
-      break;
   }
 }

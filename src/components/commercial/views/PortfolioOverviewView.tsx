@@ -49,7 +49,7 @@ function KpiCard({
   return (
     <div
       className={cn(
-        "group flex flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.9)] p-5",
+        "group flex flex-col rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.9)] p-4",
         amiioCardHoverSurface,
       )}
     >
@@ -74,10 +74,10 @@ function KpiCard({
           </span>
         </div>
       </div>
-      <p className="mt-4 text-[26px] font-semibold leading-tight tracking-tight text-[#010309]">
+      <p className="mt-3 text-[22px] font-semibold leading-tight tracking-tight text-[#010309]">
         {value}
       </p>
-      <p className="mt-2 text-[12px] leading-snug text-[#7E8185]">{subtext}</p>
+      <p className="mt-1.5 text-[12px] leading-snug text-[#7E8185]">{subtext}</p>
     </div>
   );
 }

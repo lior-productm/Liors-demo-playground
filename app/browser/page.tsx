@@ -1,5 +1,6 @@
-import { BrowserPageClient } from "@/src/components/commercial/pages/BrowserPageClient";
+import { redirect } from "next/navigation";
 
+/** Legacy URL: browser experience was removed from the product nav. */
 export default function BrowserPage() {
-  return <BrowserPageClient />;
+  redirect("/commercial");
 }
