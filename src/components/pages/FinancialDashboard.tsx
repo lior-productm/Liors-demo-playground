@@ -64,28 +64,31 @@ export function FinancialDashboard({
           )}
         >
           <section className="min-w-0 flex-1">
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4">
               <h1 className="typo-h4 text-[#010309]">Financial Dashboard</h1>
-
-              <EntityPropertyFilterBar clearToastMessage="Cleared financial filters" />
             </div>
 
-            <div className="mb-6 flex flex-wrap items-center gap-2">
-              {FINANCIAL_SUB_TABS.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setFinancialSubTab(id)}
-                  className={cn(
-                    "h-[36px] rounded-full text-[14px] font-medium leading-[1.25] transition-colors",
-                    financialSubTab === id
-                      ? "bg-[#010309] px-5 text-white"
-                      : "px-4 text-[#969A9E] hover:text-[#353638]",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                {FINANCIAL_SUB_TABS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setFinancialSubTab(id)}
+                    className={cn(
+                      "h-[36px] rounded-full text-[14px] font-medium leading-[1.25] transition-colors",
+                      financialSubTab === id
+                        ? "bg-[#010309] px-5 text-white"
+                        : "px-4 text-[#969A9E] hover:text-[#353638]",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex shrink-0 justify-end sm:ml-auto">
+                <EntityPropertyFilterBar clearToastMessage="Cleared financial filters" />
+              </div>
             </div>
 
             <CommercialChatInjectContext.Provider value={injectFinancialChatDraft}>

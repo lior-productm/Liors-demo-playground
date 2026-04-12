@@ -157,10 +157,13 @@ export function ResizableChatAside({
   children,
   className,
   id,
+  reserveTopForFilterRail = false,
 }: {
   children: React.ReactNode;
   className?: string;
   id?: string;
+  /** Set when filters are stacked above the chat in the right column — shortens max height accordingly. */
+  reserveTopForFilterRail?: boolean;
 }) {
   const asideRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(DEFAULT_CHAT_PANEL_WIDTH);
@@ -239,7 +242,12 @@ export function ResizableChatAside({
       className={cn(
         "relative flex min-h-0 w-full min-w-0 flex-col lg:sticky lg:top-[104px] lg:z-10 lg:w-[var(--chat-aside-w)] lg:max-w-[min(var(--chat-aside-w),100%)] lg:shrink-0 lg:self-start",
         heightPx == null &&
+          !reserveTopForFilterRail &&
           "lg:h-[min(755px,calc(100dvh-104px-24px))] lg:max-h-[min(755px,calc(100dvh-104px-24px))]",
+        heightPx == null &&
+          reserveTopForFilterRail &&
+          // FILTER_RAIL_RESERVE_PX (64): filter min-h + gap-3 above chat
+          "lg:h-[min(755px,calc(100dvh-104px-24px-64px))] lg:max-h-[min(755px,calc(100dvh-104px-24px-64px))]",
         className,
       )}
       style={{

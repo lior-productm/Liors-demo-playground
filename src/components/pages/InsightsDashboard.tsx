@@ -118,13 +118,12 @@ export function InsightsDashboard({
           )}
         >
           <section className="min-w-0 flex-1">
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4">
               <h1 className="typo-h4 text-[#010309]">Insights</h1>
-              <EntityPropertyFilterBar clearToastMessage="Cleared insights filters" />
             </div>
 
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex min-h-[52px] flex-wrap items-center gap-4">
                 {INSIGHTS_SUB_TABS.map(({ id, label }) => (
                   <button
                     key={id}
@@ -141,39 +140,42 @@ export function InsightsDashboard({
                   </button>
                 ))}
               </div>
-              {insightsSubTab === "manage" ? (
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#969A9E]">
-                    Layout
-                  </span>
-                  <div className="inline-flex rounded-full border border-[#E6E8EB] bg-white p-px shadow-[0px_1px_4px_rgba(0,0,0,0.04)]">
-                    <button
-                      type="button"
-                      onClick={() => setTaskBoardLayout("horizontal")}
-                      className={cn(
-                        "flex h-8 min-w-[72px] items-center justify-center rounded-full px-3 text-[12px] font-medium leading-none transition-colors",
-                        taskBoardLayout === "horizontal"
-                          ? "bg-[#111] text-white"
-                          : "text-[#4E4F52]",
-                      )}
-                    >
-                      Horizontal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTaskBoardLayout("vertical")}
-                      className={cn(
-                        "flex h-8 min-w-[72px] items-center justify-center rounded-full px-3 text-[12px] font-medium leading-none transition-colors",
-                        taskBoardLayout === "vertical"
-                          ? "bg-[#111] text-white"
-                          : "text-[#4E4F52]",
-                      )}
-                    >
-                      Vertical
-                    </button>
-                  </div>
-                </div>
-              ) : null}
+              <div className="flex min-h-[52px] flex-wrap items-center justify-end gap-3">
+                {insightsSubTab === "manage" ? (
+                  <>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#969A9E]">
+                      Layout
+                    </span>
+                    <div className="inline-flex rounded-full border border-[#E6E8EB] bg-white p-px shadow-[0px_1px_4px_rgba(0,0,0,0.04)]">
+                      <button
+                        type="button"
+                        onClick={() => setTaskBoardLayout("horizontal")}
+                        className={cn(
+                          "flex h-8 min-w-[72px] items-center justify-center rounded-full px-3 text-[12px] font-medium leading-none transition-colors",
+                          taskBoardLayout === "horizontal"
+                            ? "bg-[#111] text-white"
+                            : "text-[#4E4F52]",
+                        )}
+                      >
+                        Horizontal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTaskBoardLayout("vertical")}
+                        className={cn(
+                          "flex h-8 min-w-[72px] items-center justify-center rounded-full px-3 text-[12px] font-medium leading-none transition-colors",
+                          taskBoardLayout === "vertical"
+                            ? "bg-[#111] text-white"
+                            : "text-[#4E4F52]",
+                        )}
+                      >
+                        Vertical
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+                <EntityPropertyFilterBar clearToastMessage="Cleared insights filters" />
+              </div>
             </div>
 
             <InsightsManageInsightsSection

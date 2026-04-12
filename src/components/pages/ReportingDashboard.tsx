@@ -29,28 +29,31 @@ export function ReportingDashboard({
       <main className="mx-auto w-full max-w-[1512px] px-8 pb-6 pt-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
           <section className="min-w-0 flex-1">
-            <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="mb-4">
               <h1 className="text-[20px] font-extrabold tracking-tight text-foreground">
                 Reporting
               </h1>
-
-              <EntityPropertyFilterBar clearToastMessage="Cleared reporting filters" />
             </div>
 
-            <div className="mb-4 flex items-center gap-5">
-              {["Templates", "Recent", "Builder", "Schedules"].map((label, idx) => (
-                <button
-                  key={label}
-                  type="button"
-                  className={
-                    idx === 0
-                      ? "h-[40px] rounded-full bg-foreground px-5 text-[12px] font-semibold text-background"
-                      : "h-[40px] rounded-full px-1 text-[12px] font-semibold text-muted-foreground hover:text-foreground"
-                  }
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-5">
+                {["Templates", "Recent", "Builder", "Schedules"].map((label, idx) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className={
+                      idx === 0
+                        ? "h-[40px] rounded-full bg-foreground px-5 text-[12px] font-semibold text-background"
+                        : "h-[40px] rounded-full px-1 text-[12px] font-semibold text-muted-foreground hover:text-foreground"
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex shrink-0 justify-end sm:ml-auto">
+                <EntityPropertyFilterBar clearToastMessage="Cleared reporting filters" />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">

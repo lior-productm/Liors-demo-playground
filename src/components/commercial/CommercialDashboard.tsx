@@ -168,38 +168,40 @@ export function CommercialDashboard({
       <main className="mx-auto w-full max-w-[1512px] px-8 pb-6 pt-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
           <section className="min-w-0 flex-1">
-            {/* Title + Filters Bar */}
-            <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="mb-4">
               <h1 className="text-[20px] font-medium leading-[1.25] tracking-tight text-[#010309]">
                 Commercial Dashboard
               </h1>
-
-              <EntityPropertyFilterBar clearToastMessage="Cleared filters" />
             </div>
 
-            {/* Secondary Navigation Tabs */}
-            <div className="mb-6 flex items-center gap-2">
-              {(
-                [
-                  { id: "portfolio" as const, label: "Portfolio" },
-                  { id: "property" as const, label: "Property Hub" },
-                  { id: "tenant" as const, label: "Tenant Hub" },
-                  { id: "leasing" as const, label: "Leasing Tool" },
-                ] as const
-              ).map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleSecondaryTabClick(t.id)}
-                  className={
-                    view === t.id
-                      ? "h-[36px] rounded-full bg-[#010309] px-5 text-[14px] font-medium leading-[1.25] text-white transition-colors"
-                      : "h-[36px] rounded-full px-4 text-[14px] font-medium leading-[1.25] text-[#969A9E] transition-colors hover:text-[#353638]"
-                  }
-                >
-                  {t.label}
-                </button>
-              ))}
+            {/* Secondary tabs + filter (same row; filter right-aligned) */}
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                {(
+                  [
+                    { id: "portfolio" as const, label: "Portfolio" },
+                    { id: "property" as const, label: "Property Hub" },
+                    { id: "tenant" as const, label: "Tenant Hub" },
+                    { id: "leasing" as const, label: "Leasing Tool" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => handleSecondaryTabClick(t.id)}
+                    className={
+                      view === t.id
+                        ? "h-[36px] rounded-full bg-[#010309] px-5 text-[14px] font-medium leading-[1.25] text-white transition-colors"
+                        : "h-[36px] rounded-full px-4 text-[14px] font-medium leading-[1.25] text-[#969A9E] transition-colors hover:text-[#353638]"
+                    }
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex shrink-0 justify-end sm:ml-auto">
+                <EntityPropertyFilterBar clearToastMessage="Cleared filters" />
+              </div>
             </div>
 
             {/* View Content */}
@@ -228,7 +230,6 @@ export function CommercialDashboard({
             )}
           </section>
 
-          {/* Chat Panel — column hidden when minimized so main content uses full width */}
           {!chatMinimized ? (
             <ResizableChatAside>
               <ChatPanel
