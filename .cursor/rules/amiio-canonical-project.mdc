@@ -1,0 +1,11 @@
+---
+description: Use amiio-product-demo only; do not use the legacy excel-add-in folder
+alwaysApply: true
+---
+
+# Canonical Amiio demo codebase
+
+- **This repository (`amiio-product-demo`)** is the single source of truth for the product demo (Commercial, Financial, Insights, Reporting, Excel-style flows).
+- **Do not** read, edit, import from, or copy paths from **`amiio-excel-add-in`** or any sibling “excel add-in” project. Treat that folder as out of scope unless the user explicitly asks to migrate or compare.
+- Excel-related UI in the demo lives here under **`app/excel/`** and related components in this tree only.
+- All new features and fixes for the demo belong in **`amiio-product-demo`** paths (`app/`, `components/`, `src/`, etc.).
