@@ -1808,10 +1808,7 @@ export function ScenarioForecastingPanel() {
         rows: plExportRows,
       });
     }
-    downloadExcelWorkbook(sheets, "scenario-forecast-comparison");
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", { detail: { message: "Exported scenario workbook (.xlsx)" } }),
-    );
+    void downloadExcelWorkbook(sheets, "scenario-forecast-comparison");
   }, [comparisonRows, scenarioList]);
 
   const saveJson = useCallback(() => {
@@ -1834,9 +1831,6 @@ export function ScenarioForecastingPanel() {
     a.download = "scenario-comparison-snapshot.json";
     a.click();
     URL.revokeObjectURL(url);
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", { detail: { message: "Saved comparison snapshot (JSON)" } }),
-    );
   }, [scenarioList]);
 
   const comparisonTable = (

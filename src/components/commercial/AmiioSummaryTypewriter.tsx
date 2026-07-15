@@ -68,18 +68,24 @@ export function AmiioSummaryTypewriterParts({
   charDelayMs = 9,
   startDelayMs = 0,
   showCaret = true,
+  onComplete,
 }: {
   parts: readonly Part[];
   className?: string;
   charDelayMs?: number;
   startDelayMs?: number;
   showCaret?: boolean;
+  onComplete?: () => void;
 }) {
   const fullLength = useMemo(
     () => parts.reduce((acc, p) => acc + p.text.length, 0),
     [parts],
   );
   const { len, done } = useTypewriterLength(fullLength, charDelayMs, startDelayMs);
+
+  useEffect(() => {
+    if (done) onComplete?.();
+  }, [done, onComplete]);
 
   const rendered: ReactNode[] = [];
   let remaining = len;

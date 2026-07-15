@@ -1,8 +1,4 @@
-export type TopNavTabId =
-  | "amiio"
-  | "finance"
-  | "commercial"
-  | "reporting";
+export type { SidebarNavId, TopNavTabId } from "@/src/types/navigation";
 
 export type LeaseStatus = "Expiring" | "Renewal" | "Active";
 

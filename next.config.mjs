@@ -14,6 +14,19 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "date-fns",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-tooltip",
+    ],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -33,16 +46,6 @@ const nextConfig = {
     "*.ngrok.io",
     "*.ngrok.app",
   ],
-  async redirects() {
-    return [
-      {
-        source: "/reporting",
-        destination:
-          "https://demo.dev.amiio.com/reporting/active-reports",
-        permanent: false,
-      },
-    ];
-  },
 }
 
 export default nextConfig

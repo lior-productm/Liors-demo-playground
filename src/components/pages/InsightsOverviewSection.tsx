@@ -397,7 +397,7 @@ export function InsightsOverviewSection({
           >
             <div className="flex w-full shrink-0 items-start justify-between gap-3">
               <div className="min-w-0 space-y-1">
-                <p className="text-[20px] font-medium leading-[1.25] text-[#353638]">
+                <p className="typo-h4 text-[#353638]">
                   Insights by type
                 </p>
                 <p className="text-[14px] font-normal leading-[1.24] text-[#65686B]">
@@ -522,7 +522,7 @@ export function InsightsOverviewSection({
           >
             <div className="flex w-full shrink-0 items-start justify-between gap-3">
               <div className="min-w-0 flex-1 space-y-1">
-                <p className="text-[20px] font-medium leading-[1.25] text-[#353638]">
+                <p className="typo-h4 text-[#353638]">
                   Top insights
                 </p>
                 <p className="text-[14px] font-normal leading-[1.24] text-[#65686B]">

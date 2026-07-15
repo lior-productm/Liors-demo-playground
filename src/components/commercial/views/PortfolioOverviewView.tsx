@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  AlertTriangle,
-  ArrowUpRight,
   Building2,
   Calendar,
   CheckCircle2,
@@ -19,13 +17,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AmiioAiDisclaimerTrigger,
-  AMIIO_AI_DISCLAIMER,
-} from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
+import { OverviewAiSummaryCard } from "@/src/components/commercial/overview/OverviewAiSummaryCard";
+import { AMIIO_AI_DISCLAIMER } from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
 import { TrendPill } from "@/src/components/commercial/TrendPill";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { COMMERCIAL_BAR_CHART_BAR_CLASS, lightenHexColor } from "@/src/lib/chartColors";
+import { OverviewTrendBarChartCard } from "@/src/components/commercial/charts/OverviewTrendBarChartCard";
+import { PORTFOLIO_OVERVIEW_BAR_CHARTS } from "@/src/lib/commercialMockData";
 
 function KpiCard({
   title,
@@ -65,13 +64,11 @@ function KpiCard({
               pct={delta}
             />
           ) : null}
-          <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-            <WidgetHeaderLamp
-              chatTopic={chatTopic}
-              chatLabel={chatLabel}
-              revealOnHover
-            />
-          </span>
+          <WidgetHeaderLamp
+            chatTopic={chatTopic}
+            chatLabel={chatLabel}
+            revealOnHover
+          />
         </div>
       </div>
       <p className="mt-3 text-[22px] font-semibold leading-tight tracking-tight text-[#010309]">
@@ -84,11 +81,20 @@ function KpiCard({
 
 type TrendBarMeta = { period: string; tooltip: string };
 
+const TREND_BAR_COLOR = "#70A4AC";
+const TREND_BAR_HOVER_COLOR = lightenHexColor(TREND_BAR_COLOR);
+
 /** Minimum plot height inside trend cards; flex-1 lets the chart grow with the card row. */
 const TREND_PLOT_MIN_H_PX = 200;
 
 /** Matches Lease Expiry chart value dot (Property Hub). */
-function PortfolioTrendBarValueMarker({ className }: { className?: string }) {
+function PortfolioTrendBarValueMarker({
+  color = TREND_BAR_COLOR,
+  className,
+}: {
+  color?: string;
+  className?: string;
+}) {
   return (
     <div
       className={cn(
@@ -97,7 +103,10 @@ function PortfolioTrendBarValueMarker({ className }: { className?: string }) {
       )}
       aria-hidden
     >
-      <span className="absolute inset-[3px] rounded-full bg-[#436367]" />
+      <span
+        className="absolute inset-[3px] rounded-full"
+        style={{ backgroundColor: color }}
+      />
       <span className="absolute inset-[5px] rounded-full bg-white" />
     </div>
   );
@@ -170,7 +179,7 @@ function PortfolioTrendBarChart({
             const barPct = Math.max(pct, 8);
             const active = hoveredBar === i;
             const showValueTooltip = active || clickedBarIdx === i;
-            const useSecondary900 = active || clickedBarIdx === i;
+            const useHoverColor = active || clickedBarIdx === i;
             const dimOthers =
               (hoveredBar !== null && hoveredBar !== i) ||
               (clickedBarIdx !== null && clickedBarIdx !== i);
@@ -207,14 +216,11 @@ function PortfolioTrendBarChart({
                   role="button"
                   tabIndex={0}
                   aria-label={`${meta.period}, ${meta.tooltip}. Click for Analyse with Amiio.`}
-                  className={cn(
-                    "mx-auto w-[88%] min-w-[18px] cursor-pointer rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#010309] focus-visible:ring-offset-2",
-                    useSecondary900 ? "bg-[#436367]" : "bg-[#70A4AC]",
-                    dimOthers && "opacity-45",
-                  )}
+                  className={cn(COMMERCIAL_BAR_CHART_BAR_CLASS, dimOthers && "opacity-45")}
                   style={{
                     height: barsReady ? `${barPct}%` : "0%",
-                    transition: "height 1s cubic-bezier(0.22, 1, 0.36, 1)",
+                    backgroundColor: useHoverColor ? TREND_BAR_HOVER_COLOR : TREND_BAR_COLOR,
+                    transition: "height 1s cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms ease",
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -402,350 +408,414 @@ const WALT_BAR_META = [
   { period: "Dec 2025", tooltip: "4.8 yrs current WALT" },
 ] as const satisfies readonly [TrendBarMeta, TrendBarMeta, TrendBarMeta, TrendBarMeta];
 
-export function PortfolioOverviewView({
-  onAnalyseWithAmiio,
+type OverviewScope = "portfolio" | "entity";
+
+type OverviewMetricVisual =
+  | { kind: "none" }
+  | { kind: "sparkline" }
+  | { kind: "progress"; value: number; accent: string };
+
+type OverviewMetricItem = {
+  label: string;
+  value: string;
+  helper: string;
+  delta?: string;
+  deltaPositive?: boolean;
+  visual?: OverviewMetricVisual;
+  chatTopic: string;
+  chatLabel: string;
+};
+
+type OverviewMinorMetricItem = {
+  label: string;
+  value: string;
+  delta: string;
+  deltaPositive: boolean;
+  helper: string;
+};
+
+const OVERVIEW_CHARTS = PORTFOLIO_OVERVIEW_BAR_CHARTS;
+
+function OverviewSparkline({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 68 56"
+      className={cn("h-14 w-[68px] shrink-0", className)}
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="overviewSparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6BE1D5" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#6BE1D5" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M2 15 C7 4, 12 3, 18 14 C24 25, 30 24, 36 12 C42 1, 49 9, 54 8 C59 7, 63 16, 66 54 L66 56 L2 56 Z"
+        fill="url(#overviewSparkFill)"
+      />
+      <path
+        d="M2 15 C7 4, 12 3, 18 14 C24 25, 30 24, 36 12 C42 1, 49 9, 54 8 C59 7, 63 16, 66 54"
+        stroke="#22C7B8"
+        strokeWidth="1.7"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function OverviewProgressRing({
+  value,
+  accent,
 }: {
-  onAnalyseWithAmiio?: (topic: string) => void;
+  value: number;
+  accent: string;
 }) {
-  const summaryLen = useTypewriter(PORTFOLIO_SUMMARY_PLAIN, 14);
-  const summaryComplete = summaryLen >= PORTFOLIO_SUMMARY_PLAIN.length;
-  const keyTrendsLen = useDeferredTypewriter(KEY_TRENDS_PLAIN, 9, summaryComplete);
-  const keyTrendsTypingDone =
-    summaryComplete && keyTrendsLen >= KEY_TRENDS_PLAIN.length;
-
-  const [openInsight, setOpenInsight] = useState<PortfolioInsightId | null>(null);
-
-  useEffect(() => {
-    if (openInsight === null) return;
-    const handler = (e: MouseEvent) => {
-      const el = e.target as HTMLElement;
-      if (
-        el.closest("[data-portfolio-insight-widget]") ||
-        el.closest("[data-portfolio-insight-analyse]")
-      ) {
-        return;
-      }
-      setOpenInsight(null);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [openInsight]);
-
-  function renderInsightAnalysePill(topic: string) {
-    if (!onAnalyseWithAmiio) return null;
-    return (
-      <div className="relative z-20 mt-2 flex justify-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              data-portfolio-insight-analyse
-              className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#D1D5D9] bg-white px-3.5 text-left text-[13px] font-medium text-[#353638] shadow-[0px_2px_6px_rgba(0,0,0,0.05)] transition-colors hover:border-[#BFC6CD] hover:bg-[#F8FAFC]"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAnalyseWithAmiio(topic);
-                setOpenInsight(null);
-              }}
-            >
-              <Lightbulb className="h-4 w-4 shrink-0 text-[#7E8185]" />
-              <span className="leading-[1.25] text-[#353638]">
-                Analyse with Amiio
-              </span>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent
-            side="bottom"
-            sideOffset={6}
-            className="max-w-[260px] border border-[#E6E8EB] bg-[#353638] text-[12px] font-medium leading-snug text-[#F0F2F5]"
-          >
-            <p>Send this insight to chat for a deeper analysis.</p>
-            <p className="mt-2 border-t border-white/15 pt-2 text-[11px] font-normal text-[#F0F2F5]/90">
-              {AMIIO_AI_DISCLAIMER}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    );
-  }
+  const size = 56;
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = Math.max(0, Math.min(1, value));
+  const dashOffset = circumference * (1 - progress);
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="space-y-8">
-        {/* Amiio's Portfolio Summary */}
-        <div
-          className={cn(
-            "relative rounded-2xl border border-[rgba(230,231,232,0.85)] bg-[rgba(255,255,255,0.92)] p-6",
-            amiioCardHoverSurface,
-          )}
-        >
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
-                <Sparkles className="size-5 shrink-0 text-[#010309]" aria-hidden />
-              </AmiioAiDisclaimerTrigger>
-              <span className="text-[16px] font-semibold text-[#010309]">
-                Amiio&apos;s Portfolio Summary
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] text-[#969A9E]">Updated Dec 2025</span>
-              <WidgetHeaderLamp
-                chatTopic="Summarise portfolio valuation growth, occupancy, top performers, and assets needing attention."
-                chatLabel="Portfolio Summary"
-              />
-            </div>
-          </div>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0" aria-hidden>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#E5E7EB"
+        strokeWidth={stroke}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={accent}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={dashOffset}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
 
-          <p className="min-h-[5.5rem] text-[14px] leading-[1.65] text-[#353638]">
-            {!summaryComplete ? (
-              <>
-                {PORTFOLIO_SUMMARY_PLAIN.slice(0, summaryLen)}
-                <span
-                  className="ml-0.5 inline-block h-[1.1em] w-px translate-y-0.5 animate-pulse bg-[#010309]"
-                  aria-hidden
-                />
-              </>
-            ) : (
-              <>
-                Portfolio performance remains strong with{" "}
-                <strong className="font-semibold text-[#010309]">+2.9% valuation growth</strong> YoY
-                driven primarily by{" "}
-                <strong className="font-semibold text-[#010309]">Wenckebachweg 90-98</strong> and{" "}
-                <strong className="font-semibold text-[#010309]">Zuidas Tower</strong>. Occupancy
-                improved to{" "}
-                <strong className="font-semibold text-[#010309]">94.2%</strong>, up 0.4% from last
-                month, with new leases signed at Herengracht contributing 3 additional tenants this
-                quarter.
-              </>
-            )}
+function OverviewMetricCard({
+  label,
+  value,
+  helper,
+  delta,
+  deltaPositive = true,
+  visual = { kind: "none" },
+  chatTopic,
+  chatLabel,
+}: OverviewMetricItem) {
+  return (
+    <div
+      className={cn(
+        "rounded-[32px] border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.92)] p-6",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[16px] font-medium leading-[1.25] text-[#65686B]">{label}</p>
+        <WidgetHeaderLamp chatTopic={chatTopic} chatLabel={chatLabel} />
+      </div>
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-4">
+        <div className="min-w-0">
+          <p className="text-[24px] font-medium leading-[1.25] tracking-tight text-[#353638]">
+            {value}
           </p>
-
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-            <div
-              data-portfolio-insight-widget={onAnalyseWithAmiio ? "" : undefined}
-              role={onAnalyseWithAmiio ? "button" : undefined}
-              tabIndex={onAnalyseWithAmiio ? 0 : undefined}
-              aria-expanded={onAnalyseWithAmiio ? openInsight === "performers" : undefined}
-              aria-label={
-                onAnalyseWithAmiio
-                  ? "Top performers. Click to open Analyse with Amiio."
-                  : undefined
-              }
-              className={cn(
-                "rounded-lg border border-[#D1D5D9] bg-[#F8F9FA] p-3 outline-none transition-shadow",
-                onAnalyseWithAmiio &&
-                  "cursor-pointer hover:border-[#B3B8BD] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#010309] focus-visible:ring-offset-2",
-                openInsight === "performers" && "border-[#1F9E8B]/40 ring-1 ring-[#1F9E8B]/25",
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!onAnalyseWithAmiio) return;
-                setOpenInsight((p) => (p === "performers" ? null : "performers"));
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (!onAnalyseWithAmiio) return;
-                  setOpenInsight((p) => (p === "performers" ? null : "performers"));
-                }
-              }}
-            >
-              <div className="flex items-start gap-2">
-                <CheckCircle2
-                  className="mt-0.5 size-4 shrink-0 text-[#1F9E8B]"
-                  strokeWidth={2}
-                />
-                <div className="min-w-0">
-                  <p className="text-[12px] font-semibold text-[#1F9E8B]">Top performers</p>
-                  <p className="mt-0.5 text-[12px] leading-snug text-[#676A6E]">
-                    Wenckebachweg (+4.2% GRI), Zuidas Tower (98% occupancy)
-                  </p>
-                </div>
-              </div>
-              {openInsight === "performers"
-                ? renderInsightAnalysePill(
-                    "top portfolio performers: Wenckebachweg (+4.2% GRI) and Zuidas Tower (98% occupancy)",
-                  )
-                : null}
-            </div>
-
-            <div
-              data-portfolio-insight-widget={onAnalyseWithAmiio ? "" : undefined}
-              role={onAnalyseWithAmiio ? "button" : undefined}
-              tabIndex={onAnalyseWithAmiio ? 0 : undefined}
-              aria-expanded={onAnalyseWithAmiio ? openInsight === "attention" : undefined}
-              aria-label={
-                onAnalyseWithAmiio
-                  ? "Attention needed. Click to open Analyse with Amiio."
-                  : undefined
-              }
-              className={cn(
-                "rounded-lg border border-[#D1D5D9] bg-[#F8F9FA] p-3 outline-none transition-shadow",
-                onAnalyseWithAmiio &&
-                  "cursor-pointer hover:border-[#B3B8BD] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#010309] focus-visible:ring-offset-2",
-                openInsight === "attention" && "border-[#D97706]/40 ring-1 ring-[#D97706]/20",
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!onAnalyseWithAmiio) return;
-                setOpenInsight((p) => (p === "attention" ? null : "attention"));
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (!onAnalyseWithAmiio) return;
-                  setOpenInsight((p) => (p === "attention" ? null : "attention"));
-                }
-              }}
-            >
-              <div className="flex items-start gap-2">
-                <AlertTriangle
-                  className="mt-0.5 size-4 shrink-0 text-[#D97706]"
-                  strokeWidth={2}
-                />
-                <div className="min-w-0">
-                  <p className="text-[12px] font-semibold text-[#D97706]">Attention needed</p>
-                  <p className="mt-0.5 text-[12px] leading-snug text-[#676A6E]">
-                    Herengracht 123 (WALT declining to 2.8 yrs, 2 lease expiries Q1)
-                  </p>
-                </div>
-              </div>
-              {openInsight === "attention"
-                ? renderInsightAnalysePill(
-                    "Herengracht 123 — WALT declining to 2.8 years and 2 lease expiries in Q1",
-                  )
-                : null}
-            </div>
-          </div>
-
-          <div className="mt-4 min-h-[4.5rem] border-t border-[#E6E8EB] pt-4">
-            <p className="text-[12px] leading-relaxed text-[#7E8185]">
-              <span className="font-semibold text-[#676A6E]">Key trends:</span>{" "}
-              {!summaryComplete ? (
-                <span className="text-[#969A9E]">…</span>
-              ) : !keyTrendsTypingDone ? (
-                <>
-                  {KEY_TRENDS_PLAIN.slice(0, keyTrendsLen)}
-                  <span
-                    className="ml-0.5 inline-block h-[1em] w-px translate-y-0.5 animate-pulse bg-[#010309]"
-                    aria-hidden
-                  />
-                </>
-              ) : (
-                <>
-                  Average rent/sqm increased 3.1% across the portfolio. WALT decreased slightly
-                  (-0.3 yrs) due to natural lease roll. Service charges remain stable at portfolio
-                  average. Tenant sentiment score improved to 7.6/10 (+0.2 vs last quarter).
-                </>
-              )}
-            </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {delta ? (
+              <TrendPill
+                direction={deltaPositive ? "up" : "down"}
+                pct={delta}
+              />
+            ) : null}
+            <span className="text-[12px] leading-[1.24] text-[#7E8185]">{helper}</span>
           </div>
         </div>
-
-        {/* KPI grid */}
-        <div>
-          <h3 className="mb-4 text-[14px] font-semibold uppercase tracking-[0.06em] text-[#969A9E]">
-            Key metrics
-          </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <KpiCard
-              title="Total Assets"
-              icon={Building2}
-              value="12"
-              subtext="Properties in portfolio"
-              chatTopic="Explain total assets count and how it compares to peer portfolios."
-              chatLabel="Total Assets"
-            />
-            <KpiCard
-              title="Portfolio Value"
-              icon={Wallet}
-              value="€245,000,000"
-              subtext="vs Last Year: €238,000,000"
-              delta="+2.9%"
-              chatTopic="Interpret portfolio valuation change vs last year and key drivers."
-              chatLabel="Portfolio Value"
-            />
-            <KpiCard
-              title="Avg. Occupancy"
-              icon={ArrowUpRight}
-              value="94.2%"
-              subtext="vs Last Month: 93.8%"
-              delta="+0.4%"
-              chatTopic="Analyse average occupancy trend and implications for revenue."
-              chatLabel="Avg. Occupancy"
-            />
-            <KpiCard
-              title="Total Tenants"
-              icon={Users}
-              value="87"
-              subtext="vs Last Quarter: 84"
-              delta="+3.6%"
-              chatTopic="Discuss tenant count growth and concentration risk."
-              chatLabel="Total Tenants"
-            />
-            <KpiCard
-              title="Total GRI"
-              icon={Wallet}
-              value="€18,500,000"
-              subtext="vs Last Year: €17,800,000"
-              delta="+3.9%"
-              chatTopic="Break down gross rental income growth vs last year."
-              chatLabel="Total GRI"
-            />
-            <KpiCard
-              title="Avg. WALT"
-              icon={Calendar}
-              value="4.8 yrs"
-              subtext="vs Last Quarter: 5.1 yrs"
-              delta="+5.9%"
-              chatTopic="Explain weighted average lease term movement and renewal exposure."
-              chatLabel="Avg. WALT"
-            />
-          </div>
-        </div>
-
-        {/* Trend charts */}
-        <div>
-          <h3 className="mb-4 text-[14px] font-semibold uppercase tracking-[0.06em] text-[#969A9E]">
-            Trends
-          </h3>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:[grid-template-rows:minmax(420px,auto)]">
-            <TrendCard
-              title="Rental Income Trend"
-              heightsPct={[62, 72, 85, 100]}
-              barMeta={RENTAL_BAR_META}
-              onAnalyseWithAmiio={onAnalyseWithAmiio}
-              metrics={[
-                { label: "vs Last Period +€300,000" },
-                { label: "vs Last Year +€700,000" },
-                { label: "vs 2 Yrs Ago +2.3M" },
-              ]}
-            />
-            <TrendCard
-              title="Occupancy Trend"
-              heightsPct={[88, 90, 93, 100]}
-              barMeta={OCC_BAR_META}
-              onAnalyseWithAmiio={onAnalyseWithAmiio}
-              metrics={[
-                { label: "vs Last Period +0.4%" },
-                { label: "vs Last Year +1.1%" },
-                { label: "vs 2 Yrs Ago +2.7%" },
-              ]}
-            />
-            <TrendCard
-              title="WALT Trend"
-              heightsPct={[100, 96, 92, 88]}
-              barMeta={WALT_BAR_META}
-              onAnalyseWithAmiio={onAnalyseWithAmiio}
-              metrics={[
-                { label: "vs Last Period -0.1 yrs", valueClass: "text-[#1F9E8B]" },
-                { label: "vs Last Year -0.3 yrs", valueClass: "text-[#1F9E8B]" },
-                { label: "vs 2 Yrs Ago -0.6 yrs", valueClass: "text-[#1F9E8B]" },
-              ]}
-            />
-          </div>
+        <div className="flex items-end self-stretch">
+          {visual.kind === "sparkline" ? <OverviewSparkline /> : null}
+          {visual.kind === "progress" ? (
+            <OverviewProgressRing value={visual.value} accent={visual.accent} />
+          ) : null}
         </div>
       </div>
-    </TooltipProvider>
+    </div>
+  );
+}
+
+function OverviewMinorMetricsBar({
+  items,
+}: {
+  items: OverviewMinorMetricItem[];
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-[32px] border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.92)] px-6 py-5",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-0">
+        {items.map((item, index) => (
+          <div
+            key={item.label}
+            className={cn(
+              "min-w-0",
+              index > 0 && "xl:border-l xl:border-[#D1D5D9] xl:pl-4",
+              index < items.length - 1 && "xl:pr-4",
+            )}
+          >
+            <p className="text-[14px] font-medium leading-[1.24] text-[#65686B]">{item.label}</p>
+            <p className="mt-2 text-[18px] font-medium leading-[1.25] text-[#353638]">{item.value}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <TrendPill
+                direction={item.deltaPositive ? "up" : "down"}
+                pct={item.delta}
+              />
+              <span className="text-[12px] leading-[1.24] text-[#7E8185]">{item.helper}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OverviewSummaryCard({
+  scope,
+}: {
+  scope: OverviewScope;
+}) {
+  const isEntity = scope === "entity";
+
+  return (
+    <OverviewAiSummaryCard
+      title={isEntity ? "Entity Summary" : "Portfolio Summary"}
+      chatTopic={
+        isEntity
+          ? "Summarise the current entity overview, with performance against the portfolio benchmark."
+          : "Summarise the current portfolio overview, highlight outperformance and risks."
+      }
+      chatLabel={isEntity ? "Entity Summary" : "Portfolio Summary"}
+      summary={
+        isEntity ? (
+          <p>
+            Entity is portfolio outperformer with occupancy at 89%{" "}
+            <span className="font-medium text-[#1F9E8B]">(+3.5% QoQ)</span> exceeding portfolio
+            average of 87%. GRI growth of{" "}
+            <span className="font-medium text-[#1F9E8B]">6.2%</span> demonstrates strong
+            operational execution. Entity represents 32% of portfolio value and remains a
+            strategic focus area.
+          </p>
+        ) : (
+          <p>
+            Portfolio performing strongly with occupancy reaching 87%{" "}
+            <span className="font-medium text-[#1F9E8B]">(+3.2% QoQ)</span> and GRI exceeding
+            budget by EUR 1.2M. Strong pricing momentum is visible with rent/sqm up 2.1%,
+            driven by 8 new leases signed. WAULT continues to decline and needs close
+            monitoring.
+          </p>
+        )
+      }
+      trends={
+        isEntity
+          ? [
+              {
+                tone: "positive",
+                content: (
+                  <>
+                    Occupancy outperforming: 89% vs portfolio 87%{" "}
+                    <span className="font-medium text-[#1F9E8B]">(+2%)</span>
+                  </>
+                ),
+              },
+              {
+                tone: "positive",
+                content: "GRI growth strong: +6.2% vs portfolio +5.8%",
+              },
+              {
+                tone: "warning",
+                content: (
+                  <>
+                    WAULT declining: <span className="font-medium text-[#9F2D3A]">-0.3 yrs</span>{" "}
+                    but still above portfolio average
+                  </>
+                ),
+              },
+            ]
+          : [
+              {
+                tone: "positive",
+                content: (
+                  <>
+                    Occupancy improving: <span className="font-medium text-[#1F9E8B]">+3.2%</span>{" "}
+                    to 87% with strong leasing momentum
+                  </>
+                ),
+              },
+              {
+                tone: "positive",
+                content: (
+                  <>
+                    Pricing strength: rent/sqm up{" "}
+                    <span className="font-medium text-[#1F9E8B]">2.1%</span>
+                  </>
+                ),
+              },
+              {
+                tone: "warning",
+                content: (
+                  <>
+                    WAULT declining: <span className="font-medium text-[#9F2D3A]">-0.4 yrs</span> to
+                    3.2 years, monitor expirations
+                  </>
+                ),
+              },
+            ]
+      }
+    />
+  );
+}
+
+export function PortfolioOverviewView({
+  scope = "portfolio",
+  selectedPortfolio: _selectedPortfolio,
+  selectedEntity: _selectedEntity,
+  selectedProperty: _selectedProperty,
+  onAnalyseWithAmiio,
+}: {
+  scope?: OverviewScope;
+  selectedPortfolio?: string;
+  selectedEntity?: string;
+  selectedProperty?: string;
+  onAnalyseWithAmiio?: (topic: string) => void;
+}) {
+  const isEntity = scope === "entity";
+  const topMetrics: OverviewMetricItem[] = [
+    {
+      label: "Total Assets",
+      value: "12",
+      helper: "Properties in portfolio",
+      visual: { kind: "none" },
+      chatTopic: "Explain total assets in the current overview scope.",
+      chatLabel: "Total Assets",
+    },
+    {
+      label: "Current Valuation",
+      value: isEntity ? "€25,209,000" : "€245,209,000",
+      helper: "vs last period",
+      delta: "1.5%",
+      visual: { kind: "sparkline" },
+      chatTopic: "Explain current valuation and the latest change versus the prior period.",
+      chatLabel: "Current Valuation",
+    },
+    {
+      label: "Total Tenants",
+      value: "218",
+      helper: "vs last period",
+      delta: "1.5%",
+      visual: { kind: "none" },
+      chatTopic: "Summarise tenant count and the latest movement.",
+      chatLabel: "Total Tenants",
+    },
+    {
+      label: "WAULT",
+      value: "2.8 years",
+      helper: "vs last period",
+      delta: "1.5%",
+      visual: { kind: "sparkline" },
+      chatTopic: "Explain WAULT and whether the current movement is a risk.",
+      chatLabel: "WAULT",
+    },
+    {
+      label: "Occupancy Rate",
+      value: "94%",
+      helper: "vs last period",
+      delta: "1.5%",
+      visual: { kind: "progress", value: 0.94, accent: "#2437B8" },
+      chatTopic: "Explain occupancy rate and what is driving it.",
+      chatLabel: "Occupancy Rate",
+    },
+    {
+      label: "Vacancy Rate",
+      value: "5.28%",
+      helper: "vs last period",
+      delta: "1.5%",
+      visual: { kind: "progress", value: 0.0528, accent: "#2437B8" },
+      chatTopic: "Explain vacancy rate and how it compares with recent periods.",
+      chatLabel: "Vacancy Rate",
+    },
+  ];
+  const minorMetrics: OverviewMinorMetricItem[] = [
+    {
+      label: "Tenant Retention Rate",
+      value: "71.8%",
+      delta: "0.9%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Net Absorption",
+      value: "3%",
+      delta: "0.8%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Average Rent per m2",
+      value: "€75",
+      delta: "4.2%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Total GRI",
+      value: "3%",
+      delta: "0.8%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Net Rental Income",
+      value: "2,180,339",
+      delta: "11%",
+      deltaPositive: true,
+      helper: "vs previous year",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <OverviewSummaryCard scope={scope} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {topMetrics.slice(0, 3).map((metric) => (
+          <OverviewMetricCard key={metric.label} {...metric} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {topMetrics.slice(3).map((metric) => (
+          <OverviewMetricCard key={metric.label} {...metric} />
+        ))}
+      </div>
+      <OverviewMinorMetricsBar items={minorMetrics} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {OVERVIEW_CHARTS.map((chart) => (
+          <OverviewTrendBarChartCard
+            key={chart.title}
+            chart={chart}
+            onAnalyse={onAnalyseWithAmiio}
+            fileName={chart.title.toLowerCase().replace(/\s+/g, "-")}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

@@ -36,7 +36,7 @@ function SummaryCardShell({
   return (
     <div className={WIDGET_CARD_CLASS} style={WIDGET_CARD_SURFACE}>
       <div className="flex items-start justify-between gap-3">
-        <h3 className="min-w-0 flex-1 text-[20px] font-medium leading-[1.25] text-[#353638]">
+        <h3 className="typo-h4 min-w-0 flex-1 text-[#353638]">
           {title}
         </h3>
         <div className="flex shrink-0 items-center gap-2">

@@ -1,5 +1,3 @@
-import * as XLSX from "xlsx";
-
 export type ExcelSheetInput = {
   name: string;
   columns: string[];
@@ -11,10 +9,11 @@ function sanitizeSheetName(name: string) {
   return (cleaned || "Sheet").slice(0, 31);
 }
 
-export function downloadExcelWorkbook(
+export async function downloadExcelWorkbook(
   sheets: ExcelSheetInput[],
   fileBaseName: string,
 ) {
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
   for (const s of sheets) {
     const aoa = [s.columns, ...s.rows];
@@ -24,10 +23,10 @@ export function downloadExcelWorkbook(
   XLSX.writeFile(wb, `${fileBaseName}.xlsx`);
 }
 
-export function downloadExcelSingle(
+export async function downloadExcelSingle(
   columns: string[],
   rows: (string | number)[][],
   fileBaseName: string,
 ) {
-  downloadExcelWorkbook([{ name: "Export", columns, rows }], fileBaseName);
+  await downloadExcelWorkbook([{ name: "Export", columns, rows }], fileBaseName);
 }

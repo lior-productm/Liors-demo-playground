@@ -71,7 +71,7 @@ export function TrendPill({
     return (
       <span
         className={cn(
-          "inline-flex w-fit max-w-full shrink-0 items-center gap-0.5 rounded-lg bg-[#D3D9F8] px-1 py-0.5 typo-l3-b font-medium tabular-nums text-[#1B32B3]",
+          "inline-flex w-fit max-w-full shrink-0 items-center gap-[2px] rounded-[8px] bg-[#D3D9F8] px-1 py-0.5 typo-l3-b font-medium tabular-nums text-[#1B32B3]",
           className,
         )}
       >
@@ -87,7 +87,7 @@ export function TrendPill({
   return (
     <span
       className={cn(
-        "inline-flex w-fit max-w-full shrink-0 items-center gap-0.5 rounded-lg px-1 py-0.5 typo-l3-b font-medium tabular-nums",
+        "inline-flex w-fit max-w-full shrink-0 items-center gap-[2px] rounded-[8px] px-1 py-0.5 typo-l3-b font-medium tabular-nums",
         isPositive ? "bg-[#E6F6F3] text-[#1F9E8B]" : "bg-[#FBEAEC] text-[#9F2D3A]",
         className,
       )}

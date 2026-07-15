@@ -2,19 +2,60 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  BarChart3,
+  Building2,
+  FileText,
   Loader2,
   ArrowUpRight,
-  Plus,
+  Lightbulb,
   Maximize2,
+  Mic,
   Minus,
-  RotateCcw,
-  Sparkles,
+  Plus,
+  Send,
+  type LucideIcon,
 } from "lucide-react";
+import { ChatHistoryTrigger } from "@/src/components/commercial/ChatHistoryTrigger";
+import { ASK_AI_CHIP_SUGGESTIONS } from "@/src/components/ask-ai/AskAiLanding";
 import type { ChatMessage } from "@/src/types/commercial";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { AMIIO_AI_DISCLAIMER } from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
+import { AmiioFocusChatBar, type AmiioFocusChatBarLayout } from "@/src/components/commercial/AmiioFocusChatBar";
+import {
+  SHELL_SIDEBAR_CHAT_INPUT_MAX_PX,
+  SHELL_CHAT_WIDTH_PX,
+  SHELL_CHAT_PANEL_GRADIENT_STYLE,
+  SHELL_SIDE_PANEL_FRAME_CLASS,
+  SHELL_SIDE_PANEL_INSET_SHADOW_CLASS,
+} from "@/src/lib/shellLayout";
+import {
+  WorkflowAiBlock,
+  WorkflowThinkingIndicator,
+  WorkflowUserBubble,
+} from "@/src/components/workflows/WorkflowChatUi";
+
+/** Figma 1128:32685 — gradient lamp avatar for all Amiio chat assistant messages. */
+export function AiPromptBubble({ size = "sm" }: { size?: "sm" | "md" }) {
+  const dim = size === "md" ? "size-6" : "size-5";
+  const icon = size === "md" ? "size-[18px]" : "size-[15px]";
+  const radius = size === "md" ? "rounded-[18px]" : "rounded-[15px]";
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center shadow-[0_1.5px_2.25px_rgba(0,0,0,0.15)]",
+        dim,
+        radius,
+      )}
+      style={{
+        backgroundImage:
+          "linear-gradient(178.07deg, rgb(27, 50, 179) 1.63%, rgb(0, 0, 0) 128.52%)",
+      }}
+      aria-hidden
+    >
+      <Lightbulb className={cn(icon, "text-white")} strokeWidth={1.5} />
+    </div>
+  );
+}
 
 function assistantReplyFor(text: string) {
   const t = text.toLowerCase();
@@ -116,18 +157,20 @@ export function ChatRestoreFab({ onExpand }: { onExpand: () => void }) {
       onPointerUp={(e) => endPointer(e)}
       onPointerCancel={(e) => endPointer(e, { allowExpandOnTap: false })}
       className={cn(
-        "z-50 flex h-14 w-14 cursor-grab touch-none items-center justify-center rounded-full border border-[rgba(1,3,9,0.14)] bg-transparent text-[#353638] shadow-none backdrop-blur-none active:cursor-grabbing",
+        "z-50 flex h-14 w-14 cursor-grab touch-none items-center justify-center rounded-full border-0 bg-transparent text-[#353638] shadow-none backdrop-blur-none active:cursor-grabbing",
         position ? "fixed" : "fixed bottom-8 right-8",
       )}
       style={position ? { left: position.left, top: position.top } : undefined}
       aria-label="Open chat (drag to move)"
     >
-      <Sparkles className="pointer-events-none h-6 w-6 drop-shadow-sm" />
+      <span className="pointer-events-none flex items-center justify-center">
+        <AiPromptBubble size="md" />
+      </span>
     </button>
   );
 }
 
-const DEFAULT_CHAT_PANEL_WIDTH = 396;
+const DEFAULT_CHAT_PANEL_WIDTH = SHELL_CHAT_WIDTH_PX;
 const CHAT_PANEL_WIDTH_MIN = 280;
 const CHAT_PANEL_WIDTH_MAX = 920;
 const CHAT_PANEL_HEIGHT_MIN = 320;
@@ -153,6 +196,29 @@ type ResizeDrag =
       startHeight: number;
     };
 
+export function ChatAside({
+  children,
+  className,
+  id,
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  id?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <aside
+      id={id}
+      className={cn("flex h-full min-h-0 w-full min-w-0 flex-col", className)}
+      style={style}
+    >
+      {children}
+    </aside>
+  );
+}
+
+/** @deprecated Prefer ChatAside — resize handles add global listeners and hurt dev performance. */
 export function ResizableChatAside({
   children,
   className,
@@ -240,14 +306,13 @@ export function ResizableChatAside({
       id={id}
       ref={asideRef}
       className={cn(
-        "relative flex min-h-0 w-full min-w-0 flex-col lg:sticky lg:top-[104px] lg:z-10 lg:w-[var(--chat-aside-w)] lg:max-w-[min(var(--chat-aside-w),100%)] lg:shrink-0 lg:self-start",
+        "relative flex min-h-0 w-full min-w-0 flex-col lg:sticky lg:top-8 lg:z-10 lg:h-[calc(100vh-64px)] lg:w-[var(--chat-aside-w)] lg:max-w-[min(var(--chat-aside-w),100%)] lg:shrink-0 lg:self-start",
         heightPx == null &&
           !reserveTopForFilterRail &&
-          "lg:h-[min(755px,calc(100dvh-104px-24px))] lg:max-h-[min(755px,calc(100dvh-104px-24px))]",
+          "lg:max-h-[calc(100vh-64px)]",
         heightPx == null &&
           reserveTopForFilterRail &&
-          // FILTER_RAIL_RESERVE_PX (64): filter min-h + gap-3 above chat
-          "lg:h-[min(755px,calc(100dvh-104px-24px-64px))] lg:max-h-[min(755px,calc(100dvh-104px-24px-64px))]",
+          "lg:max-h-[calc(100vh-64px-64px)]",
         className,
       )}
       style={{
@@ -279,6 +344,376 @@ export function ResizableChatAside({
   );
 }
 
+export type ChatSuggestionGroup = {
+  label: string;
+  prompts: string[];
+};
+
+export const DASHBOARD_CHAT_SUGGESTIONS: ChatSuggestionGroup[] = [
+  {
+    label: "Performance ANALYSIS",
+    prompts: [
+      "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+      "Rank my assets by risk score and explain the main drivers",
+      "Create a portfolio performance summary for Q2",
+    ],
+  },
+  {
+    label: "Leasing MANaGEMENT",
+    prompts: [
+      "Draft a lease agreement renewal based on the Rent Roll 2026",
+      "Which tenants are risky?",
+    ],
+  },
+  {
+    label: "DATA QUALITY",
+    prompts: [
+      "Help me find wrong, or inconsistent data",
+      "Remove duplicated data",
+    ],
+  },
+];
+
+export const ASK_AI_CARD_SUGGESTIONS = [
+  "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+  "Rank my assets by risk score and explain the main drivers",
+  "Create a portfolio performance summary for Q2",
+];
+
+/** Figma 1172:61523 — default chip prompts for expanded sidebar chat. */
+export const SIDEBAR_CHAT_CHIP_SUGGESTIONS: {
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  { label: "Analyze asset performance", icon: BarChart3 },
+  { label: "Initiate a Lease Renewal", icon: Building2 },
+  { label: "Draft an Investor report", icon: FileText },
+];
+
+/** Figma 830:52546 — default empty-state prompts for sidebar chat. */
+export const SIDEBAR_CHAT_EMPTY_PROMPTS = [
+  "Summarize the performance of all entities in portfolio A",
+  "Which properties are underperforming?",
+  "Rank my assets by risk score and explain the main drivers",
+];
+
+/** Focus-mode chat bar — sidebar (349px) or Ask Amiio full page (Figma 1172:62206). */
+export function SidebarChatInput({
+  draft,
+  error,
+  isTyping,
+  inputRef,
+  onDraftChange,
+  onSubmit,
+  placeholder = "Ask me anything",
+  rotatingSuggestions,
+  className,
+  layout = "sidebar",
+}: {
+  draft: string;
+  error: string | null;
+  isTyping: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onDraftChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  placeholder?: string;
+  rotatingSuggestions?: readonly string[];
+  className?: string;
+  layout?: AmiioFocusChatBarLayout;
+}) {
+  const isFull = layout === "full";
+
+  const handleSend = () => {
+    onSubmit({ preventDefault: () => {} } as React.FormEvent);
+  };
+
+  return (
+    <form
+      onSubmit={onSubmit}
+      className={cn(
+        "flex w-full justify-center",
+        isFull ? "max-w-[720px]" : "max-w-[349px]",
+        className,
+      )}
+    >
+      <AmiioFocusChatBar
+        layout={layout}
+        draft={draft}
+        error={error}
+        isTyping={isTyping}
+        inputRef={inputRef}
+        onDraftChange={onDraftChange}
+        onSubmit={handleSend}
+        placeholder={placeholder}
+        rotatingSuggestions={rotatingSuggestions}
+      />
+    </form>
+  );
+}
+
+/** Input + disclaimer dock anchored to the bottom of expanded chat panels. */
+export function SidebarChatInputDock({
+  draft,
+  error,
+  isTyping,
+  inputRef,
+  onDraftChange,
+  onSubmit,
+  placeholder,
+  rotatingSuggestions,
+  className,
+  layout = "sidebar",
+}: {
+  draft: string;
+  error: string | null;
+  isTyping: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onDraftChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  placeholder?: string;
+  rotatingSuggestions?: readonly string[];
+  className?: string;
+  layout?: AmiioFocusChatBarLayout;
+}) {
+  const isFull = layout === "full";
+
+  return (
+    <div
+      className={cn(
+        "flex w-full shrink-0 flex-col items-center gap-2",
+        isFull && "mx-auto max-w-[720px]",
+        className,
+      )}
+      style={!isFull ? { maxWidth: SHELL_SIDEBAR_CHAT_INPUT_MAX_PX } : undefined}
+    >
+      <SidebarChatInput
+        draft={draft}
+        error={error}
+        isTyping={isTyping}
+        inputRef={inputRef}
+        onDraftChange={onDraftChange}
+        onSubmit={onSubmit}
+        placeholder={placeholder}
+        rotatingSuggestions={rotatingSuggestions}
+        layout={layout}
+        className={isFull ? "w-full" : undefined}
+      />
+      <p
+        className={cn(
+          "whitespace-nowrap text-center font-normal leading-[1.5] text-[#969A9E]",
+          isFull ? "text-[12px]" : "text-[11px]",
+        )}
+      >
+        Amiio AI can make mistakes. Check important info.
+      </p>
+    </div>
+  );
+}
+
+function SidebarChatChip({
+  label,
+  icon: Icon,
+  onSelect,
+}: {
+  label: string;
+  icon: LucideIcon;
+  onSelect: (label: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex h-10 w-full items-center justify-center gap-1 rounded-[32px] border-[1.5px] border-[#E6E8EB] bg-white px-3 py-2 transition-colors hover:bg-[#FAFBFC]"
+      onClick={() => onSelect(label)}
+    >
+      <Icon className="size-4 shrink-0 text-[#65686B]" strokeWidth={1.75} aria-hidden />
+      <span className="typo-p2-b truncate text-[#65686B]">{label}</span>
+    </button>
+  );
+}
+
+export function SidebarChatShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className={cn("relative h-full min-h-0 w-full rounded-[12px]", SHELL_SIDE_PANEL_FRAME_CLASS)}>
+      <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[12px]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[12px] backdrop-blur-[20px]"
+          style={SHELL_CHAT_PANEL_GRADIENT_STYLE}
+        />
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-[inherit]",
+            SHELL_SIDE_PANEL_INSET_SHADOW_CLASS,
+          )}
+        />
+        <div className="relative flex h-full min-h-0 flex-col">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Figma 830:52528 — top chat banner. */
+export function SidebarChatHeader({
+  onNewChat,
+  onMinimize,
+  title = "New Chat",
+}: {
+  onNewChat?: () => void;
+  onMinimize?: () => void;
+  title?: string;
+}) {
+  return (
+    <div className="flex shrink-0 items-center justify-between border-b border-[#F0F2F5] px-4 py-2">
+      <button
+        type="button"
+        className="inline-flex h-[37px] items-center rounded-[32px] px-2 py-1 typo-p2-b text-[#676A6E] transition-colors hover:bg-[#F0F2F5] hover:text-[#353638]"
+        onClick={onNewChat}
+      >
+        {title}
+      </button>
+      <div className="flex items-center gap-1 text-[#7E8185]">
+        <ChatHistoryTrigger />
+        <button
+          type="button"
+          className="flex size-8 items-center justify-center text-[#7E8185] transition-colors hover:bg-[#F0F2F5] hover:text-[#353638]"
+          aria-label="Expand"
+        >
+          <Maximize2 className="size-6" strokeWidth={1.5} />
+        </button>
+        {onMinimize ? (
+          <button
+            type="button"
+            className="flex size-8 items-center justify-center rounded-[32px] p-2.5 text-[#7E8185] transition-colors hover:bg-[#F0F2F5] hover:text-[#353638]"
+            aria-label="Minimize chat"
+            onClick={onMinimize}
+          >
+            <Minus className="size-6" strokeWidth={1.5} />
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Figma 830:52538 — sidebar chat empty state (1172:61523). */
+function SidebarChatEmptyState({
+  chips,
+  onSelectPrompt,
+  draft,
+  error,
+  isTyping,
+  inputRef,
+  onDraftChange,
+  onSubmit,
+}: {
+  chips: { label: string; icon: LucideIcon }[];
+  onSelectPrompt: (prompt: string) => void;
+  draft: string;
+  error: string | null;
+  isTyping: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onDraftChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-hidden px-6 pt-4 pb-4">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-4 overflow-y-auto">
+        <div className="flex w-full shrink-0 flex-col items-center gap-1.5 py-6 text-center">
+          <p className="typo-h3 leading-[1.5] tracking-[-0.4px] text-[#040617]">
+            Good afternoon, Tomer!
+          </p>
+          <p className="typo-p1-r text-[#65686B]">How can we help you today?</p>
+        </div>
+        <div className="flex w-full flex-col gap-3">
+          {chips.map(({ label, icon }) => (
+            <SidebarChatChip
+              key={label}
+              label={label}
+              icon={icon}
+              onSelect={onSelectPrompt}
+            />
+          ))}
+        </div>
+      </div>
+      <SidebarChatInputDock
+        draft={draft}
+        error={error}
+        isTyping={isTyping}
+        inputRef={inputRef}
+        onDraftChange={onDraftChange}
+        onSubmit={onSubmit}
+      />
+    </div>
+  );
+}
+
+export function AskAiComposer({
+  draft,
+  error,
+  isTyping,
+  inputRef,
+  onDraftChange,
+  onSubmit,
+}: {
+  draft: string;
+  error: string | null;
+  isTyping: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onDraftChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className={cn(
+        "flex h-[119px] w-full flex-col gap-2.5 rounded-[16px] border border-[#E6E8EB] bg-white p-2.5",
+        error ? "border-red-400" : "",
+      )}
+    >
+      <div className="px-2 py-0.5">
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => onDraftChange(e.target.value)}
+          placeholder="Ask me anything"
+          className="w-full bg-transparent text-[16px] font-normal leading-6 text-[#353638] placeholder:text-[#8F8F8F] outline-none"
+        />
+      </div>
+      <div className="mt-auto flex items-end justify-between">
+        <button
+          type="button"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#353638] hover:bg-[#F0F2F5]"
+          aria-label="Attach"
+        >
+          <Plus className="size-5" strokeWidth={1.75} />
+        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full text-[#101010] hover:bg-[#F0F2F5]"
+            aria-label="Voice input"
+          >
+            <Mic className="size-5" strokeWidth={1.75} />
+          </button>
+          <button
+            type="submit"
+            disabled={isTyping}
+            className="flex size-8 items-center justify-center rounded-[32px] bg-[#040617] text-white shadow-[0_6.667px_9.333px_rgba(0,0,0,0.14)] disabled:opacity-50"
+            aria-label="Send"
+          >
+            {isTyping ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ArrowUpRight className="size-4" strokeWidth={2} />
+            )}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
 export type ChatDraftPayload = { id: number; text: string } | null;
 
 export function ChatPanel({
@@ -290,6 +725,8 @@ export function ChatPanel({
   onMinimize,
   chatDraftPayload,
   onChatDraftPayloadConsumed,
+  variant = "dashboard",
+  suggestionGroups = DASHBOARD_CHAT_SUGGESTIONS,
 }: {
   messages: ChatMessage[];
   suggestions: string[];
@@ -297,9 +734,11 @@ export function ChatPanel({
   isTyping: boolean;
   onNewChat?: () => void;
   onMinimize?: () => void;
-  /** When set, pre-fills the composer (e.g. from widget lamp) */
   chatDraftPayload?: ChatDraftPayload;
   onChatDraftPayloadConsumed?: () => void;
+  /** Dashboard sidebar chat (categorized prompts) vs Ask AI page (card prompts + rich input). */
+  variant?: "dashboard" | "ask-ai";
+  suggestionGroups?: ChatSuggestionGroup[];
 }) {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -319,9 +758,8 @@ export function ChatPanel({
     queueMicrotask(() => inputRef.current?.focus());
   }, [chatDraftPayload?.id, chatDraftPayload, onChatDraftPayloadConsumed]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = draft.trim();
+  const handleSubmit = (text: string) => {
+    const trimmed = text.trim();
     if (!trimmed) {
       setError("Please type a question before sending.");
       return;
@@ -337,170 +775,73 @@ export function ChatPanel({
 
   const handleNewChat = () => {
     onNewChat?.();
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", {
-        detail: { message: "New chat started" },
-      }),
-    );
+  };
+
+  const emptyStateChips =
+    variant === "dashboard"
+      ? SIDEBAR_CHAT_CHIP_SUGGESTIONS
+      : ASK_AI_CHIP_SUGGESTIONS.map(({ label, icon }) => ({ label, icon }));
+
+  const handleSelectPrompt = (prompt: string) => {
+    setError(null);
+    onSend(prompt);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit(draft);
   };
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="flex h-full min-h-0 w-full flex-col rounded-[12px] border-2 border-[rgba(255,255,255,0.6)] bg-[linear-gradient(90deg,rgba(255,255,255,0.3)_1.2%,rgba(255,255,255,0.15)_100%)] shadow-[0_8px_24px_rgba(0,0,0,0.12)] backdrop-blur-[20px]">
-        {/* Top Chat Banner */}
-        <div className="flex h-[53px] shrink-0 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            className="h-8 gap-2 px-2 typo-l2-b text-[#7E8185] transition-colors hover:bg-[#010309] hover:text-[#F0F2F5] hover:[&_svg]:text-[#F0F2F5]"
-            onClick={handleNewChat}
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
-          </Button>
+      <SidebarChatShell>
+        <SidebarChatHeader onNewChat={handleNewChat} onMinimize={onMinimize} />
 
-          <div className="flex items-center gap-0.5 text-[#7E8185]">
-            <button
-              type="button"
-              className="rounded-full p-1.5 text-[#7E8185] transition-colors hover:bg-[#010309] hover:text-[#F0F2F5]"
-              aria-label="History"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="rounded-full p-1.5 text-[#7E8185] transition-colors hover:bg-[#010309] hover:text-[#F0F2F5]"
-              aria-label="Expand"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-            {onMinimize && (
-              <button
-                type="button"
-                className="rounded-full p-1.5 text-[#7E8185] transition-colors hover:bg-[#010309] hover:text-[#F0F2F5]"
-                aria-label="Minimize chat"
-                onClick={onMinimize}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {!hasConversation ? (
+            <SidebarChatEmptyState
+              chips={emptyStateChips}
+              onSelectPrompt={handleSelectPrompt}
+              draft={draft}
+              error={error}
+              isTyping={isTyping}
+              inputRef={inputRef}
+              onDraftChange={(value) => {
+                setDraft(value);
+                if (error) setError(null);
+              }}
+              onSubmit={handleFormSubmit}
+            />
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-6 pt-4 pb-4">
+              <div
+                ref={listRef}
+                className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
               >
-                <Minus className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Body */}
-        {!hasConversation ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            <div className="flex-1 px-6 pt-4">
-              <div className="flex flex-col items-center pt-6">
-                <img src="/amiio-logo.png" alt="Amiio" className="h-[43px]" />
-                <div className="mt-3 typo-h5 text-[#2C2C2C]">Good afternoon, Tomer!</div>
-                <div className="mt-3 typo-p2-r text-[#7E8185]">Select a topic or ask me a question</div>
-              </div>
-
-              <div className="mx-auto mt-8 w-full max-w-[340px] px-1">
-                {suggestions.slice(0, 2).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="flex h-10 w-full items-center justify-center border-b border-[rgba(205,207,213,0.5)] typo-l3-b text-[#7E8185] transition-colors hover:text-[#353638]"
-                    onClick={() => {
-                      setError(null);
-                      onSend(s);
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div
-              ref={listRef}
-              className="flex-1 space-y-4 overflow-y-auto px-5 py-4"
-            >
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex gap-2",
-                    msg.role === "user" ? "justify-end" : "justify-start",
-                  )}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#010309]">
-                      <Sparkles className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                  <div
-                    className={cn(
-                      "max-w-[min(320px,calc(100%-2.5rem))] rounded-xl px-3 py-2 typo-p2-r",
-                      msg.role === "user"
-                        ? "bg-[#010309] text-white"
-                        : "bg-[#F2F4F7] text-[#353638]",
-                    )}
-                  >
-                    {msg.text.split("\n").map((line, i) => (
-                      <span key={i}>
-                        {line}
-                        {i < msg.text.split("\n").length - 1 && <br />}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#010309]">
-                    <Sparkles className="h-3 w-3 text-white" />
-                  </div>
-                  <div className="flex items-center gap-1 rounded-xl bg-[#F2F4F7] px-3 py-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#7E8185]" />
-                    <span className="typo-p3-r text-[#7E8185]">Thinking...</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Chat Input */}
-        <div className="shrink-0 px-6 pt-3 pb-4">
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <div className="flex-1">
-              <Input
-                ref={inputRef}
-                className={cn(
-                  "h-[42px] rounded-full border-[rgba(0,0,0,0.04)] bg-[rgba(255,255,255,0.8)] pl-5 typo-p2-r text-[#353638] placeholder:typo-p2-r placeholder:text-[#7E8185]",
-                  error ? "border-red-400" : "",
+                {messages.map((msg) =>
+                  msg.role === "user" ? (
+                    <WorkflowUserBubble key={msg.id}>{msg.text}</WorkflowUserBubble>
+                  ) : (
+                    <WorkflowAiBlock key={msg.id} question={msg.text} />
+                  ),
                 )}
-                placeholder="Ask me anything"
-                value={draft}
-                onChange={(e) => {
-                  setDraft(e.target.value);
+                {isTyping ? <WorkflowThinkingIndicator /> : null}
+              </div>
+              <SidebarChatInputDock
+                draft={draft}
+                error={error}
+                isTyping={isTyping}
+                inputRef={inputRef}
+                onDraftChange={(value) => {
+                  setDraft(value);
                   if (error) setError(null);
                 }}
+                onSubmit={handleFormSubmit}
               />
             </div>
-            <button
-              type="submit"
-              disabled={isTyping}
-              className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#7E8185] transition-colors hover:bg-[#F2F4F7] hover:text-[#353638] disabled:opacity-50"
-              aria-label="Send"
-            >
-              {isTyping ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowUpRight className="h-4 w-4" />
-              )}
-            </button>
-          </form>
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-center typo-p3-r text-[#7E8185]">
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-black" aria-hidden />
-            <span>{AMIIO_AI_DISCLAIMER}</span>
-          </div>
+          )}
         </div>
-      </div>
+      </SidebarChatShell>
     </div>
   );
 }

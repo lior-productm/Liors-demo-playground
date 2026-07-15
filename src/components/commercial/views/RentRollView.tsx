@@ -506,6 +506,13 @@ export function RentRollView({
             <ChevronDown className="h-3 w-3 text-[#969A9E]" />
           </button>
 
+          <WidgetExportMenu
+            variant="table"
+            fileName="rent-roll"
+            captureRef={cardRef}
+            excelWorkbook={excelWorkbook}
+          />
+
           <AmiioAiDisclaimerTrigger
             variant="lamp"
             lampSummary={defaultLampTooltipSummary(
@@ -526,13 +533,6 @@ export function RentRollView({
               <Lightbulb className="h-4 w-4" />
             </button>
           </AmiioAiDisclaimerTrigger>
-
-          <WidgetExportMenu
-            variant="table"
-            fileName="rent-roll"
-            captureRef={cardRef}
-            excelWorkbook={excelWorkbook}
-          />
         </div>
       </div>
 

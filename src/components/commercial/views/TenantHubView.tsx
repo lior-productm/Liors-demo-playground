@@ -36,6 +36,22 @@ import {
 } from "@/src/components/commercial/AmiioExpandableRow";
 import { TENANT_SCALEHUB_LOGO } from "@/src/constants/commercialDemoMedia";
 
+/** Same sub-tabs as Property Hub (PropertyHubView). */
+type TenantHubTab =
+  | "overview"
+  | "financial"
+  | "commercial"
+  | "leasing"
+  | "management";
+
+const TENANT_HUB_TABS: { id: TenantHubTab; label: string }[] = [
+  { id: "overview", label: "Overview" },
+  { id: "financial", label: "Financial" },
+  { id: "commercial", label: "Commercial" },
+  { id: "leasing", label: "Leasing" },
+  { id: "management", label: "Management" },
+];
+
 /* ------------------------------------------------------------------ */
 /*  Collapsible section                                                */
 /* ------------------------------------------------------------------ */
@@ -111,12 +127,11 @@ function MiniTable({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {trendBadge}
-          <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
-            <WidgetHeaderLamp
-              chatTopic={`Review "${title}" on Tenant Hub and compare to portfolio or market where useful.`}
-              chatLabel={title}
-            />
-          </span>
+          <WidgetHeaderLamp
+            chatTopic={`Review "${title}" on Tenant Hub and compare to portfolio or market where useful.`}
+            chatLabel={title}
+            revealOnHover
+          />
         </div>
       </div>
       {children}
@@ -345,6 +360,7 @@ export function TenantHubView({
   onNavigateToLeasing?: () => void;
   onAnalyseWithAmiio?: (topic: string) => void;
 } = {}) {
+  const [hubTab, setHubTab] = useState<TenantHubTab>("overview");
   const [actionsOpen, setActionsOpen] = useState(false);
   const actionsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -401,16 +417,10 @@ export function TenantHubView({
           <div className="flex min-w-0 flex-1 flex-col gap-[15px]">
             <div className="flex flex-col gap-[10px]">
               <div className="flex items-start justify-between">
-                <h2 className="text-[20px] font-medium leading-[1.25] text-[#353638]">
+                <h2 className="typo-h4 text-[#353638]">
                   ScaleHub III B.V.
                 </h2>
                 <div className="flex items-center gap-2">
-                  <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
-                    <WidgetHeaderLamp
-                      chatTopic="Summarise ScaleHub III B.V. profile: financial health, lease posture, and top questions for the asset manager."
-                      chatLabel="Company overview"
-                    />
-                  </span>
                 <div ref={actionsRef} className="relative">
                   <button
                     type="button"
@@ -435,11 +445,6 @@ export function TenantHubView({
                             setActionsOpen(false);
                             if (item.label === "Lease Renewals") {
                               onNavigateToLeasing?.();
-                              window.dispatchEvent(
-                                new CustomEvent("amiio:toast", {
-                                  detail: { message: "Opening Proposal Prep" },
-                                }),
-                              );
                               return;
                             }
                             window.dispatchEvent(
@@ -459,6 +464,11 @@ export function TenantHubView({
                     </div>
                   )}
                 </div>
+                  <WidgetHeaderLamp
+                    revealOnHover
+                    chatTopic="Summarise ScaleHub III B.V. profile: financial health, lease posture, and top questions for the asset manager."
+                    chatLabel="Company overview"
+                  />
                 </div>
               </div>
               <p className="text-[12px] leading-[1.25] text-[#838697]">
@@ -500,40 +510,80 @@ export function TenantHubView({
         </div>
       </div>
 
-      {/* ============ Amiio's Tenant Summary ============ */}
       <div
-        className={cn(
-          "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
-          amiioCardHoverSurface,
-        )}
+        className="-mx-2 border-b border-[rgba(230,231,232,0.75)] px-2 py-1.5"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--Secondary-Sea-Salt) 94%, white)",
+        }}
       >
-        <div className="flex w-full items-center gap-2">
-          <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left">
-            <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
-            <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
-              <Sparkles className="h-5 w-5 shrink-0 text-[#010309]" aria-hidden />
-            </AmiioAiDisclaimerTrigger>
-            <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
-              Amiio&apos;s Tenant Summary
-            </span>
-          </button>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-2">
-          {tenantAmiioSummaryItems.map((it) => (
-            <AmiioExpandableInsightRow
-              key={it.id}
-              summary={it.summary}
-              when={it.when}
-              fullDescription={it.fullDescription}
-              recentActionLines={[...it.recentActionLines]}
-              useTypewriterSummary={false}
-              hideExpandedAnalyseButton
-              onAnalyseFurther={analyseTenantInsight}
-            />
-          ))}
+        <div
+          className="flex w-full flex-wrap items-center gap-2"
+          role="tablist"
+          aria-label="Tenant hub sections"
+        >
+          {TENANT_HUB_TABS.map((t) => {
+            const active = hubTab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setHubTab(t.id)}
+                className={cn(
+                  "h-[36px] rounded-full text-[14px] font-medium leading-[1.25] transition-colors",
+                  active
+                    ? "bg-[#010309] px-5 text-white"
+                    : "px-4 text-[#969A9E] hover:text-[#353638]",
+                )}
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      <div className="min-h-[200px] pt-0.5">
+        {hubTab === "overview" && (
+          <>
+            {/* ============ Amiio's Tenant Summary ============ */}
+            <div
+              className={cn(
+                "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
+                amiioCardHoverSurface,
+              )}
+            >
+              <div className="flex w-full items-center gap-2">
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
+                  <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
+                    <Sparkles className="h-5 w-5 shrink-0 text-[#010309]" aria-hidden />
+                  </AmiioAiDisclaimerTrigger>
+                  <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
+                    Amiio&apos;s Tenant Summary
+                  </span>
+                </button>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2">
+                {tenantAmiioSummaryItems.map((it) => (
+                  <AmiioExpandableInsightRow
+                    key={it.id}
+                    summary={it.summary}
+                    when={it.when}
+                    fullDescription={it.fullDescription}
+                    recentActionLines={[...it.recentActionLines]}
+                    useTypewriterSummary={false}
+                    hideExpandedAnalyseButton
+                    onAnalyseFurther={analyseTenantInsight}
+                  />
+                ))}
+              </div>
+            </div>
 
       {/* ============ General Information ============ */}
       <Section title="General Information">
@@ -607,7 +657,10 @@ export function TenantHubView({
           </div>
         </div>
       </Section>
-
+          </>
+        )}
+        {hubTab === "leasing" && (
+          <>
       {/* ============ Lease Information ============ */}
       <Section title="Lease Information">
         <div className="flex flex-col gap-4">
@@ -696,7 +749,7 @@ export function TenantHubView({
                   <span className="text-[14px] font-medium leading-[1.25] text-[#65686B]">
                     Annual SC Advance
                   </span>
-                  <span className="text-[20px] font-medium leading-[1.25] text-[#2C2C2C]">
+                  <span className="typo-h4 text-[#2C2C2C]">
                     €45
                   </span>
                 </div>
@@ -730,7 +783,10 @@ export function TenantHubView({
           </div>
         </div>
       </Section>
-
+          </>
+        )}
+        {hubTab === "financial" && (
+          <>
       {/* ============ Financial Information ============ */}
       <Section title="Financial Information">
         <div className="flex flex-col gap-4">
@@ -920,7 +976,10 @@ export function TenantHubView({
           </div>
         </div>
       </Section>
-
+          </>
+        )}
+        {hubTab === "commercial" && (
+          <>
       {/* ============ Commercial Information ============ */}
       <Section title="Commercial Information">
         <div className="flex flex-col gap-4">
@@ -935,7 +994,7 @@ export function TenantHubView({
                   <span className="text-[14px] font-medium leading-[1.25] text-[#65686B]">
                     Requests this month
                   </span>
-                  <span className="text-[20px] font-medium leading-[1.25] text-[#2C2C2C]">
+                  <span className="typo-h4 text-[#2C2C2C]">
                     8
                   </span>
                 </div>
@@ -1081,7 +1140,10 @@ export function TenantHubView({
           </div>
         </div>
       </Section>
-
+          </>
+        )}
+        {hubTab === "management" && (
+          <>
       {/* ============ Recent Actions ============ */}
       <Section title="Recent actions">
         <div
@@ -1117,6 +1179,9 @@ export function TenantHubView({
           ))}
         </div>
       </Section>
+          </>
+        )}
+      </div>
     </div>
   );
 }

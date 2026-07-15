@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { toPng } from "html-to-image";
 import { FileImage, FileSpreadsheet, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,11 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  downloadExcelSingle,
-  downloadExcelWorkbook,
-  type ExcelSheetInput,
-} from "@/src/lib/commercial-export";
+import type { ExcelSheetInput } from "@/src/lib/commercial-export";
 
 export type WidgetExportMenuProps = {
   variant: "table" | "chart";
@@ -56,6 +51,7 @@ export function WidgetExportMenu({
     }
     setBusy(true);
     try {
+      const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(el, {
         pixelRatio: 2,
         backgroundColor: "#ffffff",
@@ -65,7 +61,6 @@ export function WidgetExportMenu({
       link.download = `${fileName}.png`;
       link.href = dataUrl;
       link.click();
-      toast("PNG downloaded");
     } catch {
       toast("PNG export failed");
     } finally {
@@ -73,14 +68,16 @@ export function WidgetExportMenu({
     }
   }, [captureRef, fileName]);
 
-  const handleExcel = useCallback(() => {
+  const handleExcel = useCallback(async () => {
     try {
+      const { downloadExcelSingle, downloadExcelWorkbook } = await import(
+        "@/src/lib/commercial-export"
+      );
       if (excelWorkbook?.length) {
-        downloadExcelWorkbook(excelWorkbook, fileName);
+        await downloadExcelWorkbook(excelWorkbook, fileName);
       } else if (excel) {
-        downloadExcelSingle(excel.columns, excel.rows, fileName);
+        await downloadExcelSingle(excel.columns, excel.rows, fileName);
       }
-      toast("Excel downloaded");
     } catch {
       toast("Excel export failed");
     }

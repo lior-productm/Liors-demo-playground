@@ -1,79 +1,174 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChatMessage, TopNavTabId } from "@/src/types/commercial";
-import { TopNav } from "./TopNav";
+import { useRouter } from "next/navigation";
+import type { TopNavTabId } from "@/src/types/commercial";
+import type { SidebarNavId } from "@/src/types/navigation";
 import { ToastStack } from "./ToastStack";
 import {
   ChatPanel,
-  ChatRestoreFab,
-  ResizableChatAside,
+  ChatAside,
   __assistantReplyFor,
 } from "./ChatPanel";
+import { FloatingAmiioChat } from "./FloatingAmiioChat";
 import { CommercialChatInjectContext } from "./CommercialChatContext";
 import { EntityPropertyFilterBar } from "./EntityPropertyFilterBar";
-import { PropertyHubView } from "./views/PropertyHubView";
-import { TenantHubView } from "./views/TenantHubView";
-import { LeasingToolView } from "./views/LeasingToolView";
-import { PortfolioOverviewView } from "./views/PortfolioOverviewView";
-import { TenantModal } from "./TenantModal";
+import {
+  getFilterEntityOptions,
+  getFilterPortfolioOptions,
+  getFilterPropertyOptions,
+} from "@/src/lib/leaseBackendData";
+import { lazyNamed } from "@/src/lib/lazy-component";
+import {
+  AppShell,
+  DashboardPageBody,
+  DashboardPageHeader,
+} from "@/src/components/layout/AppShell";
+import { DashboardPageTabs } from "@/src/components/layout/DashboardPageTabs";
+import type { ChatMessage } from "@/src/types/commercial";
+import {
+  readCommercialDashboardState,
+  writeCommercialDashboardState,
+  type CommercialDashboardState,
+} from "@/src/lib/dashboardState";
 
-type CommercialView = "portfolio" | "property" | "tenant" | "leasing";
+const PortfolioOverviewView = lazyNamed(
+  () => import("./views/PortfolioOverviewView"),
+  "PortfolioOverviewView",
+  "Loading overview…",
+);
+const PropertyHubView = lazyNamed(
+  () => import("./views/PropertyHubView"),
+  "PropertyHubView",
+  "Loading property hub…",
+);
+const RentRollView = lazyNamed(
+  () => import("./views/RentRollView"),
+  "RentRollView",
+  "Loading rent roll…",
+);
+
+type CommercialView = "overview" | "rent-roll";
+
+const DEFAULT_PORTFOLIO = "Portfolio A";
+const DEFAULT_ENTITY = "Select entity";
+const DEFAULT_PROPERTY = "Select property";
+
+const COMMERCIAL_TABS = [
+  { id: "overview" as const, label: "Overview" },
+  { id: "rent-roll" as const, label: "Rent Roll" },
+];
+
+const COMMERCIAL_DEFAULTS: CommercialDashboardState = {
+  view: "overview",
+  selectedPortfolio: DEFAULT_PORTFOLIO,
+  selectedEntity: DEFAULT_ENTITY,
+  selectedProperty: DEFAULT_PROPERTY,
+  messages: [],
+  chatMinimized: true,
+};
 
 export function CommercialDashboard({
   activeTab,
+  activeNav = "commercial",
   onTabChange,
 }: {
   activeTab: TopNavTabId;
+  activeNav?: SidebarNavId;
   onTabChange: (tab: TopNavTabId) => void;
 }) {
-  const [view, setView] = useState<CommercialView>("portfolio");
-  const [tenantModalOpen, setTenantModalOpen] = useState(false);
+  const router = useRouter();
+  const [view, setView] = useState<CommercialView>("overview");
+  const [selectedPortfolio, setSelectedPortfolio] = useState(DEFAULT_PORTFOLIO);
+  const [selectedEntity, setSelectedEntity] = useState(DEFAULT_ENTITY);
+  const [selectedProperty, setSelectedProperty] = useState(DEFAULT_PROPERTY);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [chatMinimized, setChatMinimized] = useState(false);
+  const [chatMinimized, setChatMinimized] = useState(true);
   const [chatDraftPayload, setChatDraftPayload] = useState<{
     id: number;
     text: string;
   } | null>(null);
-  /** When opening Leasing Tool from Tenant Hub lease renewal, jump straight to Proposal Prep. */
-  const [leasingEntryIntent, setLeasingEntryIntent] = useState<
-    "default" | "proposal-prep"
-  >("default");
+
+  useEffect(() => {
+    const saved = readCommercialDashboardState(COMMERCIAL_DEFAULTS);
+    const migratedView =
+      saved.view === "rent-roll"
+        ? "rent-roll"
+        : saved.view === "property"
+          ? "rent-roll"
+          : "overview";
+    setView(migratedView);
+    setSelectedPortfolio(saved.selectedPortfolio);
+    setSelectedEntity(saved.selectedEntity);
+    setSelectedProperty(saved.selectedProperty);
+    setMessages(saved.messages);
+  }, []);
 
   const suggestions = useMemo(() => {
     const base = [
-      "Why has the revenue decreased in the last year?",
-      "Please summarise the content of this page",
+      "Summarize the performance of all entities in portfolio A",
+      "Which properties are underperforming?",
+      "Rank my assets by risk score and explain the main drivers",
     ];
     if (activeTab === "reporting")
       return [
         "Create a monthly report outline",
         "Please summarise the content of this page",
+        "Which reports are due this week?",
       ];
     if (activeTab === "finance")
       return [
         "Explain NOI drivers",
         "Please summarise the content of this page",
+        "Which properties are underperforming?",
       ];
     if (activeTab === "amiio")
       return [
         "What did Amiio detect today?",
         "Please summarise the content of this page",
+        "Which properties are underperforming?",
       ];
     return base;
   }, [activeTab]);
 
   useEffect(() => {
-    setMessages([]);
-    setIsTyping(false);
+    if (activeTab !== "commercial") {
+      setMessages([]);
+      setIsTyping(false);
+    }
   }, [activeTab]);
+
+  useEffect(() => {
+    writeCommercialDashboardState({
+      view,
+      selectedPortfolio,
+      selectedEntity,
+      selectedProperty,
+      messages,
+      chatMinimized,
+    });
+  }, [view, selectedPortfolio, selectedEntity, selectedProperty, messages, chatMinimized]);
+
+  useEffect(() => {
+    const onExpandChat = () => setChatMinimized(false);
+    window.addEventListener("amiio:expand-chat", onExpandChat);
+    return () => window.removeEventListener("amiio:expand-chat", onExpandChat);
+  }, []);
 
   const handleNewChat = useCallback(() => {
     setMessages([]);
     setIsTyping(false);
-  }, []);
+    writeCommercialDashboardState({
+      view,
+      selectedPortfolio,
+      selectedEntity,
+      selectedProperty,
+      messages: [],
+      chatMinimized,
+    });
+  }, [view, selectedPortfolio, selectedEntity, selectedProperty, chatMinimized]);
 
   const sendUserMessage = useCallback(
     (text: string) => {
@@ -110,20 +205,8 @@ export function CommercialDashboard({
   const handleSend = sendUserMessage;
 
   const handleNavigateToLeasing = () => {
-    setLeasingEntryIntent("default");
-    setView("leasing");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    router.push("/workflows/leasing-renewal");
   };
-
-  const handleNavigateToLeaseRenewalProposalPrep = () => {
-    setLeasingEntryIntent("proposal-prep");
-    setView("leasing");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const clearLeasingEntryIntent = useCallback(() => {
-    setLeasingEntryIntent("default");
-  }, []);
 
   const handleAnalyseWithAmiio = useCallback(
     (topic: string) => {
@@ -138,125 +221,114 @@ export function CommercialDashboard({
     setChatDraftPayload({ id: Date.now(), text });
   }, []);
 
-  const handleOpenTenantModal = () => setTenantModalOpen(true);
-  const handleTenantConfirm = (_tenantName: string) => {
-    setTenantModalOpen(false);
-    setView("tenant");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const handleSecondaryTabClick = (tab: CommercialView) => {
-    if (tab === "tenant") {
-      setTenantModalOpen(true);
-      return;
-    }
-    if (tab === "leasing") {
-      setLeasingEntryIntent("default");
-    }
-    setView(tab);
-  };
+  const isEntitySelected = selectedEntity !== DEFAULT_ENTITY;
+  const isPropertySelected = selectedProperty !== DEFAULT_PROPERTY;
+
+  const portfolioOptions = useMemo(() => getFilterPortfolioOptions(), []);
+  const entityOptions = useMemo(
+    () => getFilterEntityOptions(selectedPortfolio),
+    [selectedPortfolio],
+  );
+  const propertyOptions = useMemo(
+    () =>
+      isEntitySelected
+        ? getFilterPropertyOptions(selectedPortfolio, selectedEntity)
+        : [],
+    [isEntitySelected, selectedEntity, selectedPortfolio],
+  );
+
+  const handlePortfolioChange = useCallback((value: string) => {
+    setSelectedPortfolio(value);
+    setSelectedEntity(DEFAULT_ENTITY);
+    setSelectedProperty(DEFAULT_PROPERTY);
+  }, []);
+
+  const handleEntityChange = useCallback((value: string) => {
+    setSelectedEntity(value);
+    setSelectedProperty(DEFAULT_PROPERTY);
+  }, []);
+
+  const handlePropertyChange = useCallback((value: string) => {
+    setSelectedProperty(value);
+  }, []);
 
   return (
     <CommercialChatInjectContext.Provider value={injectChatDraft}>
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--Secondary-Sea-Salt)" }}
-    >
-      <TopNav activeTab={activeTab} onTabChange={onTabChange} />
+      <AppShell
+        activeNav={activeNav}
+        chatMinimized={chatMinimized}
+        chatPanel={
+          <ChatAside>
+            <ChatPanel
+              messages={messages}
+              suggestions={suggestions}
+              isTyping={isTyping}
+              onSend={handleSend}
+              onNewChat={handleNewChat}
+              onMinimize={() => setChatMinimized(true)}
+              chatDraftPayload={chatDraftPayload}
+              onChatDraftPayloadConsumed={() => setChatDraftPayload(null)}
+            />
+          </ChatAside>
+        }
+        chatRestoreFab={
+          <FloatingAmiioChat
+            messages={messages}
+            suggestions={suggestions}
+            isTyping={isTyping}
+            onSend={handleSend}
+            onExpandPanel={() => setChatMinimized(false)}
+            chatDraftPayload={chatDraftPayload}
+            onChatDraftPayloadConsumed={() => setChatDraftPayload(null)}
+          />
+        }
+      >
+        <DashboardPageHeader
+          title="Commercial Dashboard"
+          tabs={
+            <DashboardPageTabs
+              tabs={COMMERCIAL_TABS}
+              activeId={view}
+              onChange={(id) => setView(id as CommercialView)}
+            />
+          }
+          filters={
+            <EntityPropertyFilterBar
+              portfolioLabel={selectedPortfolio}
+              entityLabel={selectedEntity}
+              propertyLabel={selectedProperty}
+              portfolioOptions={portfolioOptions}
+              entityOptions={entityOptions}
+              propertyOptions={propertyOptions}
+              onPortfolioChange={handlePortfolioChange}
+              onEntityChange={handleEntityChange}
+              onPropertyChange={handlePropertyChange}
+            />
+          }
+        />
 
-      <ToastStack />
-
-      <main className="mx-auto w-full max-w-[1512px] px-8 pb-6 pt-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          <section className="min-w-0 flex-1">
-            <div className="mb-4">
-              <h1 className="text-[20px] font-medium leading-[1.25] tracking-tight text-[#010309]">
-                Commercial Dashboard
-              </h1>
-            </div>
-
-            {/* Secondary tabs + filter (same row; filter right-aligned) */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                {(
-                  [
-                    { id: "portfolio" as const, label: "Portfolio" },
-                    { id: "property" as const, label: "Property Hub" },
-                    { id: "tenant" as const, label: "Tenant Hub" },
-                    { id: "leasing" as const, label: "Leasing Tool" },
-                  ] as const
-                ).map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => handleSecondaryTabClick(t.id)}
-                    className={
-                      view === t.id
-                        ? "h-[36px] rounded-full bg-[#010309] px-5 text-[14px] font-medium leading-[1.25] text-white transition-colors"
-                        : "h-[36px] rounded-full px-4 text-[14px] font-medium leading-[1.25] text-[#969A9E] transition-colors hover:text-[#353638]"
-                    }
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex shrink-0 justify-end sm:ml-auto">
-                <EntityPropertyFilterBar clearToastMessage="Cleared filters" />
-              </div>
-            </div>
-
-            {/* View Content */}
-            {view === "portfolio" && (
-              <PortfolioOverviewView onAnalyseWithAmiio={handleAnalyseWithAmiio} />
-            )}
-
-            {view === "property" && (
-              <PropertyHubView onNavigateToLeasing={handleNavigateToLeasing} onAnalyseWithAmiio={handleAnalyseWithAmiio} onOpenTenantHub={handleOpenTenantModal} />
-            )}
-
-            {view === "tenant" && (
-              <TenantHubView
-                onNavigateToLeasing={handleNavigateToLeaseRenewalProposalPrep}
+        <DashboardPageBody>
+          {view === "overview" &&
+            (isPropertySelected ? (
+              <PropertyHubView
+                onNavigateToLeasing={handleNavigateToLeasing}
                 onAnalyseWithAmiio={handleAnalyseWithAmiio}
               />
-            )}
-
-            {view === "leasing" && (
-              <LeasingToolView
-                onOpenTenantHub={handleOpenTenantModal}
+            ) : (
+              <PortfolioOverviewView
+                scope={isEntitySelected ? "entity" : "portfolio"}
+                selectedPortfolio={selectedPortfolio}
+                selectedEntity={selectedEntity}
+                selectedProperty={selectedProperty}
                 onAnalyseWithAmiio={handleAnalyseWithAmiio}
-                entryIntent={leasingEntryIntent}
-                onEntryIntentApplied={clearLeasingEntryIntent}
               />
-            )}
-          </section>
+            ))}
 
-          {!chatMinimized ? (
-            <ResizableChatAside>
-              <ChatPanel
-                messages={messages}
-                suggestions={suggestions}
-                isTyping={isTyping}
-                onSend={handleSend}
-                onNewChat={handleNewChat}
-                onMinimize={() => setChatMinimized(true)}
-                chatDraftPayload={chatDraftPayload}
-                onChatDraftPayloadConsumed={() => setChatDraftPayload(null)}
-              />
-            </ResizableChatAside>
-          ) : null}
-        </div>
-      </main>
-
-      {chatMinimized && (
-        <ChatRestoreFab onExpand={() => setChatMinimized(false)} />
-      )}
-
-      <TenantModal
-        open={tenantModalOpen}
-        onClose={() => setTenantModalOpen(false)}
-        onConfirm={handleTenantConfirm}
-      />
-    </div>
+          {view === "rent-roll" && (
+            <RentRollView onAnalyseWithAmiio={handleAnalyseWithAmiio} />
+          )}
+        </DashboardPageBody>
+      </AppShell>
     </CommercialChatInjectContext.Provider>
   );
 }

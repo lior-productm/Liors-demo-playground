@@ -12,11 +12,11 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { dsChartCard, dsFinTypo } from "@/src/lib/designSystem";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { useCommercialChatInject } from "@/src/components/commercial/CommercialChatContext";
 
-const DS_CARD =
-  "rounded-[32px] border border-[rgba(230,231,232,0.85)] bg-white shadow-[0px_2px_12px_rgba(0,0,0,0.04)]";
+const DS_CARD = `${dsChartCard} ds-card-gradient shadow-[0px_2px_12px_rgba(0,0,0,0.04)]`;
 
 function fmtEuroAmount(n: number) {
   return `€ ${n.toLocaleString("de-DE")}`;
@@ -42,7 +42,10 @@ function AnalyseWithAmiioButton({ topic }: { topic: string }) {
         e.stopPropagation();
         onClick();
       }}
-      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#D1D5D9] bg-white px-3.5 text-[13px] font-medium text-[#353638] shadow-[0px_2px_6px_rgba(0,0,0,0.05)] transition-colors hover:border-[#BFC6CD] hover:bg-[#F8FAFC]"
+      className={cn(
+        "inline-flex h-9 items-center gap-1.5 rounded-full border border-[#D1D5D9] bg-white px-3.5 shadow-[0px_2px_6px_rgba(0,0,0,0.05)] transition-colors hover:border-[#BFC6CD] hover:bg-[#F8FAFC]",
+        dsFinTypo.analyseBtn,
+      )}
     >
       <Lightbulb className="size-4 shrink-0 text-[#7E8185]" strokeWidth={1.8} />
       Analyse with Amiio
@@ -181,10 +184,10 @@ const CAPEX_INPUT_SOURCES: {
 
 function statusPill(state: (typeof CAPEX_PROJECTS)[number]["state"]) {
   if (state === "completed")
-    return <span className="rounded-full bg-[#E6F6F3] px-2 py-0.5 text-[11px] font-semibold text-[#1F9E8B]">Completed</span>;
+    return <span className={cn("rounded-full bg-[#E6F6F3] px-2 py-0.5 text-[#1F9E8B]", dsFinTypo.badge)}>Completed</span>;
   if (state === "in-progress")
-    return <span className="rounded-full bg-[#D3E8FA] px-2 py-0.5 text-[11px] font-semibold text-[#1A4D8C]">In Progress</span>;
-  return <span className="rounded-full bg-[#EDEEF2] px-2 py-0.5 text-[11px] font-semibold text-[#676A6E]">Planned</span>;
+    return <span className={cn("rounded-full bg-[#D3E8FA] px-2 py-0.5 text-[#1A4D8C]", dsFinTypo.badge)}>In Progress</span>;
+  return <span className={cn("rounded-full bg-[#EDEEF2] px-2 py-0.5 text-[#676A6E]", dsFinTypo.badge)}>Planned</span>;
 }
 
 function valueToneClass(tone?: CashFlowRow["tone"]) {
@@ -240,17 +243,16 @@ export function FinancialCapexCfPanel() {
             )}
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="text-[13px] font-medium text-[#65686B]">{k.title}</p>
+              <p className={dsFinTypo.kpiLabel}>{k.title}</p>
               <WidgetHeaderLamp
-                className="h-7 w-7"
                 chatLabel={k.title}
                 chatTopic={`Analyse ${k.title} in Capex & Cash Flow context.`}
               />
             </div>
-            <p className={cn("mt-2 text-[22px] font-semibold tabular-nums tracking-tight", k.subTone === "success" ? "text-[#146B3A]" : "text-[#010309]")}>
+            <p className={cn("mt-2", dsFinTypo.kpiValue, k.subTone === "success" && "text-[#146B3A]")}>
               {k.value}
             </p>
-            <p className={cn("mt-1 text-[12px] font-medium", k.subTone === "success" ? "text-[#146B3A]" : k.subTone === "warning" ? "text-[#B07D12]" : "text-[#969A9E]")}>
+            <p className={cn("mt-1", dsFinTypo.kpiSubMuted, k.subTone === "success" ? "text-[#146B3A]" : k.subTone === "warning" ? "text-[#B07D12]" : undefined)}>
               {k.sub}
             </p>
           </div>
@@ -260,7 +262,7 @@ export function FinancialCapexCfPanel() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className={cn(DS_CARD, "p-6")}>
           <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-            <h3 className="text-[16px] font-semibold text-[#2C2C2C]">Capital Expenditure Projects</h3>
+            <h3 className={dsFinTypo.sectionTitle}>Capital Expenditure Projects</h3>
             <WidgetHeaderLamp
               chatLabel="Capex projects"
               chatTopic="Summarise capex project progress, budget burn, and delivery risk for each project."
@@ -277,21 +279,21 @@ export function FinancialCapexCfPanel() {
                     className="w-full rounded-xl border border-[rgba(230,231,232,0.75)] bg-[#FAFBFC] p-3 text-left"
                   >
                     <div className="mb-1 flex items-start justify-between gap-2">
-                      <p className="text-[14px] font-semibold text-[#010309]">{p.name}</p>
+                      <p className={dsFinTypo.rowTitle}>{p.name}</p>
                       {statusPill(p.state)}
                     </div>
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[12px] text-[#65686B]">
+                    <div className={cn("mb-2 flex flex-wrap items-center justify-between gap-2", dsFinTypo.meta)}>
                       <span>Budget: {fmtEuroAmount(p.budget)}</span>
                       <span>Spent: {fmtEuroAmount(p.spent)}</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--Neutral-200)]">
                       <div className={cn("h-full rounded-full transition-[width] duration-300", p.barClass)} style={{ width: `${p.progressPct}%` }} />
                     </div>
-                    <p className="mt-1 text-right text-[11px] text-[#969A9E]">{p.progressPct}% complete</p>
+                    <p className={cn("mt-1 text-right", dsFinTypo.kpiSubMuted)}>{p.progressPct}% complete</p>
                   </button>
                   {open ? (
                     <div className="mt-2 rounded-xl border border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] p-3">
-                      <p className="text-[12px] leading-[1.45] text-[#353638]">{p.detail}</p>
+                      <p className={dsFinTypo.bodySm}>{p.detail}</p>
                       <div className="mt-3 flex justify-end">
                         <AnalyseWithAmiioButton topic={`${p.name} — spent ${fmtEuroAmount(p.spent)} of ${fmtEuroAmount(p.budget)}.\n\n${p.detail}`} />
                       </div>
@@ -305,7 +307,7 @@ export function FinancialCapexCfPanel() {
 
         <div className={cn(DS_CARD, "p-6")}>
           <div className="mb-4 flex items-start justify-between gap-2">
-            <h3 className="text-[16px] font-semibold text-[#2C2C2C]">Cash Flow Projection</h3>
+            <h3 className={dsFinTypo.sectionTitle}>Cash Flow Projection</h3>
             <WidgetHeaderLamp
               chatLabel="Cash flow projection"
               chatTopic="Interpret monthly cash inflow and outflow projection for Jan to Jun and highlight risks."
@@ -337,7 +339,7 @@ export function FinancialCapexCfPanel() {
               ))}
             </svg>
           </div>
-          <div className="mt-1 flex items-center justify-center gap-6 text-[12px] text-[#65686B]">
+          <div className={cn("mt-1 flex items-center justify-center gap-6", dsFinTypo.meta)}>
             <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-[#1F9E8B]" />Cash Inflow</span>
             <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-[#EA4B57]" />Cash Outflow</span>
           </div>
@@ -346,11 +348,15 @@ export function FinancialCapexCfPanel() {
 
       <div className={cn(DS_CARD, "overflow-hidden p-6")}>
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <h3 className="text-[16px] font-semibold text-[#2C2C2C]">Cash Flow Statement - Q1 2026</h3>
+          <h3 className={dsFinTypo.sectionTitle}>Cash Flow Statement - Q1 2026</h3>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#D1D5D9] bg-white px-3 text-[13px] font-medium text-[#010309] transition-colors hover:bg-[#F7F8FA]"
+              className={cn(
+                "inline-flex h-9 items-center gap-2 rounded-xl border border-[#D1D5D9] bg-white px-3 transition-colors hover:bg-[#F7F8FA]",
+                dsFinTypo.btn,
+                "text-[#010309]",
+              )}
               onClick={() =>
                 window.dispatchEvent(
                   new CustomEvent("amiio:toast", { detail: { message: "Export cashflow statement" } }),
@@ -370,7 +376,7 @@ export function FinancialCapexCfPanel() {
             <thead>
               <tr className="border-b border-[rgba(230,231,232,0.9)] bg-[#F7F8FA]">
                 {["Item", "Jan", "Feb", "Mar", "Q1 Total"].map((h) => (
-                  <th key={h} className={cn("px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.04em] text-[#969A9E]", h !== "Item" && "text-right")}>
+                  <th key={h} className={cn("px-4 py-3", dsFinTypo.tableHeader, h !== "Item" && "text-right")}>
                     {h}
                   </th>
                 ))}
@@ -379,11 +385,11 @@ export function FinancialCapexCfPanel() {
             <tbody>
               {CASHFLOW_ROWS.map((r) => (
                 <tr key={r.item} className="border-b border-[rgba(230,231,232,0.6)] last:border-0">
-                  <td className="px-4 py-3 text-[13px] font-medium text-[#353638]">{r.item}</td>
-                  <td className={cn("px-4 py-3 text-right text-[13px] tabular-nums", valueToneClass(r.tone))}>{fmtEuroAmount(r.jan)}</td>
-                  <td className={cn("px-4 py-3 text-right text-[13px] tabular-nums", valueToneClass(r.tone))}>{fmtEuroAmount(r.feb)}</td>
-                  <td className={cn("px-4 py-3 text-right text-[13px] tabular-nums", valueToneClass(r.tone))}>{fmtEuroAmount(r.mar)}</td>
-                  <td className={cn("px-4 py-3 text-right text-[13px] tabular-nums font-semibold", valueToneClass(r.tone))}>{fmtEuroAmount(r.q1)}</td>
+                  <td className={cn("px-4 py-3", dsFinTypo.tableCellMedium)}>{r.item}</td>
+                  <td className={cn("px-4 py-3 text-right tabular-nums", dsFinTypo.tableCell, valueToneClass(r.tone))}>{fmtEuroAmount(r.jan)}</td>
+                  <td className={cn("px-4 py-3 text-right tabular-nums", dsFinTypo.tableCell, valueToneClass(r.tone))}>{fmtEuroAmount(r.feb)}</td>
+                  <td className={cn("px-4 py-3 text-right tabular-nums", dsFinTypo.tableCell, valueToneClass(r.tone))}>{fmtEuroAmount(r.mar)}</td>
+                  <td className={cn("px-4 py-3 text-right tabular-nums font-semibold", dsFinTypo.tableCellStrong, valueToneClass(r.tone))}>{fmtEuroAmount(r.q1)}</td>
                 </tr>
               ))}
             </tbody>
@@ -393,11 +399,11 @@ export function FinancialCapexCfPanel() {
 
       <div className={cn(DS_CARD, "p-6")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-[16px] font-semibold text-[#2C2C2C]">Input Sources</h3>
+          <h3 className={dsFinTypo.sectionTitle}>Input Sources</h3>
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="text-[13px] font-medium text-[#233FDE] underline-offset-2 hover:underline"
+              className={dsFinTypo.link}
               onClick={() =>
                 window.dispatchEvent(
                   new CustomEvent("amiio:toast", { detail: { message: "View all sources" } }),
@@ -443,13 +449,13 @@ export function FinancialCapexCfPanel() {
                     <Icon className="size-5" strokeWidth={1.5} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-[#010309]">{s.title}</p>
-                    <p className="mt-0.5 text-[12px] text-[#65686B]">{s.date}</p>
+                    <p className={cn(dsFinTypo.rowTitle, "text-[#010309]")}>{s.title}</p>
+                    <p className={cn("mt-0.5", dsFinTypo.meta)}>{s.date}</p>
                   </div>
                 </button>
                 {open ? (
                   <div className="mt-2 rounded-xl border border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] p-3">
-                    <p className="text-[12px] leading-[1.45] text-[#353638]">{s.detail}</p>
+                    <p className={dsFinTypo.bodySm}>{s.detail}</p>
                     <div className="mt-3 flex justify-end">
                       <AnalyseWithAmiioButton topic={`Input source: ${s.title}\n\n${s.detail}`} />
                     </div>

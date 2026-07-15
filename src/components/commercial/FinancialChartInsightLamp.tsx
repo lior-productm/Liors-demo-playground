@@ -44,8 +44,8 @@ export function FinancialChartInsightLamp({
             background: "linear-gradient(178deg, #1B32B3 1.63%, #000000 128.52%)",
           }}
         >
-          <span className="flex size-[22.627px] rotate-45 items-center justify-center">
-            <Lightbulb className="size-4 text-white" strokeWidth={2} aria-hidden />
+          <span className="flex size-[66%] rotate-45 items-center justify-center">
+            <Lightbulb className="size-[57%] text-white" strokeWidth={2} aria-hidden />
           </span>
         </button>
       </PopoverTrigger>

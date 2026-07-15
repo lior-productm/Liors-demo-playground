@@ -7,39 +7,183 @@
     text-wrap: balance;
   }
 
-  /* ── Figma Core Design System – Typography ── */
-  /* Headings */
-  .typo-h1 { font-size: 40px; font-weight: 500; line-height: 1.25; }
-  .typo-h2 { font-size: 32px; font-weight: 500; line-height: 1.25; }
-  .typo-h3 { font-size: 24px; font-weight: 500; line-height: 1.25; }
-  .typo-h4 { font-size: 20px; font-weight: 500; line-height: 1.25; }
-  .typo-h5 { font-size: 18px; font-weight: 500; line-height: 1.25; }
+  /* ── Figma Core Design System – Typography (830:52765) ── */
+  /* Headings — Inter Medium */
+  .typo-h1 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+  .typo-h2 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+  .typo-h3 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+  .typo-h4 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+  .typo-h5 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
 
-  /* Paragraphs */
-  .typo-p1-r { font-size: 16px; font-weight: 400; line-height: 1.5; }
-  .typo-p1-b { font-size: 16px; font-weight: 500; line-height: 1.5; }
-  .typo-p2-r { font-size: 14px; font-weight: 400; line-height: 1.4; }
-  .typo-p2-b { font-size: 14px; font-weight: 500; line-height: 1.5; }
-  .typo-p3-r { font-size: 12px; font-weight: 400; line-height: 1.5; }
-  .typo-p3-b { font-size: 12px; font-weight: 500; line-height: 1.5; }
+  /* Page titles — Inter Medium (dashboard / section headers) */
+  .typo-page-title {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
 
-  /* Labels */
-  .typo-l1-r { font-size: 16px; font-weight: 400; line-height: 1.25; }
-  .typo-l1-b { font-size: 16px; font-weight: 500; line-height: 1.25; }
-  .typo-l2-r { font-size: 14px; font-weight: 400; line-height: 1.25; }
-  .typo-l2-b { font-size: 14px; font-weight: 500; line-height: 1.25; }
-  .typo-l3-r { font-size: 12px; font-weight: 400; line-height: 1.25; }
-  .typo-l3-b { font-size: 12px; font-weight: 500; line-height: 1.25; }
+  /* Paragraphs — Inter Regular / Medium */
+  .typo-p1-r { font-size: 16px; font-weight: 400; line-height: 1.5; letter-spacing: 0; }
+  .typo-p1-b { font-size: 16px; font-weight: 500; line-height: 1.5; letter-spacing: 0; }
+  .typo-p2-r { font-size: 14px; font-weight: 400; line-height: 1.4; letter-spacing: 0; }
+  .typo-p2-b { font-size: 14px; font-weight: 500; line-height: 1.5; letter-spacing: 0; }
+  .typo-p3-r { font-size: 12px; font-weight: 400; line-height: 1.5; letter-spacing: 0; }
+  .typo-p3-b { font-size: 12px; font-weight: 500; line-height: 1.5; letter-spacing: 0; }
 
-  /* Numbers */
+  /* Labels — Inter Regular / Medium */
+  .typo-l1-r { font-size: 16px; font-weight: 400; line-height: 1.25; letter-spacing: 0; }
+  .typo-l1-b { font-size: 16px; font-weight: 500; line-height: 1.25; letter-spacing: 0; }
+  .typo-l2-r { font-size: 14px; font-weight: 400; line-height: 1.24; letter-spacing: 0; }
+  .typo-l2-b { font-size: 14px; font-weight: 500; line-height: 1.24; letter-spacing: 0; }
+  .typo-l3-r { font-size: 12px; font-weight: 400; line-height: 1.24; letter-spacing: 0; }
+  .typo-l3-b { font-size: 12px; font-weight: 500; line-height: 1.25; letter-spacing: 0; }
+
+  /* Chart axis / legend (Financial dashboard) */
+  .typo-chart-axis { font-size: 12px; font-weight: 400; line-height: 1.24; letter-spacing: 0; color: var(--Neutral-700); }
+  .typo-chart-axis-b { font-size: 12px; font-weight: 500; line-height: 1.25; letter-spacing: 0; color: var(--Neutral-700); }
+
+  /* Numbers — tabular */
   .typo-n-default { font-size: 14px; font-weight: 400; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .typo-n-total { font-size: 14px; font-weight: 500; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .typo-n-sectiontotal { font-size: 14px; font-weight: 600; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .typo-n-grandtotal { font-size: 14px; font-weight: 700; line-height: 1.25; font-variant-numeric: tabular-nums; }
-  .typo-n-default-s { font-size: 12px; font-weight: 400; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .typo-n-default-s { font-size: 12px; font-weight: 400; line-height: 1.24; font-variant-numeric: tabular-nums; }
   .typo-n-total-s { font-size: 12px; font-weight: 500; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .typo-n-sectiontotal-s { font-size: 12px; font-weight: 600; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .typo-n-grandtotal-s { font-size: 12px; font-weight: 700; line-height: 1.25; font-variant-numeric: tabular-nums; }
+
+  /* Card surfaces */
+  .ds-card-gradient { background-image: linear-gradient(-88deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%); }
+
+  /*
+   * Financial chart cards — scale type + plot to card width (Figma ref inner 307px).
+   * At ~355px card (chat open) scale ≈ 1; shrinks smoothly in narrower columns.
+   */
+  .financial-chart-card {
+    container-type: inline-size;
+    container-name: financial-chart;
+    --fc-ref-w: 355;
+    --fc-scale: clamp(0.72, 100cqw / calc(var(--fc-ref-w) * 1px), 1);
+  }
+
+  .financial-chart-scaled-title {
+    font-size: calc(14px * var(--fc-scale));
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  .financial-chart-scaled-body {
+    font-size: calc(12px * var(--fc-scale));
+    line-height: 1.24;
+    font-weight: 400;
+  }
+
+  .financial-chart-scaled-body-m {
+    font-size: calc(12px * var(--fc-scale));
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  .financial-chart-scaled-value {
+    font-size: calc(20px * var(--fc-scale));
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .financial-chart-scaled-plot-h {
+    height: calc(216px * var(--fc-scale));
+  }
+
+  /* Plot fills card width beside Y-axis; SVG stretches via preserveAspectRatio="none". */
+  .financial-chart-scaled-plot-area {
+    height: calc(216px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-lamp {
+    width: calc(34px * var(--fc-scale));
+    height: calc(34px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-y-axis {
+    width: calc(40px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-x-pl {
+    padding-left: calc(40px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-donut {
+    width: min(100%, calc(204px * var(--fc-scale)));
+    height: calc(203px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-donut-center-label {
+    font-size: calc(14px * var(--fc-scale));
+    line-height: 1.24;
+    font-weight: 400;
+  }
+
+  .financial-chart-scaled-donut-center-value {
+    font-size: calc(48px * var(--fc-scale));
+    line-height: 1.25;
+    font-weight: 500;
+  }
+
+  .financial-chart-scaled-legend-label {
+    font-size: calc(14px * var(--fc-scale));
+    line-height: 1.24;
+    font-weight: 400;
+  }
+
+  .financial-chart-scaled-legend-value {
+    font-size: calc(14px * var(--fc-scale));
+    line-height: 1.24;
+    font-weight: 500;
+  }
+
+  .financial-chart-scaled-filter {
+    height: calc(24px * var(--fc-scale));
+    min-height: 20px;
+    font-size: calc(12px * var(--fc-scale));
+    width: calc(122px * var(--fc-scale));
+  }
+
+  .financial-chart-scaled-legend-line {
+    width: calc(24px * var(--fc-scale));
+  }
 }
 
 @layer base {
@@ -160,6 +304,14 @@
     -webkit-font-smoothing: antialiased;
     font-synthesis: none;
   }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: Inter, var(--font-inter), system-ui, sans-serif;
+  }
 }
 
 ::selection {
@@ -218,6 +370,17 @@
   animation: fade-in-up 0.3s ease-out forwards;
 }
 
+@keyframes suggestion-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Typing dots */
 @keyframes typing-dot {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
@@ -226,6 +389,95 @@
 .typing-dot-1 { animation: typing-dot 1.4s infinite 0s; }
 .typing-dot-2 { animation: typing-dot 1.4s infinite 0.2s; }
 .typing-dot-3 { animation: typing-dot 1.4s infinite 0.4s; }
+
+/* Ask Amiio lease reasoning stepper */
+@keyframes reasoning-check-in {
+  0% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-reasoning-check-in {
+  animation: reasoning-check-in 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
+
+@keyframes reasoning-line-grow {
+  0% {
+    transform: scaleY(0);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+.animate-reasoning-line-grow {
+  transform-origin: top;
+  animation: reasoning-line-grow 0.35s ease-out forwards;
+}
+
+@keyframes reasoning-pulse-ring {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+.animate-reasoning-pulse-ring {
+  animation: reasoning-pulse-ring 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes reasoning-label-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+.animate-reasoning-label-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    #70a4ac 0%,
+    #70a4ac 38%,
+    #b8d4d8 50%,
+    #70a4ac 62%,
+    #70a4ac 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: reasoning-label-shimmer 2s linear infinite;
+}
+
+@keyframes reasoning-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-reasoning-row-in {
+  animation: reasoning-row-in 0.4s ease-out forwards;
+}
 
 /* Excel grid styles */
 .excel-cell {

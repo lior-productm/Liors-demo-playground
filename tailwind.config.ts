@@ -73,6 +73,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-amiio-serif)', 'Georgia', 'serif'],
         mono: ['var(--font-jetbrains)', 'monospace'],
       },
       borderRadius: {

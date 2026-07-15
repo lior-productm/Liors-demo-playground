@@ -79,10 +79,11 @@ export function AmiioAiDisclaimerTrigger({
   );
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-        <TooltipContent
+    <span className="inline-flex shrink-0">
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+          <TooltipContent
           side={side}
           className={cn(
             variant === "lamp"
@@ -125,5 +126,6 @@ export function AmiioAiDisclaimerTrigger({
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
+    </span>
   );
 }

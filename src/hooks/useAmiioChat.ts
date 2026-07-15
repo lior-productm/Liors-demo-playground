@@ -3,10 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChatMessage, TopNavTabId } from "@/src/types/commercial";
 import { __assistantReplyFor } from "@/src/components/commercial/ChatPanel";
+import { readDashboardChat, writeDashboardChat } from "@/src/lib/dashboardState";
 
-export function useAmiioChat(activeTab: TopNavTabId) {
+export function useAmiioChat(activeTab: TopNavTabId, persistKey?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!persistKey) return;
+    setMessages(readDashboardChat(persistKey));
+  }, [persistKey]);
 
   const suggestions = useMemo(() => {
     if (activeTab === "reporting")
@@ -14,19 +20,30 @@ export function useAmiioChat(activeTab: TopNavTabId) {
     if (activeTab === "finance")
       return ["Explain NOI drivers", "Show debt ratio movement", "Summarize cashflow impact"];
     if (activeTab === "amiio")
-      return ["What did Amiio detect today?", "Summarize proactive opportunities", "Ask for recommended next steps"];
+      return [
+        "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+        "Rank my assets by risk score and explain the main drivers",
+        "Create a portfolio performance summary for Q2",
+      ];
     return ["Which assets expire next?", "Summarize rent variance vs market", "Generate a lease expiry export"];
   }, [activeTab]);
 
   useEffect(() => {
+    if (persistKey) return;
     setMessages([]);
     setIsTyping(false);
-  }, [activeTab]);
+  }, [activeTab, persistKey]);
+
+  useEffect(() => {
+    if (!persistKey) return;
+    writeDashboardChat(persistKey, messages);
+  }, [messages, persistKey]);
 
   const onNewChat = useCallback(() => {
     setMessages([]);
     setIsTyping(false);
-  }, []);
+    if (persistKey) writeDashboardChat(persistKey, []);
+  }, [persistKey]);
 
   const onSend = (text: string) => {
     if (isTyping) return;
@@ -59,4 +76,3 @@ export function useAmiioChat(activeTab: TopNavTabId) {
 
   return { messages, isTyping, suggestions, onSend, onNewChat };
 }
-

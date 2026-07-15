@@ -13,7 +13,7 @@ export function navigateTopNavTab(tab: TopNavTabId, router: RouterWithPush) {
   }
   switch (tab) {
     case "amiio":
-      router.push("/insights");
+      router.push("/workspace");
       break;
     case "finance":
       router.push("/financial");

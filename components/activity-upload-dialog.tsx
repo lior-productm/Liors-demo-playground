@@ -43,13 +43,8 @@ export function ActivityUploadDialog({
       );
       return;
     }
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", {
-        detail: { message: `${activityLabel} uploaded: ${fileName}` },
-      }),
-    );
     onOpenChange(false);
-  }, [activityLabel, fileName, onOpenChange]);
+  }, [fileName, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

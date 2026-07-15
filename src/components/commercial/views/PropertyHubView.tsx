@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TruncatedText } from "@/src/components/ui/TruncatedText";
 import {
   Tooltip,
   TooltipContent,
@@ -33,9 +34,11 @@ import {
 } from "@/components/ui/tooltip";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
 import { BuildingThumb } from "@/src/components/commercial/BuildingThumb";
+import { InvestmentSummaryPhoto } from "@/src/components/commercial/overview/InvestmentSummaryPhoto";
 import { TrendPill } from "@/src/components/commercial/TrendPill";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { WidgetExportMenu } from "@/src/components/commercial/WidgetExportMenu";
+import { OverviewAiSummaryCard } from "@/src/components/commercial/overview/OverviewAiSummaryCard";
 import {
   AmiioAiDisclaimerTrigger,
   AMIIO_AI_DISCLAIMER,
@@ -46,9 +49,19 @@ import {
   AmiioExpandableInsightRow,
   AmiioExpandableRecentActionRow,
 } from "@/src/components/commercial/AmiioExpandableRow";
-import { RentRollView } from "@/src/components/commercial/views/RentRollView";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 import { AMIIO_CHART_MOTION } from "@/src/lib/chartMotion";
+import { COMMERCIAL_BAR_CHART_BAR_CLASS, lightenHexColor } from "@/src/lib/chartColors";
+import { DS_DONUT_204 } from "@/src/lib/designSystem";
+import {
+  LEASE_EXPIRY_MAX_EUR,
+  LEASE_EXPIRY_PROFILE,
+  LEASE_EXPIRY_Y_TICKS_EUR,
+  PERFORMANCE_VS_BUDGET_ROWS,
+  formatLeaseExpiryAxis,
+  formatLeaseExpiryTooltip,
+  leaseExpiryBarHeightPx,
+} from "@/src/lib/commercialMockData";
 
 /* ------------------------------------------------------------------ */
 /*  Collapsible wrapper                                                */
@@ -91,11 +104,11 @@ function CollapsibleSection({
           <span className="text-[18px] font-medium text-[#2C2C2C]">{title}</span>
         </button>
         <div className="flex shrink-0 items-center gap-1">
+          {headerTrailing}
           <WidgetHeaderLamp
             chatTopic={`Review "${title}" on the Property Hub: summarise KPIs, outliers, and recommended next steps.`}
             chatLabel={title}
           />
-          {headerTrailing}
         </div>
       </div>
       {open && <div className="px-6 pb-6">{children}</div>}
@@ -229,125 +242,193 @@ const AnalyseIcon = AmiioAnalyseIcon;
 
 /** Collapsed strip — first column key fields only. */
 const KEY_INFO_ROWS: [string, React.ReactNode][] = [
-  ["SPV", "Wenckebachweg Amsterdam BV"],
-  ["Valuation", "€47,225,000"],
-  ["Asset Manager", "Sandra van Holland"],
+  ["SPV", "Wenckebachweg Amsterdam B.V."],
+  ["Valuation", "€26.870.544"],
+  ["Asset Manager", "Daniel Meyer"],
   ["Energy Label", <Pill key="el-strip">A</Pill>],
 ];
 
+const INVESTMENT_VACANCY_PCT = 9.3;
+
+function InvestmentVacancyValue({ compact = false }: { compact?: boolean }) {
+  return (
+    <span className="flex items-center gap-2">
+      <MiniDonut
+        pct={INVESTMENT_VACANCY_PCT}
+        size={compact ? 22 : 24}
+        strokeWidth={3}
+        color="#010309"
+      />
+      <span
+        className={cn(
+          "font-medium text-[#121212]",
+          compact ? "text-[13px] md:text-[14px]" : "text-[14px]",
+        )}
+      >
+        9,3%
+      </span>
+    </span>
+  );
+}
+
 function InvestmentSummary({ compact = false }: { compact?: boolean }) {
-  const imgClass = compact
-    ? "h-[min(128px,17vw)] w-[min(128px,17vw)] min-h-[104px] min-w-[104px]"
-    : "h-[226px] w-[226px]";
-  const gridGap = compact ? "gap-5 md:gap-7 lg:gap-8" : "gap-10";
-  const colW = compact ? "w-[min(140px,24%)]" : "w-[144px]";
-  const gridMax = compact ? "xl:max-w-[min(720px,100%)]" : "xl:max-w-[693px]";
+  const photoSize = compact ? 136 : 220;
+  const photoColW = compact ? "w-[136px] max-w-[136px]" : "w-[220px] max-w-[220px]";
+  const imgClass = "aspect-square w-full";
+  const gridGap = compact ? "gap-2 md:gap-3" : "gap-3 md:gap-4";
+  const colW = compact ? "w-[min(120px,22%)]" : "min-w-[100px] flex-1";
   const addressText = compact
     ? "text-[14px] font-medium leading-[1.5] text-[#2C2C2C] md:text-[15px]"
     : "text-[14px] font-medium leading-[1.5] text-[#2C2C2C]";
   const pinClass = compact ? "h-4 w-4 md:h-[18px] md:w-[18px]" : "h-4 w-4";
 
+  const columns: Array<{ title: string; rows: [string, React.ReactNode][] }> = compact
+    ? [
+        {
+          title: "KEY INFO",
+          rows: [
+            ["SPV", "Wenckebachweg Amsterdam B.V."],
+            ["Valuation", "€26.870.544"],
+            ["Asset Manager", "Daniel Meyer"],
+            ["Energy Label", <Pill key="el-compact">A</Pill>],
+          ],
+        },
+        {
+          title: "CLASSIFICATION",
+          rows: [
+            ["Asset Use", "Office"],
+            ["Type", "Core+"],
+            ["Tenure", "Freehold"],
+            ["Tenant Type", "Multi tenant"],
+          ],
+        },
+        {
+          title: "CHARACTERISTICS",
+          rows: [
+            ["Condition", <Pill key="cond">B (Good)</Pill>],
+            ["Location", <Pill key="loc">A (Excellent)</Pill>],
+            ["Year Built", "2001"],
+            ["Floors", "4"],
+          ],
+        },
+        {
+          title: "AREAS",
+          rows: [
+            ["Plot Size", "10.757 sqm"],
+            ["GFA", "€14,423.25"],
+            ["LFA", "13,170.2"],
+            ["Vacancy", <InvestmentVacancyValue key="vac-compact" compact />],
+          ],
+        },
+      ]
+    : [
+        {
+          title: "KEY INFO",
+          rows: [
+            ["Property code", "p1000071"],
+            ["SPV", "Wenckebachweg Amsterdam B.V."],
+            ["Valuation", "€26.870.544"],
+            ["Asset Manager", "Daniel Meyer"],
+            ["Energy Label", <Pill key="el">A</Pill>],
+          ],
+        },
+        {
+          title: "CLASSIFICATION",
+          rows: [
+            ["Asset Use", "Office"],
+            ["Type", "Core+"],
+            ["Tenure", "Freehold"],
+            ["Tenant Type", "Multi tenant"],
+          ],
+        },
+        {
+          title: "CHARACTERISTICS",
+          rows: [
+            ["Condition", <Pill key="cond">B (Good)</Pill>],
+            ["Location", <Pill key="loc">A (Excellent)</Pill>],
+            ["Year Built", "2001"],
+            ["Floors", "4"],
+          ],
+        },
+        {
+          title: "AREAS",
+          rows: [
+            ["Plot Size", "10.757 sqm"],
+            ["GFA", "€14,423.25"],
+            ["LFA", "13,170.2"],
+            ["Vacancy", <InvestmentVacancyValue key="vac" />],
+          ],
+        },
+      ];
+
   return (
     <div
       className={cn(
-        "flex w-full items-start justify-between",
-        compact ? "gap-3 md:gap-5" : "gap-6",
+        "grid w-full min-w-0 items-start overflow-hidden",
+        compact ? "gap-2 md:gap-3" : "gap-3 md:gap-4",
       )}
+      style={{ gridTemplateColumns: `${photoSize}px minmax(0, 1fr)` }}
     >
-      <div className={cn("flex shrink-0 flex-col", compact ? "gap-1.5 md:gap-2" : "gap-2")}>
+      <div
+        className={cn(
+          "flex min-w-0 shrink-0 flex-col",
+          photoColW,
+          "gap-1.5",
+        )}
+      >
         <div
           className={cn(
-            "relative shrink-0 overflow-hidden rounded-[8px] bg-[#D9D9D9]",
+            "relative w-full shrink-0 overflow-hidden rounded-[8px] bg-[#D9D9D9]",
             imgClass,
           )}
         >
-          <BuildingThumb
-            className="absolute inset-0 h-full w-full rounded-[8px]"
+          <InvestmentSummaryPhoto
+            containerClassName="h-full w-full"
+            className="h-full w-full rounded-[8px] object-cover"
             alt="H.J.E. Wenckebachweg 123"
           />
         </div>
-        <div className={cn("flex items-center", compact ? "gap-2 md:gap-[11px]" : "gap-[11px]")}>
-          <MapPin className={cn("shrink-0 text-[#2C2C2C]", pinClass)} />
-          <div className={addressText}>
-            H.J.E. Wenckebachweg 123
-            <br />
-            Amsterdam
+        <div className={cn("flex min-w-0 items-start", compact ? "gap-1.5" : "gap-2")}>
+          <MapPin className={cn("mt-0.5 shrink-0 text-[#2C2C2C]", pinClass)} />
+          <div className={cn(addressText, "min-w-0 break-words")}>
+            {compact ? (
+              <>
+                H.J.E. Wenckebachweg 123
+                <br />
+                Amsterdam
+              </>
+            ) : (
+              "H.J.E. Wenckebachweg 123 / Amsterdam"
+            )}
           </div>
         </div>
       </div>
 
-      <div className={cn("min-w-0 flex-1", gridMax)}>
+      <div className="min-w-0 flex-1">
         <div
           className={cn(
-            "flex border-b border-[rgba(230,231,232,0.7)] pb-2",
+            "flex border-b border-[rgba(230,231,232,0.7)] pb-1.5",
             gridGap,
           )}
         >
-          {["KEY INFO", "CLASSIFICATION", "CHARACTERISTICS", "KEY INFO"].map(
-            (h, i) => (
-              <div
-                key={`${h}-${i}`}
-                className={cn("text-[12px] font-medium text-[#65686B]", colW)}
-              >
-                {h}
-              </div>
-            ),
-          )}
+          {columns.map((column) => (
+            <div
+              key={column.title}
+              className={cn("text-[12px] font-medium text-[#65686B]", colW)}
+            >
+              {column.title}
+            </div>
+          ))}
         </div>
-        <div className={cn("mt-3 flex", gridGap)}>
-          <InfoCol
-            compact={compact}
-            colClass={colW}
-            rows={[
-              ["SPV", "Wenckebachweg Amsterdam BV"],
-              ["Valuation", "€47,225,000"],
-              ["Asset Manager", "Sandra van Holland"],
-              ["Energy Label", <Pill key="el">A</Pill>],
-            ]}
-          />
-          <InfoCol
-            compact={compact}
-            colClass={colW}
-            rows={[
-              ["Asset Use", "Office"],
-              ["Type", "Core+"],
-              ["Tenure", "Freehold"],
-              ["Tenant Type", "Multi"],
-            ]}
-          />
-          <InfoCol
-            compact={compact}
-            colClass={colW}
-            rows={[
-              ["Condition", <Pill key="cond">B (Good)</Pill>],
-              ["Location", <Pill key="loc">A (Excellent)</Pill>],
-              ["Year Built", "2000"],
-              ["Floors", "4"],
-            ]}
-          />
-          <InfoCol
-            compact={compact}
-            colClass={colW}
-            rows={[
-              ["Plot Size", "10,757"],
-              ["GFA", "€14,423.25"],
-              ["LFA", "13,170.2"],
-              [
-                "Vacancy",
-                <span key="vac" className="flex items-center gap-2">
-                  <MiniDonut pct={0} size={compact ? 22 : 24} strokeWidth={3} color="#010309" />
-                  <span
-                    className={cn(
-                      "font-medium text-[#121212]",
-                      compact ? "text-[13px] md:text-[14px]" : "text-[14px]",
-                    )}
-                  >
-                    0%
-                  </span>
-                </span>,
-              ],
-            ]}
-          />
+        <div className={cn("mt-2 flex", gridGap)}>
+          {columns.map((column) => (
+            <InfoCol
+              key={column.title}
+              compact={compact}
+              colClass={colW}
+              rows={column.rows}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -364,7 +445,7 @@ function InfoCol({
   colClass?: string;
 }) {
   return (
-    <div className={cn("flex flex-col", colClass, compact ? "gap-2 md:gap-2.5" : "gap-3")}>
+    <div className={cn("flex flex-col", colClass, compact ? "gap-1.5 md:gap-2" : "gap-2")}>
       {rows.map(([k, v]) => (
         <div key={k} className="min-w-0">
           <FieldLabel>{k}</FieldLabel>
@@ -412,8 +493,8 @@ function InvestmentSummaryStripExpandable() {
         </div>
       ) : (
         <div className="w-full border-t border-[rgba(230,231,232,0.7)] px-4 pb-3 pt-2.5">
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-            <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-[#D9D9D9] sm:h-[88px] sm:w-[88px]">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
+            <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-[#D9D9D9] sm:h-[80px] sm:w-[80px]">
               <BuildingThumb
                 className="absolute inset-0 h-full w-full rounded-[6px]"
                 alt="H.J.E. Wenckebachweg 123"
@@ -538,7 +619,7 @@ function MajorMetricsStrip({
     "text-[11px] font-medium uppercase leading-tight tracking-wide text-[#676A6E] sm:text-[12px]";
 
   return (
-    <div className="grid w-full grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-2.5 lg:items-stretch">
+    <div className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-2.5 md:items-stretch">
       <div className={cn(card, amiioCardHoverSurface)}>
         <div className="flex flex-1 flex-col justify-between gap-1.5">
           <div className="flex items-start justify-between gap-1">
@@ -717,23 +798,21 @@ function MinorMetricsBar() {
           chatLabel="Minor metrics"
         />
       </div>
-      <div className="flex items-center gap-4 pr-12">
+      <div className="grid grid-cols-1 gap-4 pr-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-0 xl:pr-12">
         {miniMetrics.map((m, idx) => (
-          <div key={m.label} className="flex flex-1 items-center gap-4">
-            <div className="flex-1">
-              <div className="text-[14px] font-medium text-[#65686B]">
-                {m.label}
-              </div>
-              <div className="mt-2 text-[18px] font-medium text-[#353638]">
-                {m.value}
-              </div>
-              <div className="mt-2">
-                <TrendBadge value={m.delta} label={m.sub} direction={m.direction} />
-              </div>
-            </div>
-            {idx < miniMetrics.length - 1 && (
-              <div className="h-16 w-px bg-[#E6E8EB]" />
+          <div
+            key={m.label}
+            className={cn(
+              "min-w-0",
+              idx > 0 && "xl:border-l xl:border-[#E6E8EB] xl:pl-4",
+              idx < miniMetrics.length - 1 && "xl:pr-4",
             )}
+          >
+            <div className="text-[14px] font-medium text-[#65686B]">{m.label}</div>
+            <div className="mt-2 text-[18px] font-medium text-[#353638]">{m.value}</div>
+            <div className="mt-2">
+              <TrendBadge value={m.delta} label={m.sub} direction={m.direction} />
+            </div>
           </div>
         ))}
       </div>
@@ -747,16 +826,82 @@ function MinorMetricsBar() {
 
 const donutSegments = [
   { label: "ScaleHub", pct: 25, color: "#040617" },
-  { label: "Waaier Nederland...", pct: 10, color: "#233FDE" },
-  { label: "LeaseForce B.V.", pct: 10, color: "#86C5CE" },
-  { label: "Aroundtown...", pct: 20, color: "#B3B8BD" },
-  { label: "Schweppes Intern...", pct: 10, color: "#D7ECEF" },
-  { label: "Management", pct: 25, color: "#E6E8EB" },
+  { label: "Verizon Nederland...", pct: 10, color: "#142587" },
+  { label: "Schweppes Internat...", pct: 10, color: "#70A4AC" },
+  { label: "Aroundtown...", pct: 20, color: "#838697" },
+  { label: "Leapforce B.V.", pct: 10, color: "#D7ECEF" },
+  { label: "Management", pct: 25, color: "#010309" },
 ] as const;
 
-/** Match legacy 170×170 viewBox: inner 41, outer 63 → scaled to 280px plot. */
-const GRI_PIE_INNER = Math.round((41 / 85) * 140);
-const GRI_PIE_OUTER = Math.round((63 / 85) * 140);
+/** Figma 4094:174171 — fixed 204×203px doughnut viewport. */
+const GRI_DONUT_W = DS_DONUT_204.width;
+const GRI_DONUT_H = DS_DONUT_204.height;
+const GRI_PIE_OUTER = DS_DONUT_204.outerRadius;
+const GRI_PIE_INNER = DS_DONUT_204.innerRadius;
+const GRI_TENANT_COUNT = 16;
+/** Label box inside the ring opening. */
+const GRI_CENTER_INSET = DS_DONUT_204.centerInset;
+
+function GriLegendColumn({
+  items,
+  onOpenTenantHub,
+  onHover,
+}: {
+  items: (typeof donutSegments)[number][];
+  onOpenTenantHub?: () => void;
+  onHover: (idx: number | null) => void;
+}) {
+  const labelClass =
+    "max-w-[132px] text-[14px] font-normal leading-[1.24] text-[#65686B]";
+
+  return (
+    <div className="flex items-center gap-6">
+      <div className="flex min-w-0 flex-col gap-3">
+        {items.map((s) => {
+          const idx = donutSegments.findIndex((row) => row.label === s.label);
+          return (
+            <div
+              key={s.label}
+              className="flex h-[17px] min-w-0 items-center gap-4"
+              onMouseEnter={() => onHover(idx)}
+              onMouseLeave={() => onHover(null)}
+            >
+              <span
+                className="size-2 shrink-0 rounded-full"
+                style={{ background: s.color }}
+              />
+              {onOpenTenantHub && s.label === "ScaleHub" ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenTenantHub()}
+                  className="min-w-0 max-w-[132px] text-left"
+                >
+                  <TruncatedText
+                    text={s.label}
+                    side="top"
+                    className={cn(labelClass, "hover:text-[#233FDE] hover:underline")}
+                  />
+                </button>
+              ) : (
+                <TruncatedText text={s.label} side="top" className={labelClass} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex w-8 flex-col gap-3">
+        {items.map((s) => (
+          <span
+            key={`${s.label}-pct`}
+            className="flex h-[17px] items-end justify-end text-[14px] font-medium leading-[1.24] tabular-nums text-[#121212]"
+          >
+            {s.pct}%
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function GriDonutChart({ onAnalyse, onOpenTenantHub }: { onAnalyse?: (topic: string) => void; onOpenTenantHub?: () => void }) {
   const exportRef = useRef<HTMLDivElement>(null);
@@ -771,15 +916,20 @@ function GriDonutChart({ onAnalyse, onOpenTenantHub }: { onAnalyse?: (topic: str
     <div
       ref={exportRef}
       className={cn(
-        "relative rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
+        "relative flex h-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-6",
         amiioCardHoverSurface,
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="text-[18px] font-medium text-[#2C2C2C]">
+      <div className="flex shrink-0 min-w-0 items-center justify-between gap-3">
+        <div className="min-w-0 truncate text-[18px] font-medium leading-[1.25] text-[#353638]">
           GRI (% Of Total)
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          <WidgetExportMenu
+            variant="chart"
+            fileName="gri-distribution"
+            captureRef={exportRef}
+          />
           <AmiioAiDisclaimerTrigger
             variant="lamp"
             lampSummary={defaultLampTooltipSummary(
@@ -789,137 +939,120 @@ function GriDonutChart({ onAnalyse, onOpenTenantHub }: { onAnalyse?: (topic: str
           >
             <AnalyseIcon onClick={() => onAnalyse?.("the GRI distribution across tenants")} />
           </AmiioAiDisclaimerTrigger>
-          <WidgetExportMenu
-            variant="chart"
-            fileName="gri-distribution"
-            captureRef={exportRef}
-          />
         </div>
       </div>
-      <div className="mt-4 grid grid-cols-1 items-start gap-8 sm:grid-cols-[minmax(220px,44%)_1fr] sm:items-center">
-        <div className="relative mx-auto flex h-[280px] w-full max-w-[280px] justify-center sm:mx-0 sm:justify-start">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-              <Pie
-                isAnimationActive={false}
-                data={[{ name: "_track", value: 100, fill: "#F2F4F7" }]}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                innerRadius={GRI_PIE_INNER}
-                outerRadius={GRI_PIE_OUTER}
-                startAngle={90}
-                endAngle={-270}
-                stroke="none"
-              >
-                <Cell fill="#F2F4F7" />
-              </Pie>
-              <Pie
-                {...AMIIO_CHART_MOTION}
-                data={griPieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={GRI_PIE_INNER}
-                outerRadius={GRI_PIE_OUTER}
-                paddingAngle={0.6}
-                startAngle={90}
-                endAngle={-270}
-                stroke="none"
-                onMouseEnter={(_, index) => {
-                  if (typeof index === "number") setHovered(index);
-                }}
-                onMouseLeave={() => setHovered(null)}
-              >
-                {griPieData.map((entry, idx) => (
-                  <Cell
-                    key={entry.name}
-                    fill={entry.fill}
-                    className="cursor-pointer outline-none"
-                    style={{
-                      opacity: hovered !== null && hovered !== idx ? 0.4 : 1,
-                    }}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          {hovered !== null && (
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pt-1 text-center">
-              <span className="text-[20px] font-semibold text-[#353638]">
-                {donutSegments[hovered]?.pct}%
-              </span>
-              <span className="mt-0.5 max-w-[min(200px,80%)] text-[13px] text-[#969A9E]">
-                {donutSegments[hovered]?.label}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="relative min-w-0 space-y-2.5 sm:py-1">
-          {donutSegments.map((s, idx) => (
-            <div
-              key={s.label}
-              className={cn(
-                "flex min-h-[36px] items-center justify-between gap-3 rounded-md px-2 py-1 transition-colors",
-                hovered === idx ? "bg-[#F2F4F7]" : "",
-              )}
-              onMouseEnter={() => setHovered(idx)}
+
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+        <div
+          className="relative shrink-0"
+          style={{ width: GRI_DONUT_W, height: GRI_DONUT_H }}
+        >
+          <PieChart width={GRI_DONUT_W} height={GRI_DONUT_H} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <Pie
+              isAnimationActive={false}
+              data={[{ name: "_track", value: 100, fill: "#F2F4F7" }]}
+              dataKey="value"
+              cx={GRI_DONUT_W / 2}
+              cy={GRI_DONUT_H / 2}
+              innerRadius={GRI_PIE_INNER}
+              outerRadius={GRI_PIE_OUTER}
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+            >
+              <Cell fill="#F2F4F7" />
+            </Pie>
+            <Pie
+              {...AMIIO_CHART_MOTION}
+              data={griPieData}
+              dataKey="value"
+              nameKey="name"
+              cx={GRI_DONUT_W / 2}
+              cy={GRI_DONUT_H / 2}
+              innerRadius={GRI_PIE_INNER}
+              outerRadius={GRI_PIE_OUTER}
+              paddingAngle={1.5}
+              cornerRadius={2.5}
+              startAngle={90}
+              endAngle={-270}
+              stroke="#fff"
+              strokeWidth={2}
+              onMouseEnter={(_, index) => {
+                if (typeof index === "number") setHovered(index);
+              }}
               onMouseLeave={() => setHovered(null)}
             >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: s.color }} />
-                {onOpenTenantHub ? (
-                  <button
-                    type="button"
-                    onClick={() => onOpenTenantHub()}
-                    className="min-w-0 text-left text-[13px] font-medium leading-snug text-[#233FDE] underline-offset-2 hover:underline"
-                  >
-                    {s.label}
-                  </button>
-                ) : (
-                  <span className="text-[13px] font-medium leading-snug text-[#969A9E]">{s.label}</span>
-                )}
-              </div>
-              <span className="shrink-0 text-[13px] font-medium tabular-nums text-[#353638]">{s.pct}%</span>
-            </div>
-          ))}
+              {griPieData.map((entry, idx) => (
+                <Cell
+                  key={entry.name}
+                  fill={entry.fill}
+                  className="cursor-pointer outline-none"
+                  style={{
+                    opacity: hovered !== null && hovered !== idx ? 0.45 : 1,
+                  }}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+          <div
+            className="pointer-events-none absolute z-10 flex flex-col items-center justify-center gap-1 overflow-hidden text-center"
+            style={GRI_CENTER_INSET}
+          >
+            {hovered !== null ? (
+              <>
+                <span className="w-full truncate text-[14px] font-normal leading-[1.24] text-[#65686B]">
+                  {donutSegments[hovered]?.label}
+                </span>
+                <span className="w-full text-[32px] font-medium leading-[1.25] tabular-nums text-[#353638]">
+                  {donutSegments[hovered]?.pct}%
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="w-full text-[14px] font-normal leading-[1.24] text-[#65686B]">
+                  Total GRI
+                </span>
+                <span className="w-full text-[48px] font-medium leading-[1.25] tabular-nums text-[#353638]">
+                  {GRI_TENANT_COUNT}
+                </span>
+              </>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div className="flex w-full shrink-0 items-start justify-center gap-8">
+        <GriLegendColumn
+          items={donutSegments.slice(0, 3)}
+          onOpenTenantHub={onOpenTenantHub}
+          onHover={setHovered}
+        />
+        <GriLegendColumn
+          items={donutSegments.slice(3)}
+          onOpenTenantHub={onOpenTenantHub}
+          onHover={setHovered}
+        />
       </div>
     </div>
   );
 }
 
 /** Core Design System — Single Bar chart (Figma 1631:76158 / 5748:47655) */
-const LEASE_EXPIRY_MAX_EUR = 350_000;
-const leaseExpiryYTicks = [350_000, 280_000, 210_000, 140_000, 70_000, 0] as const;
-/** Bar heights (px) in 288px plot — from Desktop-Comfort default component */
-const leaseExpiryBarHeightsPx = [106, 173, 259, 217, 151, 95] as const;
-const leaseExpiryData = [
-  { year: "2025", euros: 143_243 },
-  { year: "2026", euros: 147_843 },
-  { year: "2027", euros: 350_000 },
-  { year: "2028", euros: 293_243 },
-  { year: "2029", euros: 204_054 },
-  { year: "2035", euros: 128_378 },
-] as const;
+const leaseExpiryData = LEASE_EXPIRY_PROFILE;
+const leaseExpiryYTicks = LEASE_EXPIRY_Y_TICKS_EUR;
 
 const LEASE_PLOT_H = 288;
-const LEASE_VIEWPORT_MIN_H = 312;
+const LEASE_VIEWPORT_MIN_H = LEASE_PLOT_H + 36;
+const LEASE_BAR_COLOR = "#70A4AC";
+const LEASE_BAR_HOVER_COLOR = lightenHexColor(LEASE_BAR_COLOR);
 
-function formatLeaseExpiryAxis(n: number) {
-  return `€${n / 1000}K`;
-}
-
-function formatLeaseExpiryTooltip(n: number) {
-  return new Intl.NumberFormat("en-IE", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
-function LeaseExpiryValueMarker({ className }: { className?: string }) {
+function LeaseExpiryValueMarker({
+  color = LEASE_BAR_COLOR,
+  className,
+}: {
+  color?: string;
+  className?: string;
+}) {
   return (
     <div
       className={cn(
@@ -928,7 +1061,10 @@ function LeaseExpiryValueMarker({ className }: { className?: string }) {
       )}
       aria-hidden
     >
-      <span className="absolute inset-[3px] rounded-full bg-[#436367]" />
+      <span
+        className="absolute inset-[3px] rounded-full"
+        style={{ backgroundColor: color }}
+      />
       <span className="absolute inset-[5px] rounded-full bg-white" />
     </div>
   );
@@ -970,6 +1106,11 @@ function LeaseExpiryChart({ onAnalyse }: { onAnalyse?: (topic: string) => void }
             Lease Expiry
           </h3>
           <div className="flex items-center gap-2">
+            <WidgetExportMenu
+              variant="chart"
+              fileName="lease-expiry"
+              captureRef={exportRef}
+            />
             {onAnalyse ? (
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
@@ -996,20 +1137,15 @@ function LeaseExpiryChart({ onAnalyse }: { onAnalyse?: (topic: string) => void }
                 </Tooltip>
               </TooltipProvider>
             ) : null}
-            <WidgetExportMenu
-              variant="chart"
-              fileName="lease-expiry"
-              captureRef={exportRef}
-            />
           </div>
         </div>
 
         <div
-          className="relative w-full shrink-0 rounded-[24px]"
+          className="relative w-full shrink-0 rounded-[24px] bg-white p-3 sm:p-4"
           style={{ minHeight: LEASE_VIEWPORT_MIN_H }}
           data-lease-expiry-chart
         >
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:gap-3">
             <div
               className="flex w-10 shrink-0 flex-col justify-between text-[12px] font-normal leading-[1.24] text-[#65686B]"
               style={{ height: LEASE_PLOT_H }}
@@ -1037,17 +1173,16 @@ function LeaseExpiryChart({ onAnalyse }: { onAnalyse?: (topic: string) => void }
 
               <TooltipProvider delayDuration={200}>
               <div
-                className="relative flex items-end justify-between"
+                className="relative flex items-end justify-between gap-2 px-0.5 sm:gap-3 sm:px-1"
                 style={{ height: LEASE_PLOT_H }}
               >
                 {leaseExpiryData.map((d, idx) => {
-                  const h = leaseExpiryBarHeightsPx[idx] ?? 0;
+                  const h = leaseExpiryBarHeightPx(d.euros, LEASE_PLOT_H);
                   const active = hoveredBar === idx;
                   const isHighlight = idx === highlightIdx && hoveredBar === null;
                   const showValueTooltip =
                     active || isHighlight || clickedBarIdx === idx;
-                  const useSecondary900 =
-                    active || isHighlight || clickedBarIdx === idx;
+                  const useHoverColor = active || clickedBarIdx === idx;
                   const dimOthers =
                     (hoveredBar !== null && hoveredBar !== idx) ||
                     (clickedBarIdx !== null && clickedBarIdx !== idx);
@@ -1082,12 +1217,13 @@ function LeaseExpiryChart({ onAnalyse }: { onAnalyse?: (topic: string) => void }
                         role="button"
                         tabIndex={0}
                         aria-label={`${d.year}, ${formatLeaseExpiryTooltip(d.euros)}. Click for Analyse with Amiio.`}
-                        className={cn(
-                          "w-10 max-w-full shrink-0 cursor-pointer rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#010309] focus-visible:ring-offset-2",
-                          useSecondary900 ? "bg-[#436367]" : "bg-[#70A4AC]",
-                          dimOthers && "opacity-45",
-                        )}
-                        style={{ height: h }}
+                        className={cn(COMMERCIAL_BAR_CHART_BAR_CLASS, dimOthers && "opacity-45")}
+                        style={{
+                          height: h,
+                          backgroundColor: useHoverColor
+                            ? LEASE_BAR_HOVER_COLOR
+                            : LEASE_BAR_COLOR,
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!onAnalyse) return;
@@ -1294,13 +1430,7 @@ const historicalRows = [
   ["WALT", "4.4 yrs", "4.4 yrs", "5.0 yrs", "5.0 yrs"],
 ];
 
-const budgetRows = [
-  { label: "Income (GRI)", actual: "€3,149,596", budget: "€3,100,000", actualPct: 92, budgetPct: 88, delta: "↗ 1.5%" },
-  { label: "Income (GRI)", actual: "€3,149,596", budget: "€3,100,000", actualPct: 92, budgetPct: 88, delta: "↗ 1.5%" },
-  { label: "NOI", actual: "€3,149,596", budget: "€3,100,000", actualPct: 85, budgetPct: 78, delta: "↗ 1.5%" },
-  { label: "CAPEX", actual: "€3,149,596", budget: "€3,100,000", actualPct: 65, budgetPct: 60, delta: "↗ 1.5%" },
-  { label: "OPEX", actual: "€3,149,596", budget: "€3,100,000", actualPct: 55, budgetPct: 50, delta: "↗ 1.5%" },
-];
+const budgetRows = PERFORMANCE_VS_BUDGET_ROWS;
 
 function HistoricalPerformanceCard() {
   return (
@@ -1315,12 +1445,11 @@ function HistoricalPerformanceCard() {
             Historical Performance
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100">
-              <WidgetHeaderLamp
-                chatTopic="Interpret Historical Performance metrics (NRI, occupancy, incentive %, WALT) and trends vs prior periods."
-                chatLabel="Historical Performance"
-              />
-            </span>
+            <WidgetHeaderLamp
+              revealOnHover
+              chatTopic="Interpret Historical Performance metrics (NRI, occupancy, incentive %, WALT) and trends vs prior periods."
+              chatLabel="Historical Performance"
+            />
           </div>
         </div>
         <div className="mt-3 min-w-0 overflow-x-auto rounded-md border border-[#E6E8EB]">
@@ -1401,12 +1530,11 @@ function FinancialPerformance() {
             Performance vs budget
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100">
-              <WidgetHeaderLamp
-                chatTopic="Explain Performance vs budget: actual vs budget bars, deltas, and where to focus remediation."
-                chatLabel="Performance vs budget"
-              />
-            </span>
+            <WidgetHeaderLamp
+              revealOnHover
+              chatTopic="Explain Performance vs budget: actual vs budget bars, deltas, and where to focus remediation."
+              chatLabel="Performance vs budget"
+            />
           </div>
         </div>
         <div className="mt-3 space-y-3">
@@ -1541,12 +1669,11 @@ function ValuationAndCapex({
             Indicative Valuation
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100">
-              <WidgetHeaderLamp
-                chatTopic="Walk through Indicative Valuation: cap-rate sensitivity, variance vs book, and scenario implications."
-                chatLabel="Indicative Valuation"
-              />
-            </span>
+            <WidgetHeaderLamp
+              revealOnHover
+              chatTopic="Walk through Indicative Valuation: cap-rate sensitivity, variance vs book, and scenario implications."
+              chatLabel="Indicative Valuation"
+            />
           </div>
         </div>
 
@@ -1652,12 +1779,11 @@ function ValuationAndCapex({
             CAPEX 2026
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100">
-              <WidgetHeaderLamp
-                chatTopic="Analyse CAPEX 2026: invoicing progress, categories, and top line items vs plan."
-                chatLabel="CAPEX 2026"
-              />
-            </span>
+            <WidgetHeaderLamp
+              revealOnHover
+              chatTopic="Analyse CAPEX 2026: invoicing progress, categories, and top line items vs plan."
+              chatLabel="CAPEX 2026"
+            />
           </div>
         </div>
 
@@ -1912,9 +2038,7 @@ function PropertySubsectionHeader({
         <Icon className="h-5 w-5 shrink-0 text-[#969A9E]" strokeWidth={1.75} aria-hidden />
         <h3 className="text-[16px] font-semibold text-[#2C2C2C]">{title}</h3>
       </div>
-      <span className="opacity-0 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100">
-        <WidgetHeaderLamp chatTopic={lampTopic} chatLabel={lampLabel} />
-      </span>
+      <WidgetHeaderLamp revealOnHover chatTopic={lampTopic} chatLabel={lampLabel} />
     </div>
   );
 }
@@ -2255,17 +2379,22 @@ function RecentActionsSection({
 /*  Property Hub — KPI strip + tabbed panels                           */
 /* ================================================================== */
 
-type PropertyHubTab = "operations" | "finance" | "leasing" | "rent-roll" | "management";
+type PropertyHubTab =
+  | "overview"
+  | "financial"
+  | "commercial"
+  | "leasing"
+  | "management";
 
 const PROPERTY_HUB_TABS: { id: PropertyHubTab; label: string }[] = [
-  { id: "operations", label: "Operations" },
-  { id: "finance", label: "Finance" },
+  { id: "overview", label: "Overview" },
+  { id: "financial", label: "Financial" },
+  { id: "commercial", label: "Commercial" },
   { id: "leasing", label: "Leasing" },
-  { id: "rent-roll", label: "Rent Roll" },
   { id: "management", label: "Management" },
 ];
 
-function OperationsTabPanel({
+function OverviewTabPanel({
   onNavigateToLeasing,
   onAnalyseWithAmiio,
 }: {
@@ -2332,7 +2461,7 @@ function LeasingTabPanel({
   return (
     <div className="flex flex-col gap-6">
       <MinorMetricsBar />
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
+      <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2 xl:gap-8">
         <LeaseExpiryChart onAnalyse={onAnalyse} />
         <GriDonutChart onAnalyse={onAnalyse} onOpenTenantHub={onOpenTenantHub} />
       </div>
@@ -2348,19 +2477,17 @@ function LeasingTabPanel({
             chatLabel="Leasing KPIs"
           />
         </div>
-        <div className="flex flex-wrap items-stretch gap-4 pr-10">
-          {LEASING_TAB_METRICS.map((m, idx) => (
-            <div key={m.label} className="flex min-w-[140px] flex-1 items-stretch gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-medium text-[#65686B]">{m.label}</div>
-                <div className="mt-2 text-[18px] font-medium text-[#353638]">{m.value}</div>
-                <div className="mt-2">
-                  <TrendBadge value={m.delta} label={m.sub} direction={m.direction} />
-                </div>
+        <div className="flex flex-wrap items-stretch gap-4 pr-0 sm:pr-10">
+          {LEASING_TAB_METRICS.map((m) => (
+            <div
+              key={m.label}
+              className="min-w-[140px] flex-1 basis-[calc(50%-0.5rem)] sm:basis-[calc(33.333%-0.67rem)] lg:min-w-0 lg:flex-1"
+            >
+              <div className="text-[14px] font-medium text-[#65686B]">{m.label}</div>
+              <div className="mt-2 text-[18px] font-medium text-[#353638]">{m.value}</div>
+              <div className="mt-2">
+                <TrendBadge value={m.delta} label={m.sub} direction={m.direction} />
               </div>
-              {idx < LEASING_TAB_METRICS.length - 1 && (
-                <div className="hidden h-16 w-px shrink-0 bg-[#E6E8EB] sm:block" />
-              )}
             </div>
           ))}
         </div>
@@ -2373,6 +2500,418 @@ function ManagementTabPanel() {
   return (
     <div className="flex flex-col gap-8">
       <PropertyManagementUpdatesSection />
+    </div>
+  );
+}
+
+const BUSINESS_PLAN_ASSUMPTIONS = [
+  { label: "ERV in EUR per m2", value: "EUR 3,035,956" },
+  { label: "Commercial Capex", value: "EUR 890" },
+  { label: "Upcoming Vacancy", value: "EUR 278" },
+  { label: "Unforeseen", value: "EUR 890" },
+  { label: "Tenant Improvement", value: "EUR 2,203" },
+] as const;
+
+function PropertyInvestmentSummaryCard() {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] px-6 py-5",
+        amiioCardHoverSurface,
+      )}
+    >
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 text-left"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+      >
+        {open ? (
+          <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
+        ) : (
+          <ChevronDown className="h-6 w-6 shrink-0 text-[#969A9E]" />
+        )}
+        <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
+          Investment Summary
+        </span>
+      </button>
+      {open ? (
+        <div className="mt-4 min-w-0 overflow-hidden">
+          <InvestmentSummary />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PropertyOverviewSparkline() {
+  return (
+    <svg viewBox="0 0 68 56" className="h-14 w-[68px] shrink-0" aria-hidden>
+      <defs>
+        <linearGradient id="propertyOverviewSparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6BE1D5" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#6BE1D5" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M2 15 C7 4, 12 3, 18 14 C24 25, 30 24, 36 12 C42 1, 49 9, 54 8 C59 7, 63 16, 66 54 L66 56 L2 56 Z"
+        fill="url(#propertyOverviewSparkFill)"
+      />
+      <path
+        d="M2 15 C7 4, 12 3, 18 14 C24 25, 30 24, 36 12 C42 1, 49 9, 54 8 C59 7, 63 16, 66 54"
+        stroke="#22C7B8"
+        strokeWidth="1.7"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PropertyOverviewProgressRing({
+  value,
+  accent,
+}: {
+  value: number;
+  accent: string;
+}) {
+  const size = 56;
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = Math.max(0, Math.min(1, value));
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0" aria-hidden>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#E5E7EB"
+        strokeWidth={stroke}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={accent}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference * (1 - progress)}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+
+function PropertyOverviewSummaryCard() {
+  return (
+    <OverviewAiSummaryCard
+      title="Property Summary"
+      chatTopic="Summarise this property's current performance, key trends, and lease risk."
+      chatLabel="Property Summary"
+      summary={
+        <p>
+          Property performing well with 92% occupancy{" "}
+          <span className="font-medium text-[#1F9E8B]">(+2.3% QoQ)</span> and strong GRI of
+          EUR 185k/month <span className="font-medium text-[#1F9E8B]">(+4.2% vs budget)</span>.
+          NRI at EUR 142k/month demonstrates efficient operations. Tenant retention remains
+          solid at 87%, while WAULT has declined to 4.2 years.
+        </p>
+      }
+      trends={[
+        {
+          tone: "positive",
+          content: (
+            <>
+              Occupancy strong: 92% with{" "}
+              <span className="font-medium text-[#1F9E8B]">+2.3%</span> QoQ improvement
+            </>
+          ),
+        },
+        {
+          tone: "positive",
+          content: (
+            <>
+              Tenant retention solid: 87% with{" "}
+              <span className="font-medium text-[#1F9E8B]">+3%</span> improvement
+            </>
+          ),
+        },
+        {
+          tone: "warning",
+          content: "WAULT declining: 4.2 years with 2 expirations in 6 months",
+        },
+      ]}
+    />
+  );
+}
+
+function PropertyHubFinancialPerformanceCard() {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] px-6 py-5",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
+        <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
+          Financial Performance
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        <div className="rounded-2xl border border-[#E6E8EB] bg-white/70 p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-[18px] font-medium leading-[1.25] text-[#353638]">
+                Business Plan Assumptions
+              </h3>
+              <p className="mt-1 text-[14px] leading-[1.4] text-[#65686B]">
+                Based on 5 years
+              </p>
+            </div>
+            <WidgetHeaderLamp
+              chatTopic="Explain the business plan assumptions and what the current values imply for the property."
+              chatLabel="Business Plan Assumptions"
+            />
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-xl border border-[#F2F4F7]">
+            {BUSINESS_PLAN_ASSUMPTIONS.map((row, index) => (
+              <div
+                key={row.label}
+                className={cn(
+                  "flex items-center justify-between gap-4 px-4 py-3",
+                  index < BUSINESS_PLAN_ASSUMPTIONS.length - 1 &&
+                    "border-b border-[#F2F4F7]",
+                )}
+              >
+                <span className="text-[14px] font-medium leading-[1.24] text-[#353638]">
+                  {row.label}
+                </span>
+                <span className="text-[14px] leading-[1.4] text-[#2C2C2C]">
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#E6E8EB] bg-white/70 p-6">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-[18px] font-medium leading-[1.25] text-[#353638]">
+              Historical Performance
+            </h3>
+            <WidgetHeaderLamp
+              chatTopic="Interpret the historical performance table and summarize the main trend changes."
+              chatLabel="Historical Performance"
+            />
+          </div>
+
+          <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EB]">
+            <div
+              className="grid min-w-[720px] grid-cols-[minmax(120px,1.2fr)_repeat(4,minmax(110px,1fr))] text-[14px]"
+              role="table"
+              aria-label="Historical performance"
+            >
+              <div className="bg-[#F0F2F5] px-4 py-2.5 font-medium text-[#121212]">Metric</div>
+              <div className="bg-[#F0F2F5] px-4 py-2.5 text-right font-medium text-[#2C2C2C]">DEC &apos;25</div>
+              <div className="bg-[#F0F2F5] px-4 py-2.5 text-right font-medium text-[#2C2C2C]">NOV &apos;25</div>
+              <div className="bg-[#F0F2F5] px-4 py-2.5 text-right font-medium text-[#2C2C2C]">DEC &apos;24</div>
+              <div className="bg-[#F0F2F5] px-4 py-2.5 text-right font-medium text-[#2C2C2C]">DEC &apos;22</div>
+
+              {historicalRows.map((row) => (
+                <div key={row[0]} className="contents">
+                  <div className="border-t border-[#E6E8EB] px-4 py-2.5 font-medium text-[#2C2C2C]">
+                    {row[0]}
+                  </div>
+                  <div className="border-t border-[#E6E8EB] px-4 py-2.5 text-right text-[#2C2C2C]">
+                    {row[1]}
+                  </div>
+                  <div className="border-t border-[#E6E8EB] px-4 py-2.5 text-right text-[#2C2C2C]">
+                    {row[2]}
+                  </div>
+                  <div className="border-t border-[#E6E8EB] px-4 py-2.5 text-right text-[#2C2C2C]">
+                    {row[3]}
+                  </div>
+                  <div className="border-t border-[#E6E8EB] px-4 py-2.5 text-right text-[#2C2C2C]">
+                    {row[4]}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PropertyHubRecentActionsCard({
+  onNavigateToLeasing,
+}: {
+  onNavigateToLeasing: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] px-6 py-5",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
+        <span className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">
+          Recent actions
+        </span>
+      </div>
+
+      <div className="mt-4">
+        <RecentActionsSection onNavigateToLeasing={onNavigateToLeasing} />
+      </div>
+    </div>
+  );
+}
+
+function PropertyOverviewMetricCard({
+  label,
+  value,
+  helper,
+  delta,
+  deltaPositive = true,
+  visual,
+  emptyState = false,
+  chatTopic,
+  chatLabel,
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  delta?: string;
+  deltaPositive?: boolean;
+  visual?: "sparkline" | { kind: "progress"; value: number; accent: string };
+  emptyState?: boolean;
+  chatTopic: string;
+  chatLabel: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-[32px] border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.92)] p-6",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[16px] font-medium leading-[1.25] text-[#65686B]">{label}</p>
+        <WidgetHeaderLamp chatTopic={chatTopic} chatLabel={chatLabel} />
+      </div>
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-4">
+        <div className="min-w-0">
+          <p className="text-[24px] font-medium leading-[1.25] tracking-tight text-[#353638]">
+            {value}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {delta ? (
+              <TrendPill direction={deltaPositive ? "up" : "down"} pct={delta} />
+            ) : null}
+            <span className="text-[12px] leading-[1.24] text-[#7E8185]">{helper}</span>
+          </div>
+        </div>
+        <div className="flex items-end self-stretch">
+          {emptyState ? (
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#F2F4F7]">
+              <Sparkles className="h-5 w-5 text-[#C5CAD0]" />
+              <span className="absolute -right-1 top-0 text-[12px] text-[#D1D5D9]">+</span>
+              <span className="absolute -left-1 bottom-1 h-1.5 w-1.5 rounded-full bg-[#D1D5D9]" />
+              <span className="absolute right-0 top-7 h-2 w-2 rounded-full bg-[#D1D5D9]" />
+            </div>
+          ) : null}
+          {visual === "sparkline" ? <PropertyOverviewSparkline /> : null}
+          {typeof visual === "object" && visual?.kind === "progress" ? (
+            <PropertyOverviewProgressRing value={visual.value} accent={visual.accent} />
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PropertyOverviewMinorMetricsBar() {
+  const items = [
+    {
+      label: "Tenant Retention Rate",
+      value: "71.8%",
+      delta: "0.9%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Net Absorption",
+      value: "3%",
+      delta: "0.8%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Average Rent per m2",
+      value: "EUR 75",
+      delta: "4.2%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Total GRI",
+      value: "3%",
+      delta: "0.8%",
+      deltaPositive: false,
+      helper: "vs previous year",
+    },
+    {
+      label: "Net Rental Income",
+      value: "2,180,339",
+      delta: "11%",
+      deltaPositive: true,
+      helper: "vs previous year",
+    },
+  ];
+
+  return (
+    <div
+      className={cn(
+        "rounded-[32px] border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.92)] px-6 py-5",
+        amiioCardHoverSurface,
+      )}
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-0">
+        {items.map((item, index) => (
+          <div
+            key={item.label}
+            className={cn(
+              "min-w-0",
+              index > 0 && "xl:border-l xl:border-[#D1D5D9] xl:pl-4",
+              index < items.length - 1 && "xl:pr-4",
+            )}
+          >
+            <p className="text-[14px] font-medium leading-[1.24] text-[#65686B]">{item.label}</p>
+            <p className="mt-2 text-[18px] font-medium leading-[1.25] text-[#353638]">{item.value}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <TrendPill
+                direction={item.deltaPositive ? "up" : "down"}
+                pct={item.delta}
+              />
+              <span className="text-[12px] leading-[1.24] text-[#7E8185]">{item.helper}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2390,62 +2929,74 @@ export function PropertyHubView({
   onAnalyseWithAmiio?: (topic: string) => void;
   onOpenTenantHub?: () => void;
 }) {
-  const [hubTab, setHubTab] = useState<PropertyHubTab>("operations");
-
   return (
-    <div className="space-y-3">
-      <div
-        className="-mx-2 border-b border-[rgba(230,231,232,0.75)] px-2 py-1.5"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--Secondary-Sea-Salt) 94%, white)",
-        }}
-      >
-        <div>
-          <PropertyHubKpiStrip onAnalyse={onAnalyseWithAmiio} />
-          <div
-            className="mt-2.5 flex w-full flex-wrap items-center gap-2"
-            role="tablist"
-            aria-label="Property hub sections"
-          >
-            {PROPERTY_HUB_TABS.map((t) => {
-              const active = hubTab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setHubTab(t.id)}
-                  className={
-                    active
-                      ? "h-[36px] rounded-full bg-[#010309] px-5 text-[14px] font-medium leading-[1.25] text-white transition-colors"
-                      : "h-[36px] rounded-full px-4 text-[14px] font-medium leading-[1.25] text-[#969A9E] transition-colors hover:text-[#353638]"
-                  }
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+    <div className="space-y-6">
+      <PropertyInvestmentSummaryCard />
+      <PropertyOverviewSummaryCard />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <PropertyOverviewMetricCard
+          label="Total Assets"
+          value="12"
+          helper="vs last period"
+          delta="1.5%"
+          visual="sparkline"
+          chatTopic="Explain total assets and the recent change for this period."
+          chatLabel="Total Assets"
+        />
+        <PropertyOverviewMetricCard
+          label="Current Valuation"
+          value="€25,209,000"
+          helper="vs last period"
+          delta="1.5%"
+          visual="sparkline"
+          chatTopic="Explain current valuation and the recent change for this asset."
+          chatLabel="Current Valuation"
+        />
+        <PropertyOverviewMetricCard
+          label="Total Tenants"
+          value="218"
+          helper="vs last period"
+          delta="1.5%"
+          chatTopic="Summarise total tenants and the latest movement."
+          chatLabel="Total Tenants"
+        />
       </div>
-
-      <div className="min-h-[200px] pt-0.5">
-        {hubTab === "operations" && (
-          <OperationsTabPanel
-            onNavigateToLeasing={onNavigateToLeasing}
-            onAnalyseWithAmiio={onAnalyseWithAmiio}
-          />
-        )}
-        {hubTab === "finance" && <FinanceTabPanel />}
-        {hubTab === "leasing" && (
-          <LeasingTabPanel onAnalyse={onAnalyseWithAmiio} onOpenTenantHub={onOpenTenantHub} />
-        )}
-        {hubTab === "rent-roll" && (
-          <RentRollView onOpenTenantHub={onOpenTenantHub} onAnalyseWithAmiio={onAnalyseWithAmiio} />
-        )}
-        {hubTab === "management" && <ManagementTabPanel />}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <PropertyOverviewMetricCard
+          label="WAULT"
+          value="2.8 years"
+          helper="vs last period"
+          delta="1.5%"
+          visual="sparkline"
+          chatTopic="Explain WAULT and the near-term expiry implications for this property."
+          chatLabel="WAULT"
+        />
+        <PropertyOverviewMetricCard
+          label="Occupancy Rate"
+          value="94%"
+          helper="vs last period"
+          delta="1.5%"
+          visual={{ kind: "progress", value: 0.94, accent: "#2437B8" }}
+          chatTopic="Explain occupancy rate and the operational drivers behind it."
+          chatLabel="Occupancy Rate"
+        />
+        <PropertyOverviewMetricCard
+          label="Vacancy Rate"
+          value="5.28%"
+          helper="vs last period"
+          delta="1.5%"
+          visual={{ kind: "progress", value: 0.0528, accent: "#2437B8" }}
+          chatTopic="Explain vacancy rate and what is driving the current exposure."
+          chatLabel="Vacancy Rate"
+        />
       </div>
+      <PropertyOverviewMinorMetricsBar />
+      <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
+        <GriDonutChart onAnalyse={onAnalyseWithAmiio} onOpenTenantHub={onOpenTenantHub} />
+        <LeaseExpiryChart onAnalyse={onAnalyseWithAmiio} />
+      </div>
+      <PropertyHubFinancialPerformanceCard />
+      <PropertyHubRecentActionsCard onNavigateToLeasing={onNavigateToLeasing} />
     </div>
   );
 }
