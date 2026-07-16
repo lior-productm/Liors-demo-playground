@@ -361,7 +361,7 @@ export function FloatingAmiioChat({
   return (
     <div
       ref={containerRef}
-      className="absolute z-50 flex flex-col items-center"
+      className="fixed z-50 flex flex-col items-center"
       style={{
         ...containerPositionStyle,
         width: containerWidth,
