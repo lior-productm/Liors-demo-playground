@@ -98,9 +98,10 @@ export function getAnalystMeta(id: WorkspaceAnalystId): WorkspaceAnalystMeta {
   return WORKSPACE_ANALYSTS.find((a) => a.id === id) ?? WORKSPACE_ANALYSTS[0];
 }
 
-export function getAnalystPageHref(id: WorkspaceAnalystId): string | null {
+/** Maps a workspace analyst to its AI Analyst page. Unshipped analysts land on the catalog. */
+export function getAnalystPageHref(id: WorkspaceAnalystId): string {
   if (id === "leasing") return "/ai-assistants/lease-analyst";
-  return null;
+  return "/ai-assistants";
 }
 
 export const WORKSPACE_TYPE_META: Record<
