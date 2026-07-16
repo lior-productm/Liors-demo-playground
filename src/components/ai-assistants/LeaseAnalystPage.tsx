@@ -192,8 +192,8 @@ export function LeaseAnalystPage() {
 
   if (fullChatActive) {
     return (
-      <AppShell activeNav="lease-analyst">
-        <div className="relative mx-auto flex min-h-screen w-full flex-col bg-[#F7F8FA] px-6">
+      <AppShell activeNav="lease-analyst" mainAlign="center" hideMainScrollbar>
+        <div className="relative mx-auto flex min-h-full w-full flex-col bg-[#F7F8FA] px-6">
           <div className="absolute right-8 top-8 z-10">
             <ChatHistoryTrigger />
           </div>
@@ -240,7 +240,7 @@ export function LeaseAnalystPage() {
   }
 
   return (
-    <AppShell activeNav="lease-analyst">
+    <AppShell activeNav="lease-analyst" mainAlign="center" hideMainScrollbar>
       <div className="relative mx-auto w-full max-w-[984px] px-4 pb-12 pt-6 sm:px-6">
         <div className="absolute right-4 top-6 sm:right-6">
           <ChatHistoryTrigger />

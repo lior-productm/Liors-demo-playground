@@ -695,7 +695,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
 
   return (
     <aside
-      className={cn("sticky top-0 flex h-screen shrink-0 bg-white", className)}
+      className={cn("z-30 flex h-svh shrink-0 bg-white", className)}
       style={{ width }}
     >
       <div className="flex min-w-0 flex-1 flex-col justify-between overflow-y-auto">

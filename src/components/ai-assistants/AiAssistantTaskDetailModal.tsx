@@ -10,27 +10,31 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { TaskDeleteConfirmDialog } from "@/src/components/workspace/TaskDeleteConfirmDialog";
-import type { WorkspaceOutput, WorkspaceRunLogEntry } from "@/src/lib/workspaceOutputsData";
+import type {
+  AiAssistantTask,
+  AiAssistantTaskInfo,
+  AiAssistantTaskRunLogEntry,
+} from "@/src/lib/aiAssistantsData";
 
-type EditableFields = {
+type EditableTaskFields = {
   name: string;
   triggerFull: string;
   scopeFull: string;
   output: string;
   delivery: string;
-  status: WorkspaceOutput["taskInfo"]["status"];
+  status: AiAssistantTaskInfo["status"];
   owner: string;
 };
 
-function fieldsFromOutput(output: WorkspaceOutput): EditableFields {
+function fieldsFromTask(task: AiAssistantTask): EditableTaskFields {
   return {
-    name: output.name,
-    triggerFull: output.taskInfo.triggerFull,
-    scopeFull: output.taskInfo.scopeFull,
-    output: output.taskInfo.output,
-    delivery: output.taskInfo.delivery,
-    status: output.taskInfo.status,
-    owner: output.taskInfo.owner,
+    name: task.name,
+    triggerFull: task.taskInfo.triggerFull,
+    scopeFull: task.taskInfo.scopeFull,
+    output: task.taskInfo.output,
+    delivery: task.taskInfo.delivery,
+    status: task.taskInfo.status,
+    owner: task.taskInfo.owner,
   };
 }
 
@@ -81,7 +85,7 @@ function FieldInput({
   );
 }
 
-function RunLogStatus({ entry }: { entry: WorkspaceRunLogEntry }) {
+function RunLogStatus({ entry }: { entry: AiAssistantTaskRunLogEntry }) {
   if (entry.status === "next") {
     return (
       <span className="text-[16px] font-normal leading-[1.5] text-[#060B27]">
@@ -114,29 +118,25 @@ function RunLogStatus({ entry }: { entry: WorkspaceRunLogEntry }) {
 }
 
 /** Task detail popup — Figma AI Analysts Task detail (2453:129345). */
-export function WorkspaceTaskInfoModal({
-  output,
+export function AiAssistantTaskDetailModal({
+  task,
   open,
   onOpenChange,
   onDelete,
   onSave,
 }: {
-  output: WorkspaceOutput | null;
+  task: AiAssistantTask | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDelete?: (output: WorkspaceOutput) => void;
-  onSave?: (output: WorkspaceOutput) => void;
-  /** @deprecated Use onSave instead. */
-  onEdit?: (output: WorkspaceOutput) => void;
-  /** @deprecated Replaced by Delete / Edit actions per Figma 2453:129345. */
-  onGoToAnalyst?: (output: WorkspaceOutput) => void;
+  onDelete?: (task: AiAssistantTask) => void;
+  onSave?: (task: AiAssistantTask) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [draft, setDraft] = useState<EditableFields | null>(null);
+  const [draft, setDraft] = useState<EditableTaskFields | null>(null);
 
   useEffect(() => {
-    if (!open || !output) {
+    if (!open || !task) {
       setEditing(false);
       setConfirmDelete(false);
       setDraft(null);
@@ -144,24 +144,25 @@ export function WorkspaceTaskInfoModal({
     }
     setEditing(false);
     setConfirmDelete(false);
-    setDraft(fieldsFromOutput(output));
-  }, [open, output]);
+    setDraft(fieldsFromTask(task));
+  }, [open, task]);
 
-  if (!output || !draft) return null;
+  if (!task || !draft) return null;
 
-  const info = output.taskInfo;
-  const display = editing ? draft : fieldsFromOutput(output);
+  const info = task.taskInfo;
+  const display = editing ? draft : fieldsFromTask(task);
 
-  const patchDraft = (patch: Partial<EditableFields>) => {
+  const patchDraft = (patch: Partial<EditableTaskFields>) => {
     setDraft((current) => (current ? { ...current, ...patch } : current));
   };
 
   const handleSave = () => {
-    const next: WorkspaceOutput = {
-      ...output,
-      name: draft.name.trim() || output.name,
+    const next: AiAssistantTask = {
+      ...task,
+      name: draft.name.trim() || task.name,
+      status: draft.status === "Active" ? "active" : "inactive",
       taskInfo: {
-        ...output.taskInfo,
+        ...task.taskInfo,
         triggerFull: draft.triggerFull.trim(),
         scopeFull: draft.scopeFull.trim(),
         output: draft.output.trim(),
@@ -175,7 +176,7 @@ export function WorkspaceTaskInfoModal({
   };
 
   const handleCancelEdit = () => {
-    setDraft(fieldsFromOutput(output));
+    setDraft(fieldsFromTask(task));
     setEditing(false);
   };
 
@@ -248,7 +249,7 @@ export function WorkspaceTaskInfoModal({
                     <button
                       type="button"
                       onClick={() => {
-                        setDraft(fieldsFromOutput(output));
+                        setDraft(fieldsFromTask(task));
                         setEditing(true);
                       }}
                       className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-[32px] border border-[#B3B8BD] px-3.5 text-[14px] font-medium leading-[1.24] text-[#010309] transition-colors hover:bg-[#F0F2F5] sm:flex-none"
@@ -318,7 +319,7 @@ export function WorkspaceTaskInfoModal({
                       value={draft.status}
                       onChange={(e) =>
                         patchDraft({
-                          status: e.target.value as WorkspaceOutput["taskInfo"]["status"],
+                          status: e.target.value as AiAssistantTaskInfo["status"],
                         })
                       }
                       className="w-full rounded-lg border border-[#D1D5D9] bg-white px-3 py-2 text-[14px] font-medium leading-[1.24] text-[#060B27] outline-none focus:border-[#4F65E5] focus:ring-2 focus:ring-[#A7B2F2]/40 sm:w-auto"
@@ -381,9 +382,9 @@ export function WorkspaceTaskInfoModal({
 
       <TaskDeleteConfirmDialog
         open={confirmDelete}
-        taskName={output.name}
+        taskName={task.name}
         onOpenChange={setConfirmDelete}
-        onConfirm={() => onDelete?.(output)}
+        onConfirm={() => onDelete?.(task)}
       />
     </>
   );

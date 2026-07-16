@@ -656,8 +656,8 @@ export function AskAiChat({ sessionId, initialSession }: Props) {
 
   return (
     <CommercialChatInjectContext.Provider value={onSend}>
-      <AppShell activeNav="ask-ai">
-        <div className="relative min-h-screen bg-[#F7F8FA]">
+      <AppShell activeNav="ask-ai" mainAlign="center" hideMainScrollbar>
+        <div className="relative min-h-full bg-[#F7F8FA]">
           <div className="absolute right-8 top-8 z-10 flex items-center gap-1 text-[#7E8185]">
             <ChatHistoryTrigger />
             <button
@@ -670,7 +670,7 @@ export function AskAiChat({ sessionId, initialSession }: Props) {
           </div>
 
           {!hasConversation ? (
-            <div className="mx-auto flex min-h-screen w-full flex-col items-center px-6 pb-16 pt-[120px]">
+            <div className="mx-auto flex min-h-full w-full flex-col items-center px-6 pb-16 pt-[120px]">
               <div
                 className="flex w-full flex-col items-center"
                 style={{ maxWidth: SHELL_WORKFLOW_CHAT_BAR_MAX_PX }}
@@ -701,7 +701,7 @@ export function AskAiChat({ sessionId, initialSession }: Props) {
               </div>
             </div>
           ) : (
-            <div className="relative mx-auto flex min-h-screen w-full max-w-full flex-col bg-[#F7F8FA] px-6">
+            <div className="relative mx-auto flex min-h-full w-full max-w-full flex-col bg-[#F7F8FA] px-6">
               <div
                 className="mx-auto flex w-full flex-1 flex-col pt-8"
                 style={{ maxWidth: ASK_AI_CONVERSATION_MAX_PX }}

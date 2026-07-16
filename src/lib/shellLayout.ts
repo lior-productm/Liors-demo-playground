@@ -1,17 +1,9 @@
-/** Horizontal center of main content area (excludes left sidebar). */
-export function shellContentAreaCenterLeftCss(
-  sidebarWidthPx: number = SHELL_SIDEBAR_EXPANDED_PX,
-) {
-  return `calc(${sidebarWidthPx / 2}px + 50vw)`;
-}
-
-/** Max width for floating chrome within the main content column. */
-export function shellContentAreaMaxWidthCss(
-  sidebarWidthPx: number = SHELL_SIDEBAR_EXPANDED_PX,
-  insetPx = 48,
-) {
-  return `calc(100vw - ${sidebarWidthPx}px - ${insetPx}px)`;
-}
+/** Figma Financial dashboard frame (830:52765) — laptop reference viewport. */
+export const SHELL_DESIGN_VIEWPORT_WIDTH_PX = 1440;
+export const SHELL_DESIGN_VIEWPORT_HEIGHT_PX = 1024;
+export const SHELL_VIEWPORT_SCALE_CSS_VAR = "--shell-scale";
+export const SHELL_VIEWPORT_WIDTH_CSS_VAR = "--shell-viewport-width";
+export const SHELL_VIEWPORT_OFFSET_X_CSS_VAR = "--shell-viewport-offset-x";
 
 /** CSS custom property — updated by {@link SidebarNavigation} when collapsed toggles. */
 export const SHELL_SIDEBAR_WIDTH_CSS_VAR = "--shell-sidebar-width";
@@ -22,6 +14,80 @@ export const SHELL_CHAT_HEIGHT_PX = 956;
 export const SHELL_CHAT_TOP_PX = 36;
 export const SHELL_CHAT_BOTTOM_PX = 32;
 export const SHELL_COLUMN_GAP_PX = 24;
+
+export type ShellViewportLayout = {
+  scale: number;
+  /** Inner design canvas width before transform (≤1440, or full width below laptop). */
+  designWidth: number;
+  /** Layout slot width after scale — used to center the canvas. */
+  slotWidth: number;
+  /** Layout slot min-height after scale. */
+  slotMinHeight: number;
+  /** Inner design min-height before transform. */
+  designMinHeight: number;
+};
+
+/** Never upscale UI beyond the Figma laptop frame — keeps object sizes readable on large monitors. */
+export const SHELL_VIEWPORT_MAX_SCALE = 1;
+
+/** Scale up on large displays (capped); stay fluid at laptop width and below. */
+export function computeShellViewportScale(viewportWidth: number, _viewportHeight: number) {
+  if (viewportWidth <= SHELL_DESIGN_VIEWPORT_WIDTH_PX) return 1;
+  const raw = viewportWidth / SHELL_DESIGN_VIEWPORT_WIDTH_PX;
+  return Math.min(raw, SHELL_VIEWPORT_MAX_SCALE);
+}
+
+export function computeShellViewportLayout(
+  viewportWidth: number,
+  viewportHeight: number,
+): ShellViewportLayout {
+  const scale = computeShellViewportScale(viewportWidth, viewportHeight);
+  const designWidth =
+    viewportWidth <= SHELL_DESIGN_VIEWPORT_WIDTH_PX
+      ? viewportWidth
+      : SHELL_DESIGN_VIEWPORT_WIDTH_PX;
+  const designMinHeight = Math.max(
+    SHELL_DESIGN_VIEWPORT_HEIGHT_PX,
+    viewportHeight / scale,
+  );
+
+  return {
+    scale,
+    designWidth,
+    slotWidth: designWidth * scale,
+    slotMinHeight: Math.max(viewportHeight, designMinHeight * scale),
+    designMinHeight,
+  };
+}
+
+/** Effective shell width for layout math — caps at the Figma laptop frame on large displays. */
+export function clampShellViewportWidth(viewportWidth: number) {
+  return Math.min(viewportWidth, SHELL_DESIGN_VIEWPORT_WIDTH_PX);
+}
+
+export function getShellViewportMetrics(viewportWidth: number) {
+  const layout = computeShellViewportLayout(
+    viewportWidth,
+    typeof window !== "undefined" ? window.innerHeight : SHELL_DESIGN_VIEWPORT_HEIGHT_PX,
+  );
+  const offsetX = Math.max(0, (viewportWidth - layout.slotWidth) / 2);
+  return { width: layout.designWidth, offsetX, scale: layout.scale };
+}
+
+/** Horizontal center of main content area (excludes sticky left sidebar). */
+export function shellContentAreaCenterLeftCss(
+  sidebarWidthPx: number = SHELL_SIDEBAR_EXPANDED_PX,
+) {
+  return `calc(var(${SHELL_SIDEBAR_WIDTH_CSS_VAR}, ${sidebarWidthPx}px) + (100vw - var(${SHELL_SIDEBAR_WIDTH_CSS_VAR}, ${sidebarWidthPx}px)) / 2)`;
+}
+
+/** Max width for floating chrome within the main content column. */
+export function shellContentAreaMaxWidthCss(
+  sidebarWidthPx: number = SHELL_SIDEBAR_EXPANDED_PX,
+  insetPx = 48,
+) {
+  return `min(${SHELL_DESIGN_VIEWPORT_WIDTH_PX - SHELL_SIDEBAR_EXPANDED_PX - insetPx}px, calc(100vw - var(${SHELL_SIDEBAR_WIDTH_CSS_VAR}, ${sidebarWidthPx}px) - ${insetPx}px))`;
+}
 
 /** Side panel width defaults for horizontal resize (percent of main + side area). */
 /** ~394px at 1440 viewport with 240px sidebar (1200px content area). */
@@ -40,9 +106,23 @@ export const SHELL_WORKFLOW_PROPOSAL_PANEL_MIN_PX = SHELL_CHAT_WIDTH_PX;
 
 /** Compute side-panel % so default width matches {@link SHELL_CHAT_WIDTH_PX}. */
 export function computeShellSidePanelDefaultPct(viewportWidth: number) {
-  const area = Math.max(600, viewportWidth - SHELL_SIDEBAR_EXPANDED_PX);
+  const area = Math.max(
+    600,
+    clampShellViewportWidth(viewportWidth) - SHELL_SIDEBAR_EXPANDED_PX,
+  );
   const pct = (SHELL_CHAT_WIDTH_PX / area) * 100;
   return Math.min(SHELL_SIDE_PANEL_MAX_PCT, Math.max(SHELL_SIDE_PANEL_MIN_PCT, pct));
+}
+
+export function readShellViewportScale() {
+  if (typeof window === "undefined") return 1;
+  return (
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        SHELL_VIEWPORT_SCALE_CSS_VAR,
+      ),
+    ) || 1
+  );
 }
 
 /** Figma chat bar frame (830:53562). */
@@ -69,7 +149,10 @@ export function computeWorkflowChatColumnMaxPx(
   viewportWidth: number,
   sidePanelOpen: boolean,
 ) {
-  const area = Math.max(600, viewportWidth - SHELL_SIDEBAR_EXPANDED_PX);
+  const area = Math.max(
+    600,
+    clampShellViewportWidth(viewportWidth) - SHELL_SIDEBAR_EXPANDED_PX,
+  );
   const mainWidth = sidePanelOpen
     ? area - computeWorkflowSidePanelWidthPx(viewportWidth) - SHELL_COLUMN_GAP_PX
     : area;

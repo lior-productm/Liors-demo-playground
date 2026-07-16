@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import {
   AppShell,
@@ -16,10 +15,7 @@ import {
 import { FloatingAmiioChat } from "@/src/components/commercial/FloatingAmiioChat";
 import { useAmiioChat } from "@/src/hooks/useAmiioChat";
 import { cn } from "@/lib/utils";
-import { pinAiAssistant } from "@/src/lib/aiAssistantNavState";
 import {
-  getAnalystMeta,
-  getAnalystPageHref,
   WORKSPACE_ANALYSTS,
   WORKSPACE_OUTPUTS,
   type WorkspaceAnalystId,
@@ -83,7 +79,6 @@ function WorkspaceTabs({
 }
 
 export function WorkspacePage() {
-  const router = useRouter();
   const chat = useAmiioChat("amiio", "workspace-chat");
   const [chatExpanded, setChatExpanded] = useState(false);
   const [chatDraftPayload, setChatDraftPayload] = useState<ChatDraftPayload>(null);
@@ -256,15 +251,16 @@ export function WorkspacePage() {
         output={taskInfoOutput}
         open={taskInfoOpen}
         onOpenChange={setTaskInfoOpen}
-        onGoToAnalyst={(output) => {
+        onDelete={(output) => {
           setTaskInfoOpen(false);
-          const href = getAnalystPageHref(output.analyst);
-          if (href) {
-            if (output.analyst === "leasing") pinAiAssistant("lease-analyst");
-            router.push(href);
-            return;
-          }
-          toast(`${getAnalystMeta(output.analyst).label} page (coming soon)`);
+          setTaskInfoOutput(null);
+          setOutputs((prev) => prev.filter((o) => o.id !== output.id));
+          toast(`Deleted “${output.name}”`);
+        }}
+        onSave={(next) => {
+          setOutputs((prev) => prev.map((o) => (o.id === next.id ? next : o)));
+          setTaskInfoOutput(next);
+          toast(`Saved “${next.name}”`);
         }}
       />
     </AppShell>

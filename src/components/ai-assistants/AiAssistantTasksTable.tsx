@@ -1,36 +1,17 @@
 "use client";
 
-import { useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import {
-  Bell,
-  ChevronDown,
-  ChevronUp,
   Database,
-  Lightbulb,
   Mail,
   Plus,
-  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AiAssistantTask } from "@/src/lib/aiAssistantsData";
+import { AiAssistantTaskDetailModal } from "@/src/components/ai-assistants/AiAssistantTaskDetailModal";
 
-function ExpandablePanel({
-  open,
-  children,
-}: {
-  open: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "grid transition-[grid-template-rows] duration-200 ease-out",
-        open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-      )}
-    >
-      <div className="min-h-0 overflow-hidden">{children}</div>
-    </div>
-  );
+function toast(message: string) {
+  window.dispatchEvent(new CustomEvent("amiio:toast", { detail: { message } }));
 }
 
 function StatusTag({ status }: { status: AiAssistantTask["status"] }) {
@@ -66,79 +47,6 @@ function ToolIcons({ tools }: { tools: AiAssistantTask["tools"] }) {
   );
 }
 
-function WorkflowStepIcon({ icon }: { icon: AiAssistantTask["workflowSteps"][0]["icon"] }) {
-  const className = "size-3.5 text-white";
-  if (icon === "envelope") return <Mail className={className} strokeWidth={1.75} />;
-  if (icon === "lightbulb") return <Lightbulb className={className} strokeWidth={1.75} />;
-  return <Bell className={className} strokeWidth={1.75} />;
-}
-
-function TaskExpandedPanel({ task }: { task: AiAssistantTask }) {
-  return (
-    <div className="flex flex-col gap-4 rounded-b-[12px] bg-[#F0F2F5] p-5 lg:flex-row lg:gap-4">
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium leading-[1.25] text-[#676A6E]">Trigger</p>
-        <p className="mt-2 text-sm font-normal leading-[1.4] text-[#121314]">{task.trigger}</p>
-      </div>
-
-      <div className="w-full shrink-0 lg:w-[300px]">
-        <p className="text-xs font-medium leading-[1.25] text-[#676A6E]">Workflow steps</p>
-        <div className="mt-2 flex gap-2.5">
-          <div className="flex flex-col items-center">
-            {task.workflowSteps.map((step, index) => (
-              <div key={step.id} className="flex flex-col items-center">
-                <div className="flex size-5 items-center justify-center rounded-full bg-[#020410]">
-                  <WorkflowStepIcon icon={step.icon} />
-                </div>
-                {index < task.workflowSteps.length - 1 ? (
-                  <div className="h-8 w-px bg-[#020410]" />
-                ) : null}
-              </div>
-            ))}
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-9 pt-0.5">
-            {task.workflowSteps.map((step) => (
-              <div key={step.id} className="flex flex-col gap-1">
-                <p className="text-xs font-normal leading-[1.5] text-[#353638]">{step.label}</p>
-                {step.actionLabel ? (
-                  <button
-                    type="button"
-                    className="inline-flex h-6 w-fit items-center rounded-lg border border-[#B3B8BD] px-1.5 text-xs font-medium text-[#676A6E]"
-                  >
-                    {step.actionLabel}
-                  </button>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative min-w-0 flex-1">
-        <button
-          type="button"
-          className="absolute right-0 top-0 text-[#353638] lg:hidden"
-          aria-label="Task settings"
-        >
-          <Settings className="size-5" strokeWidth={1.5} />
-        </button>
-        <p className="text-xs font-medium leading-[1.25] text-[#676A6E]">Outputs</p>
-        <ul className="mt-2 list-disc space-y-0 pl-5 text-sm font-normal leading-[1.4] text-[#121314]">
-          {task.outputItems.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-
-      <Settings
-        className="hidden size-6 shrink-0 text-[#353638] lg:block"
-        strokeWidth={1.5}
-        aria-hidden
-      />
-    </div>
-  );
-}
-
 const TASK_TABLE_GRID_STYLE = {
   gridTemplateColumns:
     "minmax(120px, 1.15fr) minmax(140px, 1.5fr) minmax(88px, 111px) minmax(88px, 116px) minmax(120px, 1.35fr) minmax(168px, 168px)",
@@ -165,27 +73,19 @@ function TaskTableGrid({
 
 function TaskRow({
   task,
-  expanded,
-  onToggle,
+  onOpenDetail,
 }: {
   task: AiAssistantTask;
-  expanded: boolean;
-  onToggle: () => void;
+  onOpenDetail: () => void;
 }) {
   const rowCellClass = "flex h-14 min-w-0 items-center overflow-hidden p-2";
 
   return (
     <div className="flex w-full min-w-0 flex-col">
-      <TaskTableGrid
-        className={cn(
-          "items-center bg-[#FBFBFB]",
-          expanded ? "rounded-t-[12px]" : "rounded-[12px]",
-        )}
-      >
+      <TaskTableGrid className="items-center rounded-[12px] bg-[#FBFBFB]">
         <button
           type="button"
-          onClick={onToggle}
-          aria-expanded={expanded}
+          onClick={onOpenDetail}
           className={cn(rowCellClass, "cursor-pointer gap-1.5 text-left")}
         >
           <p className="min-w-0 truncate text-sm font-medium leading-[1.5] text-[#353638]">
@@ -194,8 +94,7 @@ function TaskRow({
         </button>
         <button
           type="button"
-          onClick={onToggle}
-          aria-expanded={expanded}
+          onClick={onOpenDetail}
           className={cn(rowCellClass, "cursor-pointer text-left")}
         >
           <p className="line-clamp-2 min-w-0 text-sm font-normal leading-[1.4] text-[#353638]">
@@ -204,24 +103,21 @@ function TaskRow({
         </button>
         <button
           type="button"
-          onClick={onToggle}
-          aria-expanded={expanded}
+          onClick={onOpenDetail}
           className={cn(rowCellClass, "cursor-pointer text-left")}
         >
           <StatusTag status={task.status} />
         </button>
         <button
           type="button"
-          onClick={onToggle}
-          aria-expanded={expanded}
+          onClick={onOpenDetail}
           className={cn(rowCellClass, "cursor-pointer text-left")}
         >
           <ToolIcons tools={task.tools} />
         </button>
         <button
           type="button"
-          onClick={onToggle}
-          aria-expanded={expanded}
+          onClick={onOpenDetail}
           className={cn(rowCellClass, "min-w-0 cursor-pointer text-left")}
         >
           <p className="line-clamp-2 min-w-0 break-words text-sm font-normal leading-[1.4] text-[#353638]">
@@ -232,41 +128,36 @@ function TaskRow({
         <div className="flex h-14 min-w-0 items-center justify-end gap-4 overflow-hidden py-4 pl-2 pr-4">
           <button
             type="button"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              toast("Insights view (coming soon)");
+            }}
             className="inline-flex h-6 max-w-full shrink-0 items-center justify-center truncate rounded-lg border border-[#B3B8BD] px-1.5 text-xs font-medium leading-[1.25] text-[#111]"
           >
             View insights
           </button>
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-expanded={expanded}
-            aria-label={expanded ? "Collapse task" : "Expand task"}
-            className={cn(
-              "flex size-6 shrink-0 items-center justify-center rounded-full transition-colors",
-              expanded ? "bg-[#F0F2F5]" : "bg-transparent hover:bg-[#F0F2F5]",
-            )}
-          >
-            {expanded ? (
-              <ChevronUp className="size-4 text-[#353638]" strokeWidth={1.75} />
-            ) : (
-              <ChevronDown className="size-4 text-[#353638]" strokeWidth={1.75} />
-            )}
-          </button>
         </div>
       </TaskTableGrid>
-      <ExpandablePanel open={expanded}>
-        <TaskExpandedPanel task={task} />
-      </ExpandablePanel>
     </div>
   );
 }
 
 export function AiAssistantTasksTable({ tasks }: { tasks: AiAssistantTask[] }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [taskList, setTaskList] = useState(tasks);
+  const [selectedTask, setSelectedTask] = useState<AiAssistantTask | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  useEffect(() => {
+    setTaskList(tasks);
+  }, [tasks]);
 
   const headerCellClass =
     "flex h-10 min-w-0 items-center justify-start overflow-hidden px-2 text-left";
+
+  const openDetail = (task: AiAssistantTask) => {
+    setSelectedTask(task);
+    setDetailOpen(true);
+  };
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-2">
@@ -300,19 +191,35 @@ export function AiAssistantTasksTable({ tasks }: { tasks: AiAssistantTask[] }) {
           </TaskTableGrid>
 
           <div className="mt-2 flex flex-col gap-2">
-            {tasks.map((task) => (
+            {taskList.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
-                expanded={expandedId === task.id}
-                onToggle={() =>
-                  setExpandedId((current) => (current === task.id ? null : task.id))
-                }
+                onOpenDetail={() => openDetail(task)}
               />
             ))}
           </div>
         </div>
       </div>
+
+      <AiAssistantTaskDetailModal
+        task={selectedTask}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onDelete={(task) => {
+          setTaskList((prev) => prev.filter((item) => item.id !== task.id));
+          setSelectedTask(null);
+          setDetailOpen(false);
+          toast(`Deleted “${task.name}”`);
+        }}
+        onSave={(next) => {
+          setTaskList((prev) =>
+            prev.map((item) => (item.id === next.id ? next : item)),
+          );
+          setSelectedTask(next);
+          toast(`Saved “${next.name}”`);
+        }}
+      />
     </div>
   );
 }

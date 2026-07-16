@@ -11,6 +11,8 @@ import {
   SHELL_CHAT_WIDTH_PX,
   SHELL_CHAT_BOTTOM_PX,
   SHELL_COLUMN_GAP_PX,
+  SHELL_DESIGN_VIEWPORT_WIDTH_PX,
+  SHELL_SIDEBAR_EXPANDED_PX,
   shellSideChatPanelHeightCss,
 } from "@/src/lib/shellLayout";
 
@@ -25,6 +27,10 @@ const ShellLayoutContext = createContext<ShellLayoutContextValue>({
 export function useShellLayout() {
   return useContext(ShellLayoutContext);
 }
+
+/** Main column max width — Figma 1440 frame minus expanded sidebar (laptop proportions). */
+const SHELL_MAIN_MAX_PX =
+  SHELL_DESIGN_VIEWPORT_WIDTH_PX - SHELL_SIDEBAR_EXPANDED_PX;
 
 function ShellSideChatPanel({ children }: { children: React.ReactNode }) {
   return (
@@ -57,6 +63,10 @@ export function AppShell({
   chatMinimized = true,
   chatRestoreFab,
   className,
+  /** `start` pins the laptop-width stage to the sidebar (Ask Amiio / Analyst). */
+  mainAlign = "center",
+  /** Hide the main-column scrollbar while keeping scroll (Ask Amiio landing). */
+  hideMainScrollbar = false,
 }: {
   activeNav: SidebarNavId;
   children: React.ReactNode;
@@ -64,6 +74,8 @@ export function AppShell({
   chatMinimized?: boolean;
   chatRestoreFab?: React.ReactNode;
   className?: string;
+  mainAlign?: "center" | "start";
+  hideMainScrollbar?: boolean;
   /** @deprecated Side panel uses a fixed 394×956 layout for all pages. */
   sidePanelAlign?: "default" | "workflow-stage";
 }) {
@@ -73,24 +85,43 @@ export function AppShell({
     <TooltipProvider delayDuration={250}>
       <ShellLayoutContext.Provider value={{ sideChatOpen: showSidePanel }}>
         <div
-          className={cn("flex min-h-screen w-full", className)}
+          className={cn("flex h-svh w-full overflow-hidden", className)}
           style={{ backgroundColor: "var(--Secondary-Sea-Salt)" }}
         >
+          {/* Left rail stays fixed while page content scrolls (Figma Ask Amiio / Analyst). */}
           <SidebarNavigation activeNav={activeNav} />
           <ToastStack />
 
+          {/* Remaining viewport: laptop-width stage — centered or left-pinned. */}
           <div
-            className="flex min-h-0 min-w-0 flex-1"
-            style={{ gap: showSidePanel ? SHELL_COLUMN_GAP_PX : 0 }}
+            className={cn(
+              "flex min-h-0 min-w-0 flex-1 overflow-hidden",
+              mainAlign === "center" ? "justify-center" : "justify-start",
+            )}
           >
-            <div className="h-full min-h-0 w-full min-w-0 overflow-y-auto">{children}</div>
+            <div
+              className="relative flex min-h-0 w-full min-w-0"
+              style={{
+                maxWidth: SHELL_MAIN_MAX_PX,
+                gap: showSidePanel ? SHELL_COLUMN_GAP_PX : 0,
+              }}
+            >
+              <div
+                className={cn(
+                  "min-h-0 w-full min-w-0 flex-1 overflow-y-auto",
+                  hideMainScrollbar && "scrollbar-hide",
+                )}
+              >
+                {children}
+              </div>
 
-            {showSidePanel ? (
-              <ShellSideChatPanel>{chatPanel}</ShellSideChatPanel>
-            ) : null}
+              {showSidePanel ? (
+                <ShellSideChatPanel>{chatPanel}</ShellSideChatPanel>
+              ) : null}
+
+              {chatMinimized ? chatRestoreFab : null}
+            </div>
           </div>
-
-          {chatMinimized ? chatRestoreFab : null}
         </div>
       </ShellLayoutContext.Provider>
     </TooltipProvider>

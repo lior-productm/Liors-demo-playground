@@ -5,7 +5,8 @@ import { Send, Square, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   SHELL_SIDEBAR_EXPANDED_PX,
-  SHELL_SIDEBAR_WIDTH_CSS_VAR,
+  shellContentAreaCenterLeftCss,
+  shellContentAreaMaxWidthCss,
 } from "@/src/lib/shellLayout";
 import type { ChatMessage } from "@/src/types/commercial";
 import {
@@ -316,12 +317,12 @@ export function FloatingAmiioChat({
     : null;
 
   const defaultAnchorStyle = {
-    left: `calc(var(${SHELL_SIDEBAR_WIDTH_CSS_VAR}, ${SHELL_SIDEBAR_EXPANDED_PX}px) / 2 + 50vw)`,
+    left: shellContentAreaCenterLeftCss(),
     transform: "translateX(-50%)",
     bottom: FLOATING_BOTTOM_PX,
   } as const;
 
-  const containerWidth = `min(${BAR_MAX_WIDTH_PX}px, calc(100vw - var(${SHELL_SIDEBAR_WIDTH_CSS_VAR}, ${SHELL_SIDEBAR_EXPANDED_PX}px) - 48px))`;
+  const containerWidth = `min(${BAR_MAX_WIDTH_PX}px, ${shellContentAreaMaxWidthCss(SHELL_SIDEBAR_EXPANDED_PX)})`;
 
   const containerPositionStyle = dragPosition
     ? {
@@ -360,7 +361,7 @@ export function FloatingAmiioChat({
   return (
     <div
       ref={containerRef}
-      className="fixed z-50 flex flex-col items-center"
+      className="absolute z-50 flex flex-col items-center"
       style={{
         ...containerPositionStyle,
         width: containerWidth,

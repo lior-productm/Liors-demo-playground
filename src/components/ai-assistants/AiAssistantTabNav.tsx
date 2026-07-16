@@ -30,9 +30,8 @@ export function AiAssistantTabNav({
     >
       <div
         className={cn(
-          "flex flex-wrap items-center justify-center gap-4",
-          !centered && "sm:flex-1",
-          centered && "max-w-[680px]",
+          "flex flex-wrap items-center gap-4",
+          centered ? "justify-center max-w-[680px]" : "justify-start sm:flex-1",
         )}
       >
         {TABS.map((tab) => {

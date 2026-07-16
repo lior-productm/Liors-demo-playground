@@ -43,6 +43,24 @@ export type AiAssistantWorkflowStep = {
   actionLabel?: string;
 };
 
+export type AiAssistantTaskRunLogStatus = "next" | "completed" | "failed";
+
+export type AiAssistantTaskRunLogEntry = {
+  label: string;
+  status: AiAssistantTaskRunLogStatus;
+};
+
+/** Detail modal fields — Figma AI Analysts Task detail (2453:129096). */
+export type AiAssistantTaskInfo = {
+  triggerFull: string;
+  scopeFull: string;
+  output: string;
+  delivery: string;
+  status: "Active" | "Inactive";
+  owner: string;
+  runLog: AiAssistantTaskRunLogEntry[];
+};
+
 export type AiAssistantTask = {
   id: string;
   name: string;
@@ -53,6 +71,7 @@ export type AiAssistantTask = {
   trigger: string;
   workflowSteps: AiAssistantWorkflowStep[];
   outputItems: string[];
+  taskInfo: AiAssistantTaskInfo;
 };
 
 export type AiAssistantRecentChat = {
@@ -252,6 +271,20 @@ export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
       "Draft internal recommendation",
       "Follow-up task",
     ],
+    taskInfo: {
+      triggerFull: "When a rent review date is approaching",
+      scopeFull: "Property Partners, full lease register",
+      output: "Renewal Summary, Tenant Risk Score",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
   },
   {
     id: "check-lease-data",
@@ -272,13 +305,27 @@ export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
       "Mismatch report",
       "Suggested corrections",
     ],
+    taskInfo: {
+      triggerFull: "Every week, Monday at 08:00",
+      scopeFull: "Property Partners, lease register",
+      output: "Missing Data Checklist, Mismatch report",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 24", status: "completed" },
+        { label: "June 17", status: "completed" },
+        { label: "June 10", status: "failed" },
+      ],
+    },
   },
   {
     id: "break-option-monitoring",
     name: "Break Option Monitoring",
     description:
       "Prepares a draft email based on current lease terms, lease expiry date, tenant payment history and...",
-    status: "inactive",
+    status: "active",
     tools: ["database", "envelope"],
     outputs: "Renewal Summary, Risky Tenants Alerts",
     trigger: "A break option window opens within 90 days.",
@@ -288,6 +335,21 @@ export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
       { id: "3", label: "Draft alert for asset manager", icon: "bell" },
     ],
     outputItems: ["Break option alert", "Risky tenants list", "Recommended actions"],
+    /** Matches Figma 2453:129345 sample task detail. */
+    taskInfo: {
+      triggerFull: "Every month, Monday at 09:00",
+      scopeFull: "Property Partners, H.J.E. Wenckebachweg",
+      output: "Budget vs Actual report",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "failed" },
+      ],
+    },
   },
 ];
 

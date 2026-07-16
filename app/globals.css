@@ -189,6 +189,7 @@
 @layer base {
   :root {
     /* Dev-site design tokens */
+    --shell-scale: 1;
     --Primary-1100: #010309;
     --Primary-900: #040718;
     --Primary-800: #05091f;
