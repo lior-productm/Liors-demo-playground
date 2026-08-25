@@ -59,7 +59,7 @@ export function getSettlementStatus(stage: ServiceChargeSettlementStage): string
 }
 
 /** Default demo scope. */
-export const SERVICE_CHARGE_PROPERTY = "Penny Lane";
+export const SERVICE_CHARGE_PROPERTY = "Property Partners";
 export const SERVICE_CHARGE_YEAR = "2025";
 export const SERVICE_CHARGE_SOURCE_SYSTEM = "Exact";
 

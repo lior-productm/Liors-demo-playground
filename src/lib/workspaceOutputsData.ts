@@ -166,7 +166,7 @@ export const WORKSPACE_OUTPUTS: WorkspaceOutput[] = [
     outputItems: ["Expiry risk insight", "Tenant exposure summary", "Suggested renewal actions"],
     taskInfo: {
       triggerFull: "When any lease is within 90 days of expiry",
-      scopeFull: "All assets, Penny Lane portfolio",
+      scopeFull: "All assets, Property Partners portfolio",
       output: "Lease expiry risk insight card",
       delivery: "Workspace",
       status: "Active",
@@ -182,7 +182,7 @@ export const WORKSPACE_OUTPUTS: WorkspaceOutput[] = [
     id: "out-3",
     name: "Services Charge Insight",
     type: "Workflow",
-    scope: "Penny Lane...",
+    scope: "Property Partners...",
     trigger: "If services charges > 5%",
     emailAlert: true,
     analyst: "reporting",
@@ -197,7 +197,7 @@ export const WORKSPACE_OUTPUTS: WorkspaceOutput[] = [
     outputItems: ["Budget vs Actual report", "Variance alert", "Commentary draft"],
     taskInfo: {
       triggerFull: "Every month, Monday at 09:00",
-      scopeFull: "Penny Lane, H.J.E. Wenckebachweg",
+      scopeFull: "Property Partners, H.J.E. Wenckebachweg",
       output: "Budget vs Actual report",
       delivery: "Email",
       status: "Active",
@@ -290,7 +290,7 @@ export const WORKSPACE_OUTPUTS: WorkspaceOutput[] = [
     outputItems: ["Break option alert", "Tenant summary", "Follow-up email draft"],
     taskInfo: {
       triggerFull: "When a tenant break option opens within 90 days",
-      scopeFull: "All assets, Penny Lane portfolio",
+      scopeFull: "All assets, Property Partners portfolio",
       output: "Break option monitoring workflow",
       delivery: "Email + Workspace",
       status: "Active",
@@ -319,7 +319,7 @@ export const WORKSPACE_OUTPUTS: WorkspaceOutput[] = [
     outputItems: ["Q2 portfolio summary", "IC-ready commentary"],
     taskInfo: {
       triggerFull: "End of quarter at 17:00",
-      scopeFull: "Full portfolio, Penny Lane",
+      scopeFull: "Full portfolio, Property Partners",
       output: "Quarterly portfolio commentary",
       delivery: "Email",
       status: "Inactive",

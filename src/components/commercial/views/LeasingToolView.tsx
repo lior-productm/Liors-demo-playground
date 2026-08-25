@@ -104,7 +104,7 @@ const pipelineCards: PipelineCard[] = [
   {
     id: "p1",
     company: "Hey Jude B.V.",
-    entityName: "Penny Lane",
+    entityName: "Property Partners",
     propertyName: "H.J.E. Wenckebachweg",
     unit: "Unit 3A - 450 sqm",
     status: "Negotiation",
@@ -121,7 +121,7 @@ const pipelineCards: PipelineCard[] = [
   {
     id: "p2",
     company: "Hey Jude B.V.",
-    entityName: "Penny Lane",
+    entityName: "Property Partners",
     propertyName: "H.J.E. Wenckebachweg",
     unit: "Unit 2B - 350 sqm",
     status: "Proposal",
@@ -138,7 +138,7 @@ const pipelineCards: PipelineCard[] = [
   {
     id: "p3",
     company: "ABC Holdings B.V.",
-    entityName: "Penny Lane",
+    entityName: "Property Partners",
     propertyName: "Herengracht Offices",
     unit: "Unit 3A - 450 sqm",
     status: "Viewing",

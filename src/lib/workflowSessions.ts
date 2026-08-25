@@ -98,7 +98,7 @@ export function createWorkflowSessionForIntent(intent: WorkflowIntentId): Workfl
       ? {
           settlementStage: "anomaly-detection" as const,
           settlementYear: "2025",
-          property: "Penny Lane",
+          property: "Property Partners",
         }
       : {}),
     createdAt: Date.now(),

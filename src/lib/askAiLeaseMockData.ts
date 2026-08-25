@@ -22,8 +22,8 @@ export function getAskAiTenantChipOptions(): AskAiTenantOption[] {
 }
 
 const ENTITY_DISPLAY: Record<string, string> = {
-  "Entity X": "Penny Lane",
-  "Entity Y": "Penny Lane",
+  "Entity X": "Property Partners",
+  "Entity Y": "Property Partners",
   "Entity Z": "Come Together",
 };
 

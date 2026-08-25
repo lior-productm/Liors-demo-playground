@@ -919,7 +919,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                   />
                   <div className="flex min-w-0 flex-col gap-1">
                     <TruncatedText
-                      text="Penny Lane"
+                      text="Property Partners"
                       className="text-[13px] font-semibold leading-5 text-[#171717]"
                     />
                     <TruncatedText

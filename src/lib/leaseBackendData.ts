@@ -104,10 +104,10 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "All portfolio",
-    entity: "Penny Lane",
+    entity: "Property Partners",
     property: "Wenckebachweg 90-98",
     tenants: [
-      "Penny Lane Tenant Co.",
+      "Property Partners Tenant Co.",
       "North Quarter Retail B.V.",
       "MetroLink Offices B.V.",
       "UrbanMetric B.V.",
@@ -152,11 +152,11 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "Portfolio A",
-    entity: "Penny Lane",
+    entity: "Property Partners",
     property: "Wenckebachweg 90-98",
     tenants: [
       "North Quarter Retail B.V.",
-      "Penny Lane Tenant Co.",
+      "Property Partners Tenant Co.",
       "GreenLeaf Co-working B.V.",
       "Amstel Business Center B.V.",
       "Oranje Media Group B.V.",
@@ -164,7 +164,7 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "Portfolio A",
-    entity: "Penny Lane",
+    entity: "Property Partners",
     property: "Sloterdijk Central",
     tenants: [
       "MetroLink Offices B.V.",
