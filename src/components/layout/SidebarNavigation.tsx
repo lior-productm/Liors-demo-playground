@@ -366,7 +366,9 @@ function AiAssistantsNavDropdown({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [assistantsOpen, setAssistantsOpen] = useState(true);
+  const [assistantsOpen, setAssistantsOpen] = useState(() =>
+    pathname.startsWith("/ai-assistants"),
+  );
 
   const isLeaseAnalyst =
     activeNav === "lease-analyst" || pathname.startsWith("/ai-assistants/lease-analyst");
@@ -483,7 +485,9 @@ function WorkflowsNavDropdown({
   const router = useRouter();
   const pathname = usePathname();
   const { sessions, removeSession, renameSession } = useWorkflowSessions();
-  const [workflowsOpen, setWorkflowsOpen] = useState(true);
+  const [workflowsOpen, setWorkflowsOpen] = useState(() =>
+    pathname.startsWith("/workflows"),
+  );
   const [expandedTopics, setExpandedTopics] = useState<Record<WorkflowTopicId, boolean>>(() =>
     getInitialExpandedWorkflowTopics(pathname, sessions),
   );
@@ -666,7 +670,9 @@ export const SidebarNavigation = memo(function SidebarNavigation({
 }) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [dashboardsOpen, setDashboardsOpen] = useState(true);
+  const [dashboardsOpen, setDashboardsOpen] = useState(
+    () => activeNav === "financial" || activeNav === "commercial",
+  );
 
   useEffect(() => {
     if (activeNav === "financial" || activeNav === "commercial") {
@@ -762,13 +768,6 @@ export const SidebarNavigation = memo(function SidebarNavigation({
 
             {collapsed ? (
               <>
-                {featureFlags.showWorkflowsNav ? (
-                  <WorkflowsNavDropdown
-                    activeNav={activeNav}
-                    collapsed
-                    onExpand={() => setCollapsed(false)}
-                  />
-                ) : null}
                 <NavItemBase
                   collapsed
                   active={activeNav === "financial" || activeNav === "commercial"}
@@ -777,6 +776,13 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                 >
                   <SidebarNavIcon name="dashboards" size={20} />
                 </NavItemBase>
+                {featureFlags.showWorkflowsNav ? (
+                  <WorkflowsNavDropdown
+                    activeNav={activeNav}
+                    collapsed
+                    onExpand={() => setCollapsed(false)}
+                  />
+                ) : null}
                 <NavItemBase
                   collapsed
                   active={activeNav === "reporting"}
@@ -788,10 +794,6 @@ export const SidebarNavigation = memo(function SidebarNavigation({
               </>
             ) : (
               <>
-                {featureFlags.showWorkflowsNav ? (
-                  <WorkflowsNavDropdown activeNav={activeNav} collapsed={false} />
-                ) : null}
-
                 <div className={cn("flex w-full flex-col", NAV_SECTION_BODY_GAP)}>
                   <NavSectionHeaderRow
                     onClick={() => setDashboardsOpen(true)}
@@ -845,6 +847,10 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                     </div>
                   ) : null}
                 </div>
+
+                {featureFlags.showWorkflowsNav ? (
+                  <WorkflowsNavDropdown activeNav={activeNav} collapsed={false} />
+                ) : null}
 
                 <NavItemBase
                   active={activeNav === "reporting"}
