@@ -6,7 +6,6 @@ import { ChatPanel, ChatAside } from "@/src/components/commercial/ChatPanel";
 import { FloatingAmiioChat } from "@/src/components/commercial/FloatingAmiioChat";
 import { useAmiioChat } from "@/src/hooks/useAmiioChat";
 import {
-  readReportingDashboardUi,
   writeReportingDashboardUi,
 } from "@/src/lib/dashboardState";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/src/lib/reportingMockData";
 import { ReportActiveView } from "@/src/components/reporting/ReportActiveView";
 import { ReportsAllList } from "@/src/components/reporting/ReportsAllList";
+import { TemplateStudio } from "@/src/components/reporting/TemplateStudio";
 import {
   AppShell,
   DashboardPageBody,
@@ -29,20 +29,26 @@ export function ReportingDashboard({
   onTabChange: (tab: TopNavTabId) => void;
 }) {
   const chat = useAmiioChat(activeTab, "reporting");
-  const [reportTab, setReportTab] = useState<ReportingTabId>("active");
+  const [reportTab, setReportTab] = useState<ReportingTabId>("studio");
+  const [studioKey, setStudioKey] = useState(0);
   const [chatExpanded, setChatExpanded] = useState(false);
 
   useEffect(() => {
-    const savedUi = readReportingDashboardUi({ reportTab: "active" });
-    const tab = savedUi.reportTab;
-    if (tab === "active" || tab === "all") {
-      setReportTab(tab);
-    }
+    setReportTab("studio");
+    setStudioKey((value) => value + 1);
   }, []);
 
   useEffect(() => {
     writeReportingDashboardUi({ reportTab });
   }, [reportTab]);
+
+  const handleTabChange = (id: string) => {
+    const tab = id as ReportingTabId;
+    setReportTab(tab);
+    if (tab === "studio") {
+      setStudioKey((value) => value + 1);
+    }
+  };
 
   return (
     <AppShell
@@ -76,13 +82,22 @@ export function ReportingDashboard({
           <DashboardPageTabs
             tabs={REPORTING_TABS}
             activeId={reportTab}
-            onChange={(id) => setReportTab(id as ReportingTabId)}
+            onChange={handleTabChange}
           />
         }
       />
 
       <DashboardPageBody className="pt-4">
-        {reportTab === "active" ? <ReportActiveView /> : <ReportsAllList />}
+        {reportTab === "active" ? (
+          <ReportActiveView
+            variant="preview"
+            onEditInStudio={() => setReportTab("studio")}
+          />
+        ) : reportTab === "studio" ? (
+          <TemplateStudio key={studioKey} />
+        ) : (
+          <ReportsAllList />
+        )}
       </DashboardPageBody>
     </AppShell>
   );

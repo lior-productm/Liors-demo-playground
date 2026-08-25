@@ -1,12 +1,13 @@
 export const REPORTING_TABS = [
   { id: "active", label: "Active reports" },
   { id: "all", label: "All reports" },
+  { id: "studio", label: "Template Studio" },
 ] as const;
 
 export type ReportingTabId = (typeof REPORTING_TABS)[number]["id"];
 
 export const ACTIVE_REPORTS = [
-  "Z Holdings Q3 2025",
+  "Come Together Q3 2025",
   "Portfolio A Q2 2025",
   "Entity X Annual 2024",
 ] as const;
@@ -174,7 +175,19 @@ export type ReportDocumentBlock =
   | { type: "heading"; title: string; subtitle?: string }
   | { type: "table"; columns: string[]; rows: string[][] }
   | { type: "chart"; items: { label: string; value: string; ratio: number }[] }
-  | { type: "photos"; items: { label: string }[] };
+  | { type: "photos"; items: { label: string }[] }
+  | {
+      /** GPT-generated narrative summary derived from the selected entities + KPIs. */
+      type: "ai-summary";
+      /** Short headline for the summary block. */
+      headline: string;
+      /** Narrative paragraphs produced by the model. */
+      paragraphs: string[];
+      /** Entities / portfolios the summary was generated for. */
+      entities: string[];
+      /** KPI labels the summary references. */
+      kpis: string[];
+    };
 
 export type ReportDocumentSection = {
   id: ReportSectionId | string;
@@ -190,7 +203,7 @@ export const REPORT_DOCUMENT_SECTIONS: ReportDocumentSection[] = [
       {
         type: "prose",
         paragraphs: [
-          "This quarterly report covers the performance of Z Holdings for Q3 2025. It summarizes financial results, capital activity, and key operational updates for the investment committee.",
+          "This quarterly report covers the performance of Come Together for Q3 2025. It summarizes financial results, capital activity, and key operational updates for the investment committee.",
           "The report is structured by section. Use the left navigation to jump between topics, or scroll through the document in preview mode.",
         ],
       },
@@ -250,7 +263,7 @@ export const REPORT_INSIGHTS = [
     id: "1",
     title: "Original Capital Contribution Remains a Key Driver of ROI Sensitivity",
     body: [
-      "The lease agreement with a major tenant in Z Holdings B.V. is set to expire on 31 October 2026, with a 12-month notice period. This means the deadline for the tenant to provide notice is approaching soon. If notice is given and the lease is not renewed or replaced, annual rental income will drop significantly from 1 November 2026.",
+      "The lease agreement with a major tenant in Come Together B.V. is set to expire on 31 October 2026, with a 12-month notice period. This means the deadline for the tenant to provide notice is approaching soon. If notice is given and the lease is not renewed or replaced, annual rental income will drop significantly from 1 November 2026.",
       "In this specific case, the income reduction would trigger the Debt Service Coverage Ratio (DSCR) clause in the loan agreement, potentially leading to an event of default. This could allow the lender to accelerate loan repayment.",
       "Given the financial impact and covenant sensitivity, it is critical to secure a lease renewal or replacement tenant well before the notice date to avoid a default scenario.",
     ],
@@ -276,7 +289,7 @@ export const REPORT_INSIGHTS = [
     id: "4",
     title: "Q3 Report Scope Covers Financial, Capital, and Operational Updates",
     body: [
-      "This quarterly pack is intended for the investment committee and summarizes Z Holdings performance through Q3 2025.",
+      "This quarterly pack is intended for the investment committee and summarizes Come Together performance through Q3 2025.",
       "Readers should cross-reference the P&L table with the metrics section when assessing covenant headroom and cash coverage.",
     ],
     reviewed: false,
@@ -332,7 +345,7 @@ export const REPORT_INSIGHTS = [
 
 export const ALL_REPORTS_LIST = [
   {
-    title: "Z Holdings Q3 2025",
+    title: "Come Together Q3 2025",
     status: "In Review" as const,
     updated: "Updated 23 Nov 2025",
   },

@@ -5,7 +5,10 @@ export const LEASE_ANALYST_HOME = "amiio:lease-analyst-home";
 
 const STORAGE_KEY = "amiio:ai-assistant-nav";
 
-export type PinnedAiAssistantId = "lease-analyst";
+export type PinnedAiAssistantId =
+  | "lease-analyst"
+  | "financial"
+  | "debt";
 
 type AiAssistantNavState = {
   pinned: PinnedAiAssistantId[];
@@ -40,7 +43,17 @@ export function clearPinnedAiAssistants() {
   window.dispatchEvent(new CustomEvent(AI_ASSISTANT_NAV_CHANGED));
 }
 
+/** Fired to reset an analyst workspace back to its home (empty chat) state. */
+export function analystHomeEvent(basePath: string) {
+  return `amiio:analyst-home:${basePath}`;
+}
+
 export function requestLeaseAnalystHome() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(LEASE_ANALYST_HOME));
+}
+
+export function requestAnalystHome(basePath: string) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(analystHomeEvent(basePath)));
 }

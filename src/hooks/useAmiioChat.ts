@@ -21,7 +21,7 @@ export function useAmiioChat(activeTab: TopNavTabId, persistKey?: string) {
       return ["Explain NOI drivers", "Show debt ratio movement", "Summarize cashflow impact"];
     if (activeTab === "amiio")
       return [
-        "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+        "Create a one-page strategic summary for Yellow Submarine Portfolio for the investment committee",
         "Rank my assets by risk score and explain the main drivers",
         "Create a portfolio performance summary for Q2",
       ];

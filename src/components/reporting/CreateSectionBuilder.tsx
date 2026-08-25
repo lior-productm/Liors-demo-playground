@@ -8,6 +8,7 @@ import {
   Check,
   FolderOpen,
   Gauge,
+  Grid3x3,
   Heading,
   Image as ImageIcon,
   LayoutDashboard,
@@ -18,16 +19,10 @@ import {
   Sparkles,
   Table2,
   TextQuote,
+  Wand2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SectionReviewSummary } from "@/src/components/reporting/SectionReviewSummary";
 import { ReportRichBlock } from "@/src/components/reporting/ReportRichBlock";
 import {
@@ -36,9 +31,11 @@ import {
   REPORT_OBJECT_TYPES,
   SCOPE_LABELS,
   createApprovedSection,
+  formatScopeTargets,
   generateReportSection,
   getReportObjectType,
-  getScopeObjectOptions,
+  getScopeKpiOptions,
+  getScopeSuggestedOptions,
   getScopeTargetOptions,
   interpretFormula,
   type CustomReportSection,
@@ -47,8 +44,20 @@ import {
   type ReportObjectTypeId,
   type ReportScopeKind,
 } from "@/src/lib/reportSectionBuilder";
+import { saveSectionToLibrary } from "@/src/lib/reportSectionLibrary";
 
 type BuilderStep = "scope" | "objects" | "data-type" | "generating" | "review";
+
+type InterpretedDataPoint = {
+  label: string;
+  source: "snowflake" | "web" | "file";
+};
+
+type DataPointsInterpretation = {
+  plainEnglish: string;
+  dataPoints: InterpretedDataPoint[];
+  categories: string[];
+};
 
 const OBJECT_TYPE_ICON: Record<
   ReportObjectTypeId,
@@ -57,8 +66,10 @@ const OBJECT_TYPE_ICON: Record<
   "import-existing": LayoutDashboard,
   "main-page-header": Heading,
   "summary-main": TextQuote,
+  "ai-summary": Wand2,
   list: ListIcon,
   kpis: Gauge,
+  "kpi-matrix": Grid3x3,
   charts: BarChart3,
   tables: Table2,
   photos: ImageIcon,
@@ -81,9 +92,47 @@ const SCOPE_CARDS: {
   },
 ];
 
+const DATA_POINT_CATEGORIES: {
+  id: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+}[] = [
+  {
+    id: "commercial",
+    label: "Commercial data",
+    description: "Leasing, occupancy, WALT and rent activity.",
+    icon: Building2,
+  },
+  {
+    id: "financial",
+    label: "Financial data",
+    description: "P&L, NOI, budget variance and valuations.",
+    icon: BarChart3,
+  },
+  {
+    id: "tenant-payments",
+    label: "Tenant's payments",
+    description: "Arrears, collections and payment behaviour.",
+    icon: Table2,
+  },
+  {
+    id: "lease-data",
+    label: "Lease data",
+    description: "Lease events, renewals, breaks and indexation.",
+    icon: FolderOpen,
+  },
+  {
+    id: "operational",
+    label: "Operational data",
+    description: "Facilities, service charge and maintenance.",
+    icon: LayoutDashboard,
+  },
+];
+
 const STEP_LABELS: { id: BuilderStep; label: string }[] = [
   { id: "scope", label: "Scope" },
-  { id: "objects", label: "Data points" },
+  { id: "objects", label: "KPI & data points" },
   { id: "data-type", label: "Data type" },
   { id: "review", label: "Review & approve" },
 ];
@@ -122,16 +171,25 @@ function StepDots({ step }: { step: BuilderStep }) {
 
 export function CreateSectionBuilder({
   reportTitle,
+  mode = "create",
   onCancel,
   onApprove,
 }: {
   reportTitle: string;
+  /**
+   * "replace" swaps an existing object; "create" appends a new section to a
+   * template; "library" creates a standalone section saved to the library.
+   */
+  mode?: "create" | "replace" | "library";
   onCancel: () => void;
   onApprove: (section: CustomReportSection) => void;
 }) {
+  const isReplace = mode === "replace";
+  const isLibrary = mode === "library";
   const [step, setStep] = useState<BuilderStep>("scope");
   const [scopeKind, setScopeKind] = useState<ReportScopeKind | null>(null);
-  const [target, setTarget] = useState("");
+  const [targets, setTargets] = useState<string[]>([]);
+  const [dataCategories, setDataCategories] = useState<string[]>([]);
   const [selectedObjects, setSelectedObjects] = useState<string[]>([]);
   const [customFormulaOn, setCustomFormulaOn] = useState(false);
   const [customFormula, setCustomFormula] = useState("");
@@ -142,6 +200,12 @@ export function CreateSectionBuilder({
   const [objectType, setObjectType] = useState<ReportObjectTypeId | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | undefined>();
   const [draft, setDraft] = useState<GeneratedSectionDraft | null>(null);
+  const [saveToLibrary, setSaveToLibrary] = useState(false);
+  const [dataPointsStatus, setDataPointsStatus] = useState<
+    "idle" | "interpreting" | "proposed"
+  >("idle");
+  const [dataPointsSummary, setDataPointsSummary] =
+    useState<DataPointsInterpretation | null>(null);
 
   const trimmedFormula = customFormula.trim();
   const formulaConfirmed = customFormulaOn && !!trimmedFormula && formulaStatus === "accepted";
@@ -155,8 +219,12 @@ export function CreateSectionBuilder({
     () => (scopeKind ? getScopeTargetOptions(scopeKind) : []),
     [scopeKind],
   );
-  const objectOptions = useMemo(
-    () => (scopeKind ? getScopeObjectOptions(scopeKind) : []),
+  const kpiOptions = useMemo(
+    () => (scopeKind ? getScopeKpiOptions(scopeKind) : []),
+    [scopeKind],
+  );
+  const suggestedOptions = useMemo(
+    () => (scopeKind ? getScopeSuggestedOptions(scopeKind) : []),
     [scopeKind],
   );
 
@@ -167,11 +235,22 @@ export function CreateSectionBuilder({
 
   const handleScopeSelect = (kind: ReportScopeKind) => {
     setScopeKind(kind);
-    setTarget("");
+    setTargets([]);
+    setDataCategories([]);
     setSelectedObjects([]);
+    setDataPointsStatus("idle");
+    setDataPointsSummary(null);
     setCustomFormulaOn(false);
     setCustomFormula("");
     resetFormulaInterpretation();
+  };
+
+  const toggleTarget = (option: string) => {
+    setTargets((current) =>
+      current.includes(option)
+        ? current.filter((item) => item !== option)
+        : [...current, option],
+    );
   };
 
   const handleFormulaChange = (value: string) => {
@@ -193,20 +272,88 @@ export function CreateSectionBuilder({
     setFormulaStatus("declined");
   };
 
+  const resetDataPointsInterpretation = () => {
+    setDataPointsStatus("idle");
+    setDataPointsSummary(null);
+  };
+
   const toggleObject = (id: string) => {
+    resetDataPointsInterpretation();
     setSelectedObjects((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
   };
 
-  const buildRequest = () => {
-    if (!scopeKind || !target || !objectType) return null;
+  const toggleDataCategory = (id: string) => {
+    resetDataPointsInterpretation();
+    setDataCategories((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  };
+
+  const buildDataPointsInterpretation = (): DataPointsInterpretation => {
+    const chosen = [
+      ...kpiOptions.filter((option) => selectedObjects.includes(option.id)),
+      ...suggestedOptions.filter((option) => selectedObjects.includes(option.id)),
+    ];
+    const dataPoints: InterpretedDataPoint[] = chosen.map((option, index) => ({
+      label: option.label,
+      source: uploadedFileName
+        ? "file"
+        : option.group === "suggested" && index % 2 === 1
+          ? "web"
+          : "snowflake",
+    }));
+    if (formulaConfirmed) {
+      dataPoints.push({ label: "Custom formula", source: "snowflake" });
+    }
+    const categories = dataCategories.map(
+      (id) =>
+        DATA_POINT_CATEGORIES.find((category) => category.id === id)?.label ?? id,
+    );
+    const targetLabel = formatScopeTargets(targets);
+    const categoryClause =
+      categories.length > 0 ? `, focused on ${categories.join(", ")}` : "";
     return {
-      scope: { kind: scopeKind, target },
+      plainEnglish: `I'll compile ${dataPoints.length} data point${
+        dataPoints.length === 1 ? "" : "s"
+      } for ${targetLabel}${categoryClause}. I'll resolve the right source for each, pull the figures for the reporting period, and compute the variances before building the section.`,
+      dataPoints,
+      categories,
+    };
+  };
+
+  const runDataPointsInterpretation = async () => {
+    if (!hasDataPoints || formulaPending) return;
+    setDataPointsSummary(null);
+    setDataPointsStatus("interpreting");
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    setDataPointsSummary(buildDataPointsInterpretation());
+    setDataPointsStatus("proposed");
+  };
+
+  const buildRequest = () => {
+    if (!scopeKind || targets.length === 0 || !objectType) return null;
+    return {
+      scope: {
+        kind: scopeKind,
+        target: formatScopeTargets(targets),
+        targets,
+      },
       objects: selectedObjects,
       objectType,
       customFormula: formulaConfirmed ? trimmedFormula : undefined,
       uploadedFileName,
+      hint:
+        dataCategories.length > 0
+          ? `Data points: ${dataCategories
+              .map(
+                (id) =>
+                  DATA_POINT_CATEGORIES.find((category) => category.id === id)
+                    ?.label ?? id,
+              )
+              .join(", ")}`
+          : undefined,
     };
   };
 
@@ -222,7 +369,15 @@ export function CreateSectionBuilder({
   const handleApprove = () => {
     const request = buildRequest();
     if (!draft || !request) return;
-    onApprove(createApprovedSection(draft, request));
+    const section = createApprovedSection(draft, request);
+    if (!isReplace && saveToLibrary) {
+      saveSectionToLibrary({
+        title: section.title,
+        description: draft.summary.calculationLogic,
+        blocks: section.blocks,
+      });
+    }
+    onApprove(section);
   };
 
   return (
@@ -231,7 +386,7 @@ export function CreateSectionBuilder({
         <div className="flex items-center gap-2">
           <Sparkles className="size-5 text-[#4C61DB]" strokeWidth={1.75} />
           <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-            Create new section
+            {isReplace ? "Replace object" : "Create new section"}
           </h3>
         </div>
         <StepDots step={step} />
@@ -288,38 +443,93 @@ export function CreateSectionBuilder({
 
             {scopeKind ? (
               <div className="flex flex-col gap-2">
-                <p className="text-[12px] font-medium leading-[1.5] text-[#353638]">
-                  {scopeKind === "shared-entity" ? "Select entity" : "Select property"}
-                </p>
-                <Select value={target || undefined} onValueChange={setTarget}>
-                  <SelectTrigger className="h-11 w-full max-w-[360px] rounded-lg border border-[#E6E8EB] bg-white px-3">
-                    <SelectValue
-                      placeholder={
-                        scopeKind === "shared-entity"
-                          ? "Choose an entity"
-                          : "Choose a property"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="z-[100]">
-                    {targetOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[12px] font-medium leading-[1.5] text-[#353638]">
+                    {scopeKind === "shared-entity"
+                      ? "Select entities"
+                      : "Select properties"}
+                    <span className="ml-1 font-normal text-[#65686B]">
+                      · choose one or more
+                    </span>
+                  </p>
+                  {targets.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-medium text-[#4C61DB]">
+                        {targets.length} selected
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setTargets([])}
+                        className="text-[11px] font-medium text-[#65686B] underline hover:text-[#353638]"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex max-h-[220px] flex-col gap-1 overflow-y-auto rounded-lg border border-[#E6E8EB] bg-white p-1.5">
+                  {targetOptions.map((option) => {
+                    const isChecked = targets.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleTarget(option)}
+                        className={cn(
+                          "flex h-10 w-full items-center gap-2.5 rounded px-3 text-left text-[13px] font-medium leading-[1.24] transition-colors",
+                          isChecked
+                            ? "bg-[#F7F8FF] text-[#353638]"
+                            : "text-[#65686B] hover:bg-[#FAFBFC]",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
+                            isChecked
+                              ? "border-[#4C61DB] bg-[#4C61DB] text-white"
+                              : "border-[#B3B8BD] bg-white",
+                          )}
+                        >
+                          {isChecked ? (
+                            <Check className="size-3" strokeWidth={3} />
+                          ) : null}
+                        </span>
                         {option}
-                      </SelectItem>
+                      </button>
+                    );
+                  })}
+                </div>
+                {targets.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {targets.map((option) => (
+                      <span
+                        key={option}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#A7B2F2] bg-[#F7F8FF] px-2.5 py-1 text-[11px] font-medium text-[#353638]"
+                      >
+                        {option}
+                        <button
+                          type="button"
+                          onClick={() => toggleTarget(option)}
+                          className="text-[#65686B] hover:text-[#B23A2F]"
+                          aria-label={`Remove ${option}`}
+                        >
+                          <X className="size-3" strokeWidth={2} />
+                        </button>
+                      </span>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
             <div className="flex justify-end">
               <button
                 type="button"
-                disabled={!scopeKind || !target}
+                disabled={!scopeKind || targets.length === 0}
                 onClick={() => setStep("objects")}
                 className={cn(
                   "flex h-10 items-center rounded-lg px-4 text-[14px] font-medium leading-[1.24] text-white",
-                  !scopeKind || !target
+                  !scopeKind || targets.length === 0
                     ? "cursor-not-allowed bg-[#B3B8BD]"
                     : "bg-[#111] hover:bg-[#333]",
                 )}
@@ -330,21 +540,72 @@ export function CreateSectionBuilder({
           </div>
         ) : null}
 
-        {/* Step 2 — Objects / data points */}
+        {/* Step 2 — KPI & data points */}
         {step === "objects" ? (
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Select data points
+                Data points
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                The Deep Agent will identify the right source (Snowflake, Web, or your uploaded
-                file) for each selected object.
+                Choose the data domains this section should draw from.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {DATA_POINT_CATEGORIES.map((category) => {
+                const Icon = category.icon;
+                const isSelected = dataCategories.includes(category.id);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => toggleDataCategory(category.id)}
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border p-3.5 text-left transition-colors",
+                      isSelected
+                        ? "border-2 border-[#A7B2F2] bg-[#F7F8FF]"
+                        : "border-[#E6E8EB] bg-white hover:bg-[#FAFBFC]",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                        isSelected
+                          ? "bg-[#EEF0FF] text-[#4C61DB]"
+                          : "bg-[#F0F2F5] text-[#65686B]",
+                      )}
+                    >
+                      <Icon className="size-[18px]" strokeWidth={1.75} />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="flex items-center gap-1.5 text-[13px] font-semibold leading-[1.25] text-[#05091F]">
+                        {category.label}
+                        {isSelected ? (
+                          <Check className="size-3.5 text-[#4C61DB]" strokeWidth={2.5} />
+                        ) : null}
+                      </span>
+                      <span className="text-[12px] leading-[1.4] text-[#65686B]">
+                        {category.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-1 border-t border-[#F0F2F5] pt-4">
+              <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
+                Select the KPIs
+              </p>
+              <p className="text-[12px] leading-[1.5] text-[#65686B]">
+                Pick the headline metrics for this section. The Deep Agent identifies the
+                right source (Snowflake, Web, or your uploaded file) for each one.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {objectOptions.map((option) => {
+              {kpiOptions.map((option) => {
                 const isSelected = selectedObjects.includes(option.id);
                 return (
                   <button
@@ -363,25 +624,55 @@ export function CreateSectionBuilder({
                   </button>
                 );
               })}
-              <button
-                key={CUSTOM_FORMULA_OBJECT_ID}
-                type="button"
-                onClick={() =>
-                  setCustomFormulaOn((value) => {
-                    if (value) resetFormulaInterpretation();
-                    return !value;
-                  })
-                }
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border border-dashed px-3 py-2 text-[13px] font-medium leading-[1.24] transition-colors",
-                  customFormulaOn
-                    ? "border-2 border-[#A7B2F2] bg-[#F7F8FF] text-[#353638]"
-                    : "border-[#B3B8BD] bg-white text-[#65686B] hover:bg-[#FAFBFC]",
-                )}
-              >
-                <Plus className="size-3.5" strokeWidth={2} />
-                Else — write a formula
-              </button>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-[#F0F2F5] pt-4">
+              <p className="text-[12px] font-semibold leading-[1.25] text-[#353638]">
+                Suggested options
+              </p>
+              <p className="text-[12px] leading-[1.5] text-[#65686B]">
+                Add supporting data points related to your scope and selected KPIs.
+              </p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {suggestedOptions.map((option) => {
+                  const isSelected = selectedObjects.includes(option.id);
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => toggleObject(option.id)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-[13px] font-medium leading-[1.24] transition-colors",
+                        isSelected
+                          ? "border-2 border-[#A7B2F2] bg-[#F7F8FF] text-[#353638]"
+                          : "border-[#E6E8EB] bg-white text-[#65686B] hover:bg-[#FAFBFC]",
+                      )}
+                    >
+                      {isSelected ? <Check className="size-3.5" strokeWidth={2.5} /> : null}
+                      {option.label}
+                    </button>
+                  );
+                })}
+                <button
+                  key={CUSTOM_FORMULA_OBJECT_ID}
+                  type="button"
+                  onClick={() =>
+                    setCustomFormulaOn((value) => {
+                      if (value) resetFormulaInterpretation();
+                      return !value;
+                    })
+                  }
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border border-dashed px-3 py-2 text-[13px] font-medium leading-[1.24] transition-colors",
+                    customFormulaOn
+                      ? "border-2 border-[#A7B2F2] bg-[#F7F8FF] text-[#353638]"
+                      : "border-[#B3B8BD] bg-white text-[#65686B] hover:bg-[#FAFBFC]",
+                  )}
+                >
+                  <Plus className="size-3.5" strokeWidth={2} />
+                  Else — write a formula
+                </button>
+              </div>
             </div>
 
             {customFormulaOn ? (
@@ -569,6 +860,82 @@ export function CreateSectionBuilder({
               ) : null}
             </div>
 
+            {/* Deep Agent interpretation of the selected data points */}
+            {dataPointsStatus === "interpreting" ? (
+              <div className="flex items-center gap-2 rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] px-3.5 py-3">
+                <Loader2 className="size-4 animate-spin text-[#4C61DB]" strokeWidth={1.75} />
+                <p className="text-[12px] leading-[1.4] text-[#65686B]">
+                  Deep Agent is reviewing your KPIs &amp; data points…
+                </p>
+              </div>
+            ) : null}
+
+            {dataPointsStatus === "proposed" && dataPointsSummary ? (
+              <div className="flex flex-col gap-3 rounded-xl border border-[#A7B2F2] bg-[#F7F8FF] p-4">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
+                  <p className="text-[12px] font-semibold leading-[1.25] text-[#05091F]">
+                    Deep Agent — here&apos;s what I&apos;ll pull
+                  </p>
+                </div>
+                <p className="text-[12px] leading-[1.5] text-[#353638]">
+                  {dataPointsSummary.plainEnglish}
+                </p>
+
+                {dataPointsSummary.categories.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {dataPointsSummary.categories.map((category) => (
+                      <span
+                        key={category}
+                        className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-[#4C61DB] ring-1 ring-[#D9DEF3]"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
+                    Data points resolved
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {dataPointsSummary.dataPoints.map((point) => (
+                      <span
+                        key={point.label}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#E6E8EB] bg-white px-2.5 py-1 text-[11px] font-medium text-[#353638]"
+                      >
+                        {point.label}
+                        <span className="text-[#969A9E]">·</span>
+                        <span className="text-[#65686B]">
+                          {DATA_SOURCE_LABELS[point.source]}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 border-t border-[#E4E7F5] pt-3">
+                  <button
+                    type="button"
+                    onClick={resetDataPointsInterpretation}
+                    className="flex h-9 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-3 text-[13px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
+                  >
+                    <ArrowLeft className="size-4" strokeWidth={1.75} />
+                    Adjust selection
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep("data-type")}
+                    className="flex h-9 items-center gap-1.5 rounded-lg bg-[#1F7A45] px-3 text-[13px] font-medium leading-[1.24] text-white hover:bg-[#1A6B3C]"
+                  >
+                    <Check className="size-4" strokeWidth={2} />
+                    Approve &amp; continue
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
@@ -578,26 +945,44 @@ export function CreateSectionBuilder({
                 <ArrowLeft className="size-4" strokeWidth={1.75} />
                 Back
               </button>
-              <div className="flex items-center gap-3">
-                {formulaPending ? (
-                  <span className="text-[11px] leading-[1.4] text-[#B23A2F]">
-                    Accept the Deep Agent&apos;s formula read-back to continue.
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  disabled={!hasDataPoints || formulaPending}
-                  onClick={() => setStep("data-type")}
-                  className={cn(
-                    "flex h-10 items-center gap-2 rounded-lg px-4 text-[14px] font-medium leading-[1.24] text-white",
-                    !hasDataPoints || formulaPending
-                      ? "cursor-not-allowed bg-[#B3B8BD]"
-                      : "bg-[#111] hover:bg-[#333]",
-                  )}
-                >
-                  Continue
-                </button>
-              </div>
+              {dataPointsStatus !== "proposed" ? (
+                <div className="flex items-center gap-3">
+                  {formulaPending ? (
+                    <span className="text-[11px] leading-[1.4] text-[#B23A2F]">
+                      Accept the Deep Agent&apos;s formula read-back to continue.
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={
+                      !hasDataPoints ||
+                      formulaPending ||
+                      dataPointsStatus === "interpreting"
+                    }
+                    onClick={runDataPointsInterpretation}
+                    className={cn(
+                      "flex h-10 items-center gap-2 rounded-lg px-4 text-[14px] font-medium leading-[1.24] text-white",
+                      !hasDataPoints ||
+                        formulaPending ||
+                        dataPointsStatus === "interpreting"
+                        ? "cursor-not-allowed bg-[#B3B8BD]"
+                        : "bg-[#111] hover:bg-[#333]",
+                    )}
+                  >
+                    {dataPointsStatus === "interpreting" ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+                        Analyzing…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-4" strokeWidth={1.75} />
+                        Continue
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -765,6 +1150,55 @@ export function CreateSectionBuilder({
                       </div>
                     );
                   }
+                  if (block.type === "ai-summary") {
+                    return (
+                      <div
+                        key={index}
+                        className="flex flex-col gap-3 rounded-xl border border-[#A7B2F2] bg-[#F7F8FF] p-4"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Wand2 className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
+                          <p className="text-[13px] font-semibold leading-[1.25] text-[#05091F]">
+                            {block.headline}
+                          </p>
+                          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]">
+                            <Sparkles className="size-3" strokeWidth={2} />
+                            AI generated
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {block.paragraphs.map((paragraph, pIndex) => (
+                            <p
+                              key={pIndex}
+                              className="text-[12px] leading-[1.5] text-[#353638]"
+                            >
+                              {paragraph}
+                            </p>
+                          ))}
+                        </div>
+                        {block.entities.length > 0 || block.kpis.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5 border-t border-[#DDE1F7] pt-2.5">
+                            {block.entities.map((entity) => (
+                              <span
+                                key={`e-${entity}`}
+                                className="inline-flex items-center rounded-full border border-[#DDE1F7] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]"
+                              >
+                                {entity}
+                              </span>
+                            ))}
+                            {block.kpis.map((kpi) => (
+                              <span
+                                key={`k-${kpi}`}
+                                className="inline-flex items-center rounded-full border border-[#E6E8EB] bg-white px-2 py-0.5 text-[10px] font-medium text-[#65686B]"
+                              >
+                                {kpi}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  }
                   if (block.type === "updates") {
                     return (
                       <ul key={index} className="flex flex-col gap-2">
@@ -784,6 +1218,25 @@ export function CreateSectionBuilder({
                 })}
               </div>
             </div>
+
+            {mode === "create" ? (
+              <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={saveToLibrary}
+                  onChange={(event) => setSaveToLibrary(event.target.checked)}
+                  className="size-4 accent-[#4C61DB]"
+                />
+                <span className="flex flex-col">
+                  <span className="text-[13px] font-medium leading-[1.3] text-[#05091F]">
+                    Also save to the section library
+                  </span>
+                  <span className="text-[12px] leading-[1.4] text-[#65686B]">
+                    Reuse this section across other templates.
+                  </span>
+                </span>
+              </label>
+            ) : null}
 
             <div className="flex items-center justify-between">
               <button
@@ -808,7 +1261,11 @@ export function CreateSectionBuilder({
                   className="flex h-10 items-center gap-2 rounded-lg bg-[#111] px-4 text-[14px] font-medium leading-[1.24] text-white hover:bg-[#333]"
                 >
                   <Check className="size-4" strokeWidth={2} />
-                  Approve & add to {reportTitle.split(" ")[0]} template
+                  {isReplace
+                    ? "Replace object with this"
+                    : isLibrary
+                      ? "Save section to library"
+                      : `Approve & add to ${reportTitle.split(" ")[0]} template`}
                 </button>
               </div>
             </div>

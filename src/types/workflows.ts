@@ -1,5 +1,6 @@
 export type WorkflowIntentId =
   | "lease-renewal"
+  | "service-charge-settlement"
   | "prepare-report"
   | "financial-forecasting"
   | "market-research"
@@ -7,10 +8,17 @@ export type WorkflowIntentId =
 
 export type WorkflowTopicId =
   | "leasing-renewal"
+  | "service-charge-settlement"
   | "reporting"
   | "market-research"
   | "financial-forecasting"
   | "esg";
+
+export type ServiceChargeSettlementStage =
+  | "anomaly-detection"
+  | "data-review"
+  | "assumptions"
+  | "settlement-preview";
 
 export type WorkflowSession = {
   id: string;
@@ -24,6 +32,7 @@ export type WorkflowSession = {
     | "lease-reasoning"
     | "lease-handoff"
     | "lease-renewal-active"
+    | "service-charge-active"
     | "complete";
   intent?: WorkflowIntentId;
   topic?: WorkflowTopicId;
@@ -39,6 +48,10 @@ export type WorkflowSession = {
   renewalSubStep?: "pipeline" | "proposal-prep" | "lease-proposal" | "review-proposal";
   proposalPanelOpen?: boolean;
   hasProposalDraft?: boolean;
+  /** Service charge settlement — restored on refresh. */
+  settlementStage?: ServiceChargeSettlementStage;
+  /** Which fiscal year the settlement covers (e.g. "2025"). */
+  settlementYear?: string;
   createdAt: number;
   updatedAt?: number;
 };

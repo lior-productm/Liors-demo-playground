@@ -21,16 +21,30 @@ export type ReportScopeKind = "shared-entity" | "property";
 
 export type ReportScope = {
   kind: ReportScopeKind;
-  /** The chosen entity (shared-entity scope) or property (property scope). */
+  /**
+   * Backward-compatible single display target — a comma-joined label of {@link targets}.
+   * Prefer reading `targets` for the full multi-select set.
+   */
   target: string;
+  /** The chosen entities (shared-entity scope) or properties (property scope). Multi-select. */
+  targets: string[];
 };
+
+/** Join selected targets into a readable label (e.g. "Entity A, Entity B +1"). */
+export function formatScopeTargets(targets: string[]): string {
+  if (targets.length === 0) return "";
+  if (targets.length <= 2) return targets.join(", ");
+  return `${targets.slice(0, 2).join(", ")} +${targets.length - 2}`;
+}
 
 export type ReportObjectTypeId =
   | "import-existing"
   | "main-page-header"
   | "summary-main"
+  | "ai-summary"
   | "list"
   | "kpis"
+  | "kpi-matrix"
   | "charts"
   | "tables"
   | "photos";
@@ -60,12 +74,24 @@ export const REPORT_OBJECT_TYPES: ReportObjectType[] = [
     maxDataPoints: 10,
     maxLabel: "values",
   },
+  {
+    id: "ai-summary",
+    label: "AI Summary",
+    limit: "AI narrative · uses selected entities & KPIs",
+  },
   { id: "list", label: "List", limit: "Object · Max 2" },
   {
     id: "kpis",
     label: "KPIs",
     limit: "Object · Max 4",
     maxDataPoints: 4,
+    maxLabel: "KPIs",
+  },
+  {
+    id: "kpi-matrix",
+    label: "KPI matrix (entities × KPIs)",
+    limit: "Table · selected entities × KPIs",
+    maxDataPoints: 6,
     maxLabel: "KPIs",
   },
   { id: "charts", label: "Charts & Graphs", limit: "Object · Max 2" },
@@ -141,48 +167,63 @@ type ScopeObjectOption = {
   preferredSource: ReportDataSourceType;
   /** Mock value rendered in the generated metrics block. */
   sampleValue: string;
+  /**
+   * "kpi" = headline metric shown under "Select the KPIs".
+   * "suggested" = supporting data point shown under "Suggested options".
+   */
+  group: "kpi" | "suggested";
 };
 
 /** Sentinel id for the user-authored "Else" data point (custom formula). */
 export const CUSTOM_FORMULA_OBJECT_ID = "custom-formula";
 
 const SHARED_ENTITY_OBJECTS: ScopeObjectOption[] = [
-  { id: "rental-income", label: "Rental income", preferredSource: "snowflake", sampleValue: "€110,968" },
-  { id: "operating-expenses", label: "Operating expenses", preferredSource: "snowflake", sampleValue: "€20,060" },
-  { id: "noi", label: "Net operating income (NOI)", preferredSource: "snowflake", sampleValue: "€90,908" },
-  { id: "dscr", label: "Debt service & DSCR", preferredSource: "snowflake", sampleValue: "1.18x" },
-  { id: "icr", label: "Interest cover (ICR)", preferredSource: "snowflake", sampleValue: "2.4x" },
-  { id: "distributions", label: "Capital distributions", preferredSource: "snowflake", sampleValue: "€0" },
-  { id: "equity-contributions", label: "Equity contributions", preferredSource: "snowflake", sampleValue: "€4.2M" },
-  { id: "irr", label: "IRR / equity multiple", preferredSource: "snowflake", sampleValue: "12.4% · 1.8x" },
-  { id: "loan-balance", label: "Loan balances", preferredSource: "snowflake", sampleValue: "€10.8M" },
-  { id: "debt-maturity", label: "Debt maturity profile", preferredSource: "snowflake", sampleValue: "2028" },
-  { id: "cash-at-bank", label: "Cash at bank", preferredSource: "snowflake", sampleValue: "€441,060" },
-  { id: "valuation", label: "Valuation / GAV", preferredSource: "snowflake", sampleValue: "€18.4M" },
-  { id: "ltv", label: "Loan-to-value (LTV)", preferredSource: "snowflake", sampleValue: "62.4%" },
-  { id: "capex-entity", label: "Capex spend", preferredSource: "file", sampleValue: "€212,400" },
-  { id: "market-rent", label: "Market rent comparables", preferredSource: "web", sampleValue: "€18.5 / sqm" },
+  { id: "noi", label: "Net operating income (NOI)", preferredSource: "snowflake", sampleValue: "€90,908", group: "kpi" },
+  { id: "dscr", label: "Debt service & DSCR", preferredSource: "snowflake", sampleValue: "1.18x", group: "kpi" },
+  { id: "icr", label: "Interest cover (ICR)", preferredSource: "snowflake", sampleValue: "2.4x", group: "kpi" },
+  { id: "irr", label: "IRR / equity multiple", preferredSource: "snowflake", sampleValue: "12.4% · 1.8x", group: "kpi" },
+  { id: "ltv", label: "Loan-to-value (LTV)", preferredSource: "snowflake", sampleValue: "62.4%", group: "kpi" },
+  { id: "valuation", label: "Valuation / GAV", preferredSource: "snowflake", sampleValue: "€18.4M", group: "kpi" },
+  { id: "rental-income", label: "Rental income", preferredSource: "snowflake", sampleValue: "€110,968", group: "suggested" },
+  { id: "operating-expenses", label: "Operating expenses", preferredSource: "snowflake", sampleValue: "€20,060", group: "suggested" },
+  { id: "distributions", label: "Capital distributions", preferredSource: "snowflake", sampleValue: "€0", group: "suggested" },
+  { id: "equity-contributions", label: "Equity contributions", preferredSource: "snowflake", sampleValue: "€4.2M", group: "suggested" },
+  { id: "loan-balance", label: "Loan balances", preferredSource: "snowflake", sampleValue: "€10.8M", group: "suggested" },
+  { id: "debt-maturity", label: "Debt maturity profile", preferredSource: "snowflake", sampleValue: "2028", group: "suggested" },
+  { id: "cash-at-bank", label: "Cash at bank", preferredSource: "snowflake", sampleValue: "€441,060", group: "suggested" },
+  { id: "capex-entity", label: "Capex spend", preferredSource: "file", sampleValue: "€212,400", group: "suggested" },
+  { id: "market-rent", label: "Market rent comparables", preferredSource: "web", sampleValue: "€18.5 / sqm", group: "suggested" },
 ];
 
 const PROPERTY_OBJECTS: ScopeObjectOption[] = [
-  { id: "rent-roll", label: "Rent roll", preferredSource: "snowflake", sampleValue: "24 units" },
-  { id: "lease-expiries", label: "Lease events & expiries", preferredSource: "snowflake", sampleValue: "3 in 12m" },
-  { id: "break-options", label: "Break options", preferredSource: "snowflake", sampleValue: "2 in 18m" },
-  { id: "rent-reviews", label: "Rent reviews", preferredSource: "snowflake", sampleValue: "1 due" },
-  { id: "occupancy", label: "Occupancy", preferredSource: "snowflake", sampleValue: "94.2%" },
-  { id: "vacancy", label: "Vacancy schedule", preferredSource: "snowflake", sampleValue: "1.4k sqm" },
-  { id: "wault", label: "WAULT", preferredSource: "snowflake", sampleValue: "5.4 yrs" },
-  { id: "tenant-mix", label: "Tenant mix", preferredSource: "snowflake", sampleValue: "9 tenants" },
-  { id: "arrears", label: "Tenant arrears", preferredSource: "snowflake", sampleValue: "€4,210" },
-  { id: "service-charge", label: "Service charge recovery", preferredSource: "snowflake", sampleValue: "91%" },
-  { id: "epc", label: "Energy performance (EPC)", preferredSource: "file", sampleValue: "B" },
-  { id: "footfall", label: "Footfall / visits", preferredSource: "web", sampleValue: "-6.2%" },
-  { id: "capex", label: "Capex projects", preferredSource: "file", sampleValue: "2 active" },
-  { id: "market-comparables", label: "Market comparables", preferredSource: "web", sampleValue: "€18.5 / sqm" },
+  { id: "occupancy", label: "Occupancy", preferredSource: "snowflake", sampleValue: "94.2%", group: "kpi" },
+  { id: "wault", label: "WAULT", preferredSource: "snowflake", sampleValue: "5.4 yrs", group: "kpi" },
+  { id: "rent-roll", label: "Rent roll", preferredSource: "snowflake", sampleValue: "24 units", group: "kpi" },
+  { id: "arrears", label: "Tenant arrears", preferredSource: "snowflake", sampleValue: "€4,210", group: "kpi" },
+  { id: "service-charge", label: "Service charge recovery", preferredSource: "snowflake", sampleValue: "91%", group: "kpi" },
+  { id: "epc", label: "Energy performance (EPC)", preferredSource: "file", sampleValue: "B", group: "kpi" },
+  { id: "lease-expiries", label: "Lease events & expiries", preferredSource: "snowflake", sampleValue: "3 in 12m", group: "suggested" },
+  { id: "break-options", label: "Break options", preferredSource: "snowflake", sampleValue: "2 in 18m", group: "suggested" },
+  { id: "rent-reviews", label: "Rent reviews", preferredSource: "snowflake", sampleValue: "1 due", group: "suggested" },
+  { id: "vacancy", label: "Vacancy schedule", preferredSource: "snowflake", sampleValue: "1.4k sqm", group: "suggested" },
+  { id: "tenant-mix", label: "Tenant mix", preferredSource: "snowflake", sampleValue: "9 tenants", group: "suggested" },
+  { id: "footfall", label: "Footfall / visits", preferredSource: "web", sampleValue: "-6.2%", group: "suggested" },
+  { id: "capex", label: "Capex projects", preferredSource: "file", sampleValue: "2 active", group: "suggested" },
+  { id: "market-comparables", label: "Market comparables", preferredSource: "web", sampleValue: "€18.5 / sqm", group: "suggested" },
 ];
 
 export function getScopeObjectOptions(kind: ReportScopeKind): ScopeObjectOption[] {
   return kind === "shared-entity" ? SHARED_ENTITY_OBJECTS : PROPERTY_OBJECTS;
+}
+
+/** Headline KPI options for the "Select the KPIs" group. */
+export function getScopeKpiOptions(kind: ReportScopeKind): ScopeObjectOption[] {
+  return getScopeObjectOptions(kind).filter((option) => option.group === "kpi");
+}
+
+/** Supporting data points for the "Suggested options" group. */
+export function getScopeSuggestedOptions(kind: ReportScopeKind): ScopeObjectOption[] {
+  return getScopeObjectOptions(kind).filter((option) => option.group === "suggested");
 }
 
 export function getScopeTargetOptions(kind: ReportScopeKind): string[] {
@@ -363,11 +404,16 @@ function buildSummary(
     ? ` A user-defined formula was applied: "${request.customFormula}".`
     : "";
 
+  const scopeTargetLabel =
+    request.scope.targets.length > 0
+      ? request.scope.targets.join(", ")
+      : request.scope.target;
+
   const calculationLogic = `${sourceVerb}, aggregated ${labels.length} data point${
     labels.length === 1 ? "" : "s"
   } (${labels.join(", ")}) at the ${
     SCOPE_NOUNS[request.scope.kind]
-  } level for ${request.scope.target}, rendered as ${objectType.label.toLowerCase()}. Variances are computed against the prior period and budget.${formulaClause}`;
+  } level for ${scopeTargetLabel}, rendered as ${objectType.label.toLowerCase()}. Variances are computed against the prior period and budget.${formulaClause}`;
 
   const assumptions = [
     "Figures use the reporting-quarter close; intra-quarter adjustments are excluded.",
@@ -411,6 +457,52 @@ function parseMagnitude(value: string): number {
 }
 
 /**
+ * Deterministically varies a sample value per entity so a KPI matrix shows
+ * distinct-but-plausible figures across the selected entities (mock data).
+ */
+function variantValue(sample: string, entityIndex: number): string {
+  if (entityIndex === 0) return sample;
+  const match = sample.match(/[0-9][0-9.,]*/);
+  if (!match) return sample;
+
+  const raw = match[0];
+  const numeric = Number.parseFloat(raw.replace(/,/g, ""));
+  if (!Number.isFinite(numeric) || numeric === 0) return sample;
+
+  // Spread of roughly -6%..+6% keyed off the entity index.
+  const factor = 1 + (((entityIndex * 37) % 13) - 6) / 100;
+  const scaled = numeric * factor;
+
+  const decimals = raw.includes(".") ? raw.split(".")[1]?.length ?? 0 : 0;
+  const hasThousands = raw.includes(",");
+  const formatted = hasThousands
+    ? Math.round(scaled).toLocaleString("en-US")
+    : scaled.toFixed(decimals);
+
+  return sample.replace(raw, formatted);
+}
+
+/** Builds an entities × KPIs table so combinations render side by side. */
+function buildKpiMatrix(
+  request: GenerateSectionRequest,
+  selected: ScopeObjectOption[],
+): ReportDocumentBlock {
+  const entities =
+    request.scope.targets.length > 0
+      ? request.scope.targets
+      : [request.scope.target].filter(Boolean);
+  const kpis = selected.length > 0 ? selected : [];
+  const columns = ["Entity", ...kpis.map((option) => option.label)];
+  const rows = (entities.length > 0 ? entities : ["Selected scope"]).map(
+    (entity, entityIndex) => [
+      entity,
+      ...kpis.map((option) => variantValue(option.sampleValue, entityIndex)),
+    ],
+  );
+  return { type: "table", columns, rows };
+}
+
+/**
  * Emits the block(s) that best fit the chosen object type, so each section
  * type renders in its own form (KPIs → cards only, Tables → a table, etc.)
  * rather than always prose + metrics.
@@ -439,6 +531,16 @@ function buildBlocks(
     case "kpis":
       // KPI cards only — no surrounding prose.
       return [{ type: "metrics", items: cappedPoints }];
+
+    case "ai-summary":
+      // GPT narrative first, then the supporting KPI cards it references.
+      return cappedPoints.length > 0
+        ? [buildAiSummaryBlock(request, cappedPoints), { type: "metrics", items: cappedPoints }]
+        : [buildAiSummaryBlock(request, cappedPoints)];
+
+    case "kpi-matrix":
+      // Entities × KPIs combination table.
+      return [buildKpiMatrix(request, selected.slice(0, objectType.maxDataPoints ?? selected.length))];
 
     case "main-page-header":
       return [
@@ -512,6 +614,47 @@ function buildBlocks(
   }
 }
 
+/** Deterministic mock of a GPT narrative built from the selected entities + KPIs. */
+function buildAiSummaryBlock(
+  request: GenerateSectionRequest,
+  cappedPoints: { label: string; value: string }[],
+): Extract<ReportDocumentBlock, { type: "ai-summary" }> {
+  const entities = request.scope.targets.length
+    ? request.scope.targets
+    : [request.scope.target].filter(Boolean);
+  const kpis = cappedPoints.map((point) => point.label);
+  const scopeLabel = SCOPE_NOUNS[request.scope.kind];
+  const entityClause =
+    entities.length === 0
+      ? "the selected scope"
+      : entities.length === 1
+        ? entities[0]
+        : `${entities.slice(0, -1).join(", ")} and ${entities[entities.length - 1]}`;
+
+  const highlight = cappedPoints[0];
+  const secondary = cappedPoints[1];
+
+  const paragraphs: string[] = [
+    `Across ${entityClause} (${scopeLabel} level), performance this period is broadly in line with plan. ${
+      highlight ? `${highlight.label} stands at ${highlight.value}` : "Key metrics are stable"
+    }${secondary ? `, while ${secondary.label.toLowerCase()} is ${secondary.value}` : ""}.`,
+    kpis.length > 1
+      ? `The summary weighs ${kpis
+          .map((kpi) => kpi.toLowerCase())
+          .join(", ")} together to flag the drivers most likely to affect the investment case, and benchmarks each against the prior period and budget.`
+      : "The summary benchmarks the selected metric against the prior period and budget to surface the most material movement.",
+    "Recommended focus: confirm the assumptions behind any figure flagged as an outlier before circulating to the committee.",
+  ];
+
+  return {
+    type: "ai-summary",
+    headline: `AI Summary — ${formatScopeTargets(entities) || request.scope.target}`,
+    paragraphs,
+    entities,
+    kpis,
+  };
+}
+
 function buildTitle(request: GenerateSectionRequest, options: ScopeObjectOption[]): string {
   const selected = options.filter((option) => request.objects.includes(option.id));
   const lead = selected[0]?.label ?? (request.customFormula ? "Custom formula" : "Custom section");
@@ -559,6 +702,14 @@ export function appendCustomSection(
   const next = [...(store[reportTitle] ?? []), section];
   writeLocalJson(CUSTOM_SECTION_STORAGE_KEY, { ...store, [reportTitle]: next });
   return next;
+}
+
+export function writeCustomSections(
+  reportTitle: string,
+  sections: CustomReportSection[],
+) {
+  const store = readStore();
+  writeLocalJson(CUSTOM_SECTION_STORAGE_KEY, { ...store, [reportTitle]: sections });
 }
 
 export function removeCustomSection(

@@ -49,10 +49,10 @@ function ToolIcons({ tools }: { tools: AiAssistantTask["tools"] }) {
 
 const TASK_TABLE_GRID_STYLE = {
   gridTemplateColumns:
-    "minmax(120px, 1.15fr) minmax(140px, 1.5fr) minmax(88px, 111px) minmax(88px, 116px) minmax(120px, 1.35fr) minmax(168px, 168px)",
+    "minmax(190px, 1.4fr) minmax(200px, 1.8fr) minmax(88px, 104px) minmax(76px, 96px) minmax(150px, 1.4fr) minmax(132px, 132px)",
 } as const;
 
-const TASK_TABLE_MIN_WIDTH = 724;
+const TASK_TABLE_MIN_WIDTH = 860;
 
 function TaskTableGrid({
   className,
@@ -88,7 +88,7 @@ function TaskRow({
           onClick={onOpenDetail}
           className={cn(rowCellClass, "cursor-pointer gap-1.5 text-left")}
         >
-          <p className="min-w-0 truncate text-sm font-medium leading-[1.5] text-[#353638]">
+          <p className="line-clamp-2 min-w-0 text-sm font-medium leading-[1.5] text-[#353638]">
             {task.name}
           </p>
         </button>

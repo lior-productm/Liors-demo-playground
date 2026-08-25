@@ -64,14 +64,14 @@ function assistantReplyFor(text: string) {
     return `I’ll focus on: ${topic}\n\nI can summarize drivers, compare to portfolio benchmarks, and suggest concrete next steps (reports, tenant outreach, or scenarios). Tell me if you want an executive summary or full detail.`;
   }
   if (t.includes("revenue") || t.includes("decreased")) {
-    return "Revenue decreased by 4.2% year-over-year primarily due to three factors:\n\n1. Vacancy increase — Two units in Gloucester 140 were vacant for 4 months during tenant transitions\n2. Rent-free periods — New leases for ScaleHub III included 3-month incentives\n3. Service charge adjustments — Energy costs were renegotiated downward\n\nWould you like me to break this down by property or generate a detailed variance report?";
+    return "Revenue decreased by 4.2% year-over-year primarily due to three factors:\n\n1. Vacancy increase — Two units in Gloucester 140 were vacant for 4 months during tenant transitions\n2. Rent-free periods — New leases for Hey Jude III included 3-month incentives\n3. Service charge adjustments — Energy costs were renegotiated downward\n\nWould you like me to break this down by property or generate a detailed variance report?";
   }
   if (
     t.includes("summarise") ||
     t.includes("summarize") ||
     t.includes("summary")
   ) {
-    return "This page shows the Commercial Dashboard for Z Holdings portfolio:\n\n• WAULT: 4.2 years across all properties\n• Occupancy: 99.5% with only 0.5% vacancy\n• Total GRI: €1,140,703 annually\n• Key insight: 3 leases expiring within 12 months — recommend prioritizing renewal negotiations for ScaleHub III B.V. and Caesar Consulting B.V.\n\nWant me to drill into any specific section?";
+    return "This page shows the Commercial Dashboard for Come Together portfolio:\n\n• WAULT: 4.2 years across all properties\n• Occupancy: 99.5% with only 0.5% vacancy\n• Total GRI: €1,140,703 annually\n• Key insight: 3 leases expiring within 12 months — recommend prioritizing renewal negotiations for Hey Jude B.V. and Caesar Consulting B.V.\n\nWant me to drill into any specific section?";
   }
   if (t.includes("lease") && t.includes("expire")) {
     return "I can highlight the next 90-day lease expirations and show which assets have the highest renewal probability. Would you like the list sorted by confidence or delta vs market?";
@@ -353,7 +353,7 @@ export const DASHBOARD_CHAT_SUGGESTIONS: ChatSuggestionGroup[] = [
   {
     label: "Performance ANALYSIS",
     prompts: [
-      "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+      "Create a one-page strategic summary for Yellow Submarine Portfolio for the investment committee",
       "Rank my assets by risk score and explain the main drivers",
       "Create a portfolio performance summary for Q2",
     ],
@@ -375,7 +375,7 @@ export const DASHBOARD_CHAT_SUGGESTIONS: ChatSuggestionGroup[] = [
 ];
 
 export const ASK_AI_CARD_SUGGESTIONS = [
-  "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+  "Create a one-page strategic summary for Yellow Submarine Portfolio for the investment committee",
   "Rank my assets by risk score and explain the main drivers",
   "Create a portfolio performance summary for Q2",
 ];

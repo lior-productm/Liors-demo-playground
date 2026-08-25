@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { DashboardLoading } from "@/src/components/layout/DashboardLoading";
 import { WorkflowCreationChat } from "@/src/components/workflows/WorkflowCreationChat";
+import { ServiceChargeSettlementFlow } from "@/src/components/workflows/ServiceChargeSettlementFlow";
 import { WorkflowsOverviewPageClient } from "@/src/components/workflows/WorkflowsOverviewPageClient";
 import { getWorkflowSession } from "@/src/lib/workflowSessions";
 
@@ -52,5 +53,8 @@ export function WorkflowSessionPageClient() {
   }
 
   const session = getWorkflowSession(sessionId);
+  if (session?.topic === "service-charge-settlement") {
+    return <ServiceChargeSettlementFlow sessionId={sessionId} initialSession={session} />;
+  }
   return <WorkflowCreationChat sessionId={sessionId} initialSession={session} />;
 }

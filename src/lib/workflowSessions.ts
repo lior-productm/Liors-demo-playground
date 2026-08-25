@@ -77,16 +77,30 @@ export function createWorkflowSessionForIntent(intent: WorkflowIntentId): Workfl
     title:
       intent === "lease-renewal"
         ? "Lease Renewal"
-        : intent === "prepare-report"
-          ? "Prepare a Report"
-          : intent === "financial-forecasting"
-            ? "Financial Forecasting"
-            : intent === "market-research"
-              ? "Market Research"
-              : "New workflow",
-    step: intent === "lease-renewal" ? "lease-scope" : "complete",
+        : intent === "service-charge-settlement"
+          ? "Service Charge Settlement"
+          : intent === "prepare-report"
+            ? "Prepare a Report"
+            : intent === "financial-forecasting"
+              ? "Financial Forecasting"
+              : intent === "market-research"
+                ? "Market Research"
+                : "New workflow",
+    step:
+      intent === "lease-renewal"
+        ? "lease-scope"
+        : intent === "service-charge-settlement"
+          ? "service-charge-active"
+          : "complete",
     intent,
     topic,
+    ...(intent === "service-charge-settlement"
+      ? {
+          settlementStage: "anomaly-detection" as const,
+          settlementYear: "2025",
+          property: "Penny Lane",
+        }
+      : {}),
     createdAt: Date.now(),
   };
   upsertWorkflowSession(session);

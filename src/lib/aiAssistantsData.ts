@@ -1,16 +1,11 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  BarChart3,
-  Building2,
-  FileText,
-  Leaf,
-  Search,
-} from "lucide-react";
+import { BarChart3, FileText, Landmark, LineChart, Receipt, Wrench } from "lucide-react";
 
 export type AiAssistantId =
   | "reporting"
   | "esg"
   | "market-research"
+  | "service-charges"
   | "lease-analyst";
 
 export type AiAssistantTabId = "recent-chats" | "tasks" | "sources";
@@ -22,8 +17,10 @@ export type AiAssistantCard = {
   title: string;
   description: string;
   icon: LucideIcon;
-  /** Optional tint for the 24px header icon. */
+  /** Optional tint for the 24px header icon (Lucide fallback). */
   iconClassName?: string;
+  /** Figma-exported SVG under /public — preferred over Lucide when set. */
+  iconSrc?: string;
   outputExamples: { label: string; className: string }[];
   chatHref: string;
   /** Longer paragraph shown in the analyst detail modal — Figma 2453:123504. */
@@ -84,198 +81,280 @@ export type AiAssistantRecentChat = {
 export const AI_ASSISTANT_CARDS: AiAssistantCard[] = [
   {
     id: "lease-analyst",
-    title: "Lease Analyst",
+    title: "Commercial Analyst",
     description:
-      "Reviews lease expiries, break options, rent reviews, tenant exposure, and renewal risks.",
-    icon: Building2,
-    iconClassName: "text-[#C2912F]",
+      "Reviews commercial performance, tenant exposure, occupancy movements, rent roll trends, and leasing activity to identify risks and opportunities.",
+    icon: LineChart,
+    iconClassName: "text-[#009951]",
     outputExamples: [
-      { label: "Upcoming expiries", className: "bg-[#F6F3EF]" },
-      { label: "Break options", className: "bg-[#F6F3EF]" },
-      { label: "Rent review dates", className: "bg-[#F6F3EF]" },
-      { label: "Renewal deadlines", className: "bg-[#F6F3EF]" },
+      { label: "Occupancy movements", className: "bg-[#EDF9F3]" },
+      { label: "Rent roll trends", className: "bg-[#EDF9F3]" },
+      { label: "Tenant exposure", className: "bg-[#EDF9F3]" },
+      { label: "Leasing activity", className: "bg-[#EDF9F3]" },
     ],
     chatHref: "/ai-assistants/lease-analyst",
     detailDescription:
-      "The Lease Analyst helps you stay ahead of lease events, tenant risks, renewal deadlines, break options, and rent review dates. It can review lease data, identify missing information, summarize upcoming events, and prepare renewal or follow-up drafts for your review.",
+      "The Commercial Analyst reviews commercial performance across your portfolio — tenant exposure, occupancy movements, rent roll trends, and leasing activity — so you can spot risks and opportunities early and act with confidence.",
     tasksSkills: [
       {
-        title: "Draft Renewal Emails",
+        title: "Upcoming Expiry Watchlist",
         description:
-          "Prepares a draft email based on current lease terms, lease expiry date, tenant payment history",
+          "Monitors leases expiring within a chosen scope and summarizes tenants entering the renewal window, incl. WAULT impact and current vs. market indexation.",
       },
       {
-        title: "Check Lease Data Quality",
+        title: "Tenant Satisfaction Signals",
         description:
-          "Check missing lease fields, Detect duplicated tenants or units, Compare lease table with rent roll",
+          "Reads every service request and work order, analyzes tone and sentiment, and flags tenants showing signs of frustration before it turns into a non-renewal.",
       },
       {
-        title: "Break Option Monitoring",
+        title: "External Tenant Signals",
         description:
-          "Prepares a draft email based on current lease terms, lease expiry date, tenant payment history",
+          "Scans public online sources for tenant developments — bankruptcy filings, restructurings, expansions, acquisitions — that matter for your assets.",
       },
       {
-        title: "Draft Lease Proposal",
+        title: "Vacancy Monitoring",
         description:
-          "Drafting and review lease proposals by preparing commercial terms and ensuring data accuracy",
+          "Tracks every vacant unit, monitors days-on-market and letting progress against targets, and flags units that are stalling.",
       },
     ],
-    starterPrompt: "Initiate a Lease renewal",
+    starterPrompt: "Notify me every Monday about leases expiring in the next 18 months for Let It Be",
   },
   {
     id: "reporting",
-    title: "Reporting Assistant",
+    title: "Financial Analyst",
     description:
-      "Drafts monthly or quarterly report commentary from dashboard data, tailored to your needs",
+      "Analyzes financial performance across assets and portfolios, explains budget variances, and highlights what is driving NOI, income, expenses, and returns.",
     icon: FileText,
     iconClassName: "text-[#4F65E5]",
+    iconSrc: "/icons/analysts/financial.svg",
     outputExamples: [
-      { label: "Portfolio summary", className: "bg-[#F6F7FE]" },
-      { label: "Variances explanations", className: "bg-[#F6F7FE]" },
-      { label: "Comparisons", className: "bg-[#F6F7FE]" },
-      { label: "Top-performing assets", className: "bg-[#F6F7FE]" },
+      { label: "NOI variance", className: "bg-[#F6F7FE]" },
+      { label: "Budget vs Actuals", className: "bg-[#F6F7FE]" },
+      { label: "Expense drivers", className: "bg-[#F6F7FE]" },
+      { label: "Financial review", className: "bg-[#F6F7FE]" },
     ],
     chatHref: "/ai-assistants/reporting",
     detailDescription:
-      "The Reporting Assistant drafts clear, tailored report commentary straight from your dashboard data. It can summarize portfolio performance, explain variances, compare periods, and highlight top-performing assets — ready for your monthly or quarterly reviews.",
+      "The Financial Analyst analyzes financial performance across assets and portfolios, explains budget variances, and highlights what is driving NOI, income, expenses, and returns — ready for monthly or quarterly reviews.",
     tasksSkills: [
       {
-        title: "Draft Report Commentary",
+        title: "Monthly Closing Review",
         description:
-          "Generates monthly or quarterly narrative from your latest dashboard figures",
+          "Reviews monthly figures against expectations, flags anomalies and missing entries, and highlights what needs attention before you close the books.",
       },
       {
-        title: "Explain Variances",
+        title: "Annual Budgeting",
         description:
-          "Identifies key movements in the numbers and explains the drivers behind them",
+          "Prepares next year's property budgets from actuals, contracts, and indexation — giving you a solid draft to review, adjust, and finalize.",
       },
       {
-        title: "Period Comparisons",
+        title: "Anomaly Detection",
         description:
-          "Compares performance across periods, portfolios, or individual assets",
+          "Scans all financial postings for anomalies — duplicates, unusual amounts, wrong allocations, unexpected patterns — and flags what needs attention.",
       },
       {
-        title: "Highlight Top Performers",
+        title: "Budget vs. Actuals Analysis",
         description:
-          "Surfaces your best and worst performing assets with supporting context",
+          "Monitors actuals against budget per property, lease, and cost line, links deviations to assumptions, and shows early where forecasts need adjusting.",
       },
     ],
-    starterPrompt: "Draft a portfolio performance report from my latest dashboard data",
+    starterPrompt: "Help me prepare the annual 2027 budget for property X",
   },
   {
     id: "esg",
-    title: "ESG Analyst",
+    title: "Debt Analyst",
     description:
-      "Tracks ESG metrics, regulatory gaps, energy performance, and sustainability risks.",
-    icon: Leaf,
-    iconClassName: "text-[#1F9E8B]",
+      "Tracks debt exposure, maturities, covenants, refinancing risks, interest costs, and debt performance across the portfolio.",
+    icon: Landmark,
+    iconClassName: "text-[#838697]",
+    iconSrc: "/icons/analysts/debt.svg",
     outputExamples: [
-      { label: "ESG insight cards", className: "bg-[#EDF9F3]" },
-      { label: "Missing data alerts", className: "bg-[#EDF9F3]" },
-      { label: "Report-ready commentary", className: "bg-[#EDF9F3]" },
-      { label: "Suggested actions", className: "bg-[#EDF9F3]" },
+      { label: "Debt maturities", className: "bg-[#F0F2F5]" },
+      { label: "Covenant alerts", className: "bg-[#F0F2F5]" },
+      { label: "Refinancing risks", className: "bg-[#F0F2F5]" },
+      { label: "Interest costs", className: "bg-[#F0F2F5]" },
     ],
     chatHref: "/ai-assistants/esg",
     detailDescription:
-      "The ESG Analyst tracks sustainability metrics, regulatory gaps, and energy performance across your portfolio. It flags missing data, prepares report-ready commentary, and suggests actions to reduce risk and stay compliant.",
+      "The Debt Analyst tracks debt exposure, maturities, covenants, refinancing risks, interest costs, and debt performance across the portfolio — helping you stay ahead of refinancing windows and covenant pressure.",
     tasksSkills: [
       {
-        title: "Track ESG Metrics",
+        title: "Covenant Monitoring",
         description:
-          "Monitors energy, emissions, and sustainability indicators across your assets",
+          "Monitors debt covenants against live portfolio data and documentation, flagging headroom changes and potential breaches before they become problems.",
       },
       {
-        title: "Detect Regulatory Gaps",
+        title: "Maturity Calendar",
         description:
-          "Flags compliance risks and upcoming ESG reporting requirements",
+          "Surfaces upcoming debt maturities and refinancing windows across the book so nothing catches you by surprise.",
       },
       {
-        title: "Missing Data Alerts",
+        title: "Refinancing Risk",
         description:
-          "Highlights incomplete ESG fields and data that needs attention",
+          "Assesses refinancing risk, rate exposure, and lender concentration across your facilities.",
       },
       {
-        title: "Report-ready Commentary",
+        title: "Interest Cost Review",
         description:
-          "Drafts ESG narrative and suggested actions ready for your review",
+          "Summarizes interest costs and what is driving changes in debt service, ICR, and DSCR.",
       },
     ],
-    starterPrompt: "Summarize my portfolio's ESG performance and flag any regulatory gaps",
+    starterPrompt: "Monitor my debt covenants and alert me before any headroom breach",
   },
   {
     id: "market-research",
-    title: "Market Research Assistant",
+    title: "Technical Analyst",
     description:
-      "Monitors market trends, comparable assets, rent benchmarks, and local market signals.",
-    icon: Search,
-    iconClassName: "text-[#D6605B]",
+      "Supports building & facilities operations — maintenance, work orders, CapEx planning, and building systems performance across the portfolio.",
+    icon: Wrench,
+    iconClassName: "text-[#E07A3F]",
     outputExamples: [
-      { label: "Market Summary", className: "bg-[#FDF2FA]" },
-      { label: "Recent trends", className: "bg-[#FDF2FA]" },
-      { label: "Comparable signals", className: "bg-[#FDF2FA]" },
-      { label: "Risks and opportunities", className: "bg-[#FDF2FA]" },
+      { label: "Work orders", className: "bg-[#FDF0E7]" },
+      { label: "CapEx plans", className: "bg-[#FDF0E7]" },
+      { label: "Maintenance alerts", className: "bg-[#FDF0E7]" },
+      { label: "Building systems", className: "bg-[#FDF0E7]" },
     ],
     chatHref: "/ai-assistants/market-research",
     detailDescription:
-      "The Market Research Assistant monitors market trends, comparable assets, and rent benchmarks. It summarizes local market signals and surfaces the risks and opportunities most relevant to your portfolio.",
+      "The Technical Analyst helps technical managers run building & facilities operations. It tracks work orders, CapEx plans, maintenance needs, and building systems performance so issues are caught early and operations stay on plan.",
     tasksSkills: [
       {
-        title: "Market Summary",
+        title: "Technical Compliance Monitoring",
         description:
-          "Compiles a concise overview of current market conditions for your assets",
+          "Tracks all technical certifications across your assets — from elevator inspections to energy labels — and flags upcoming renewals well before they expire.",
       },
       {
-        title: "Track Recent Trends",
+        title: "Work Order Summary",
         description:
-          "Monitors movements in rents, yields, and demand across your markets",
+          "Summarizes open work orders, aging tickets, and operational bottlenecks",
       },
       {
-        title: "Comparable Signals",
+        title: "CapEx Planning",
         description:
-          "Finds comparable assets and benchmarks them against your portfolio",
+          "Surfaces CapEx priorities, planned projects, and spend risk by asset",
       },
       {
-        title: "Risks & Opportunities",
+        title: "Maintenance Alerts",
         description:
-          "Highlights emerging market risks and opportunities worth acting on",
+          "Flags overdue maintenance and systems that need attention soon",
       },
     ],
-    starterPrompt: "Give me a market summary and comparable rent benchmarks for my portfolio",
+    starterPrompt: "What are the upcoming expiring certifications in asset A that need renewal soon",
+  },
+  {
+    id: "service-charges",
+    title: "Service Charges Analyst",
+    description:
+      "Reconciles service charge costs against tenant advances, tracks cost developments per m², and prepares annual settlements ready for review.",
+    icon: Receipt,
+    iconClassName: "text-[#C2912F]",
+    outputExamples: [
+      { label: "Annual settlement", className: "bg-[#FBF3E7]" },
+      { label: "Advance reconciliation", className: "bg-[#FBF3E7]" },
+      { label: "Cost per m²", className: "bg-[#FBF3E7]" },
+      { label: "Overrun alerts", className: "bg-[#FBF3E7]" },
+    ],
+    chatHref: "/ai-assistants/service-charges",
+    detailDescription:
+      "The Service Charges Analyst reconciles actual costs against advances paid, allocates them across tenants, and prepares annual settlements ready for review — while continuously tracking cost developments per m² so there are no surprises at settlement.",
+    tasksSkills: [
+      {
+        title: "Service Charge Settlement",
+        description:
+          "Reconciles actual costs against advances paid, allocates them across tenants, and prepares annual settlements — with full flexibility to adjust before finalizing.",
+      },
+      {
+        title: "Service Charge Monitoring",
+        description:
+          "Continuously tracks actual service charge costs against tenant advances and analyzes cost developments per m², flagging overruns while there's still time to act.",
+      },
+      {
+        title: "Advance Reconciliation",
+        description:
+          "Matches advance payments per tenant against actual ledgers and highlights under- or over-recovery early.",
+      },
+      {
+        title: "Cost Trend Analysis",
+        description:
+          "Analyzes cost developments per m² and flags unusual trends across your assets.",
+      },
+    ],
+    starterPrompt: "Help me prepare the annual settlement of service charges for property X",
   },
 ];
 
 export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
   {
-    id: "draft-renewal-emails",
-    name: "Draft Renewal Emails",
+    id: "upcoming-expiry-watchlist",
+    name: "Upcoming Expiry Watchlist",
     description:
-      "Prepares a draft email based on current lease terms, lease expiry date, tenant payment history and...",
+      "Monitors leases expiring within a chosen scope and summarizes tenants entering the renewal window, incl. WAULT impact and current vs. market indexation.",
     status: "active",
     tools: ["database", "envelope"],
-    outputs: "Renewal Summary, Tenant Risk Score, Income Exposure",
-    trigger: "A rent review date is approaching.",
+    outputs: "Expiry watchlist, WAULT impact, Indexation summary",
+    trigger: "Weekly scan for leases entering the renewal window.",
     workflowSteps: [
-      { id: "1", label: "Detect upcoming rent review", icon: "envelope" },
+      { id: "1", label: "Scan leases within expiry range", icon: "envelope" },
       {
         id: "2",
-        label: "Summarize current rent and lease terms",
+        label: "Summarize WAULT impact and indexation",
         icon: "lightbulb",
         actionLabel: "View analysis",
       },
-      { id: "3", label: "Flag potential upside or risk", icon: "bell" },
+      { id: "3", label: "Send renewal-window digest", icon: "bell" },
     ],
     outputItems: [
-      "Rent review alert",
-      "Current rent summary",
-      "Potential uplift/downside",
-      "Draft internal recommendation",
-      "Follow-up task",
+      "Expiry watchlist",
+      "WAULT impact summary",
+      "Current vs. market indexation",
+      "Tenants entering renewal window",
+      "Follow-up recommendations",
     ],
     taskInfo: {
-      triggerFull: "When a rent review date is approaching",
-      scopeFull: "Property Partners, full lease register",
-      output: "Renewal Summary, Tenant Risk Score",
-      delivery: "Email",
+      triggerFull: "Every Monday — leases expiring in the next 18 months",
+      scopeFull: "Let It Be, fund / property scope (min. GRI threshold)",
+      output: "Email digest — renewal-window watchlist",
+      delivery: "Chat, Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 24", status: "completed" },
+        { label: "June 17", status: "completed" },
+        { label: "June 10", status: "completed" },
+      ],
+    },
+  },
+  {
+    id: "tenant-satisfaction-signals",
+    name: "Tenant Satisfaction Signals",
+    description:
+      "Reads every service request and work order, analyzes tone and sentiment, and flags tenants showing signs of frustration before it turns into a non-renewal.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Sentiment score, At-risk tenants, Frustration signals",
+    trigger: "New service requests or work orders are logged.",
+    workflowSteps: [
+      { id: "1", label: "Read service requests and work orders", icon: "envelope" },
+      {
+        id: "2",
+        label: "Analyze tone and sentiment",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag tenants at risk of non-renewal", icon: "bell" },
+    ],
+    outputItems: [
+      "Tenant sentiment score",
+      "At-risk tenant list",
+      "Frustration signals",
+      "Recommended outreach",
+    ],
+    taskInfo: {
+      triggerFull: "Continuously, as service requests and work orders are logged",
+      scopeFull: "All tenants, service requests and work orders",
+      output: "At-risk tenant signals",
+      delivery: "Chat",
       status: "Active",
       owner: "Tomer Zakai",
       runLog: [
@@ -287,59 +366,34 @@ export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
     },
   },
   {
-    id: "check-lease-data",
-    name: "Check Lease Data Quality",
+    id: "external-tenant-signals",
+    name: "External Tenant Signals",
     description:
-      "Check missing lease fields, Detect duplicated tenants or units, Compare lease table with rent roll",
+      "Scans public online sources for tenant developments — bankruptcy filings, restructurings, expansions, acquisitions — that matter for your assets.",
     status: "active",
     tools: ["database", "envelope"],
-    outputs: "Missing Data Checklist, Mismatch report, Suggested Corrections",
-    trigger: "Weekly data quality scan is scheduled.",
+    outputs: "Tenant news alerts, Risk flags, Opportunity signals",
+    trigger: "Public sources report a material tenant development.",
     workflowSteps: [
-      { id: "1", label: "Scan lease register for missing fields", icon: "envelope" },
-      { id: "2", label: "Compare rent roll to lease table", icon: "lightbulb" },
-      { id: "3", label: "Generate correction checklist", icon: "bell" },
+      { id: "1", label: "Scan public online sources", icon: "envelope" },
+      {
+        id: "2",
+        label: "Assess relevance to your assets",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Alert on material developments", icon: "bell" },
     ],
     outputItems: [
-      "Missing data checklist",
-      "Mismatch report",
-      "Suggested corrections",
+      "Tenant news alerts",
+      "Bankruptcy / restructuring flags",
+      "Expansion / acquisition signals",
+      "Impact on your assets",
     ],
     taskInfo: {
-      triggerFull: "Every week, Monday at 08:00",
-      scopeFull: "Property Partners, lease register",
-      output: "Missing Data Checklist, Mismatch report",
-      delivery: "Email",
-      status: "Active",
-      owner: "Tomer Zakai",
-      runLog: [
-        { label: "July 1", status: "next" },
-        { label: "June 24", status: "completed" },
-        { label: "June 17", status: "completed" },
-        { label: "June 10", status: "failed" },
-      ],
-    },
-  },
-  {
-    id: "break-option-monitoring",
-    name: "Break Option Monitoring",
-    description:
-      "Prepares a draft email based on current lease terms, lease expiry date, tenant payment history and...",
-    status: "active",
-    tools: ["database", "envelope"],
-    outputs: "Renewal Summary, Risky Tenants Alerts",
-    trigger: "A break option window opens within 90 days.",
-    workflowSteps: [
-      { id: "1", label: "Identify upcoming break options", icon: "envelope" },
-      { id: "2", label: "Assess tenant risk exposure", icon: "lightbulb" },
-      { id: "3", label: "Draft alert for asset manager", icon: "bell" },
-    ],
-    outputItems: ["Break option alert", "Risky tenants list", "Recommended actions"],
-    /** Matches Figma 2453:129345 sample task detail. */
-    taskInfo: {
-      triggerFull: "Every month, Monday at 09:00",
-      scopeFull: "Property Partners, H.J.E. Wenckebachweg",
-      output: "Budget vs Actual report",
+      triggerFull: "When public sources report a material tenant development",
+      scopeFull: "Portfolio tenants, public online sources",
+      output: "External tenant signal alerts",
       delivery: "Email",
       status: "Active",
       owner: "Tomer Zakai",
@@ -351,13 +405,53 @@ export const LEASE_ANALYST_TASKS: AiAssistantTask[] = [
       ],
     },
   },
+  {
+    id: "vacancy-monitoring",
+    name: "Vacancy Monitoring",
+    description:
+      "Tracks every vacant unit, monitors days-on-market and letting progress against targets, and flags units that are stalling.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Vacancy tracker, Days-on-market, Stalling-unit alerts",
+    trigger: "Weekly review of vacant units against letting targets.",
+    workflowSteps: [
+      { id: "1", label: "Track every vacant unit", icon: "envelope" },
+      {
+        id: "2",
+        label: "Monitor days-on-market vs. targets",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag stalling units", icon: "bell" },
+    ],
+    outputItems: [
+      "Vacancy tracker",
+      "Days-on-market per unit",
+      "Letting progress vs. target",
+      "Stalling-unit alerts",
+    ],
+    taskInfo: {
+      triggerFull: "Every week — vacant units vs. letting targets",
+      scopeFull: "All assets, vacant units",
+      output: "Vacancy monitoring report",
+      delivery: "Chat",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 24", status: "completed" },
+        { label: "June 17", status: "completed" },
+        { label: "June 10", status: "completed" },
+      ],
+    },
+  },
 ];
 
 export const NEW_TASK_CHAT_SUGGESTIONS = [
-  "Monitor leases expiring in the next 90 days",
-  "Automatically draft renewal emails when a rent review is due",
-  "Alert me when a tenant break option window opens",
-  "Run a weekly lease data quality check",
+  "Notify me every Monday about leases expiring in the next 18 months",
+  "Flag tenants showing signs of frustration in their service requests",
+  "Alert me to external tenant developments in the news",
+  "Track vacant units that are stalling on the market",
 ] as const;
 
 /** Rotating prompts in the Lease Analyst chat bar placeholder. */
@@ -378,7 +472,7 @@ export const LEASE_ANALYST_RECENT_CHATS: AiAssistantRecentChat[] = [
   {
     id: "chat-2",
     title:
-      "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+      "Create a one-page strategic summary for Yellow Submarine Portfolio for the investment committee",
     timestampLabel: "Today, 11:34",
   },
   {
@@ -408,6 +502,390 @@ export const LEASE_ANALYST_SOURCES: AiAssistantSource[] = [
   { id: "rent-roll", name: "Rent Roll" },
   { id: "lease-expiries", name: "Lease Expiries" },
   { id: "capex-plans", name: "CapEx plans" },
+];
+
+export const FINANCIAL_ANALYST_TASKS: AiAssistantTask[] = [
+  {
+    id: "monthly-closing-review",
+    name: "Monthly Closing Review",
+    description:
+      "Reviews monthly figures against expectations, flags anomalies and missing entries, and highlights what needs attention before you close the books.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Closing review, Anomaly flags, Missing entries",
+    trigger: "Scheduled monthly, ahead of closing.",
+    workflowSteps: [
+      { id: "1", label: "Pull monthly figures and budgets", icon: "envelope" },
+      {
+        id: "2",
+        label: "Compare against expectations",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag anomalies and missing entries", icon: "bell" },
+    ],
+    outputItems: [
+      "Monthly closing review",
+      "Anomaly flags",
+      "Missing entries",
+      "Items needing attention",
+    ],
+    taskInfo: {
+      triggerFull: "Automatically scheduled each month, before closing",
+      scopeFull: "Entity, property, all financial entries and budgets",
+      output: "Email digest — monthly closing review",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+  {
+    id: "annual-budgeting",
+    name: "Annual Budgeting",
+    description:
+      "Prepares next year's property budgets from actuals, contracts, and indexation — giving you a solid draft to review, adjust, and finalize.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Draft budget, Assumptions, Indexation basis",
+    trigger: "On-demand via chat.",
+    workflowSteps: [
+      { id: "1", label: "Gather 12 months actuals and contracts", icon: "envelope" },
+      {
+        id: "2",
+        label: "Apply indexation and assumptions",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Draft budget for review", icon: "bell" },
+    ],
+    outputItems: [
+      "Draft property budget",
+      "Underlying assumptions",
+      "Indexation basis",
+      "Vacancy / fill-up assumptions",
+    ],
+    taskInfo: {
+      triggerFull: "On demand — “prepare the annual 2027 budget for property X”",
+      scopeFull: "12 months financials, lease data, market assumptions",
+      output: "Excel/CSV export — draft annual budget",
+      delivery: "Platform",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+  {
+    id: "anomaly-detection",
+    name: "Anomaly Detection",
+    description:
+      "Scans all financial postings for anomalies — duplicates, unusual amounts, wrong allocations, and unexpected patterns — and flags what needs your attention.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Anomaly report, Duplicate flags, Allocation issues",
+    trigger: "Weekly scan of financial postings.",
+    workflowSteps: [
+      { id: "1", label: "Scan all financial transactions", icon: "envelope" },
+      {
+        id: "2",
+        label: "Detect duplicates and unusual amounts",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag items for review", icon: "bell" },
+    ],
+    outputItems: [
+      "Anomaly report",
+      "Duplicate postings",
+      "Wrong allocations",
+      "Unexpected patterns",
+    ],
+    taskInfo: {
+      triggerFull: "Every week — scan of all financial postings",
+      scopeFull: "All financial transactions (+ user instructions)",
+      output: "Anomaly report",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 24", status: "completed" },
+        { label: "June 17", status: "completed" },
+        { label: "June 10", status: "failed" },
+      ],
+    },
+  },
+  {
+    id: "budget-vs-actuals",
+    name: "Budget vs. Actuals Analysis",
+    description:
+      "Monitors actuals against budget per property, lease, and cost line, links deviations to assumptions, and shows early where forecasts need adjusting.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Variance analysis, Deviation drivers, Forecast flags",
+    trigger: "Continuous monitoring against budget.",
+    workflowSteps: [
+      { id: "1", label: "Compare actuals to budget", icon: "envelope" },
+      {
+        id: "2",
+        label: "Link deviations to assumptions",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag forecasts needing adjustment", icon: "bell" },
+    ],
+    outputItems: [
+      "Variance analysis",
+      "Deviation drivers",
+      "Per-property / per-lease breakdown",
+      "Forecast adjustment flags",
+    ],
+    taskInfo: {
+      triggerFull: "Continuously — actuals vs. budget per property, lease, cost line",
+      scopeFull: "All properties, budgets, and cost lines",
+      output: "Budget vs. actuals variance analysis",
+      delivery: "Platform",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+];
+
+export const FINANCIAL_ANALYST_SOURCES: AiAssistantSource[] = [
+  { id: "financial-ledger", name: "Financial Ledger" },
+  { id: "budgets", name: "Budgets" },
+  { id: "contracts", name: "Contracts & Indexation" },
+];
+
+export const FINANCIAL_ANALYST_RECENT_CHATS: AiAssistantRecentChat[] = [
+  {
+    id: "fin-chat-1",
+    title: "Help me prepare the annual 2027 budget for property X",
+    timestampLabel: "Today, 14:02",
+  },
+  {
+    id: "fin-chat-2",
+    title: "Analyze the March books for property X and flag anything unusual",
+    timestampLabel: "Today, 11:34",
+  },
+  {
+    id: "fin-chat-3",
+    title: "Explain the NOI variance vs budget for Q2",
+    timestampLabel: "Yesterday, 09:20",
+  },
+  {
+    id: "fin-chat-4",
+    title: "Which expense lines are driving the increase this month?",
+    timestampLabel: "2 days ago, 16:05",
+  },
+];
+
+export const DEBT_ANALYST_TASKS: AiAssistantTask[] = [
+  {
+    id: "covenant-monitoring",
+    name: "Covenant Monitoring",
+    description:
+      "Monitors your debt covenants against live portfolio data and documentation, flagging headroom changes and potential breaches before they become problems.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Covenant headroom, Breach alerts, ICR / DSCR",
+    trigger: "Proactive — after initial configuration by the user.",
+    workflowSteps: [
+      { id: "1", label: "Read covenants from loan agreements", icon: "envelope" },
+      {
+        id: "2",
+        label: "Compute headroom against live metrics",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Alert on headroom changes / breaches", icon: "bell" },
+    ],
+    outputItems: [
+      "Covenant headroom",
+      "Potential breach alerts",
+      "ICR / DSCR / LTV",
+      "Rental income & WAULT inputs",
+    ],
+    taskInfo: {
+      triggerFull: "Proactive — recommend & accept, after initial configuration",
+      scopeFull: "Debt covenants + related portfolio metrics per entity / asset",
+      output: "Determined at configuration by the user",
+      delivery: "Determined at configuration",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+  {
+    id: "maturity-calendar",
+    name: "Maturity Calendar",
+    description:
+      "Surfaces upcoming debt maturities and refinancing windows across the book so nothing catches you by surprise.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Maturity schedule, Refinancing windows",
+    trigger: "Proactive tracking of maturities.",
+    workflowSteps: [
+      { id: "1", label: "Read facility maturities", icon: "envelope" },
+      {
+        id: "2",
+        label: "Map refinancing windows",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Alert ahead of each window", icon: "bell" },
+    ],
+    outputItems: [
+      "Maturity schedule",
+      "Refinancing windows",
+      "Facility-level detail",
+      "Lead-time alerts",
+    ],
+    taskInfo: {
+      triggerFull: "Proactive — ahead of each maturity / refinancing window",
+      scopeFull: "All facilities across the portfolio",
+      output: "Maturity & refinancing calendar",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+  {
+    id: "refinancing-risk",
+    name: "Refinancing Risk",
+    description:
+      "Assesses refinancing risk, rate exposure, and lender concentration across your facilities.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Refinancing risk, Rate exposure, Lender concentration",
+    trigger: "Proactive assessment on portfolio changes.",
+    workflowSteps: [
+      { id: "1", label: "Aggregate facility terms", icon: "envelope" },
+      {
+        id: "2",
+        label: "Assess rate and lender exposure",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Flag elevated refinancing risk", icon: "bell" },
+    ],
+    outputItems: [
+      "Refinancing risk score",
+      "Rate exposure",
+      "Lender concentration",
+      "Mitigation options",
+    ],
+    taskInfo: {
+      triggerFull: "Proactive — on material portfolio or rate changes",
+      scopeFull: "All facilities, rate and lender exposure",
+      output: "Refinancing risk assessment",
+      delivery: "Platform",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "failed" },
+      ],
+    },
+  },
+  {
+    id: "interest-cost-review",
+    name: "Interest Cost Review",
+    description:
+      "Summarizes interest costs and what is driving changes in debt service, ICR, and DSCR.",
+    status: "active",
+    tools: ["database"],
+    outputs: "Interest cost summary, ICR / DSCR drivers",
+    trigger: "Scheduled review of debt service.",
+    workflowSteps: [
+      { id: "1", label: "Aggregate interest and debt service", icon: "envelope" },
+      {
+        id: "2",
+        label: "Explain ICR / DSCR movements",
+        icon: "lightbulb",
+        actionLabel: "View analysis",
+      },
+      { id: "3", label: "Summarize cost drivers", icon: "bell" },
+    ],
+    outputItems: [
+      "Interest cost summary",
+      "Debt service movements",
+      "ICR / DSCR drivers",
+      "Period comparison",
+    ],
+    taskInfo: {
+      triggerFull: "Scheduled — periodic debt service review",
+      scopeFull: "All facilities, interest and debt service",
+      output: "Interest cost & coverage review",
+      delivery: "Email",
+      status: "Active",
+      owner: "Tomer Zakai",
+      runLog: [
+        { label: "July 1", status: "next" },
+        { label: "June 1", status: "completed" },
+        { label: "May 1", status: "completed" },
+        { label: "April 1", status: "completed" },
+      ],
+    },
+  },
+];
+
+export const DEBT_ANALYST_SOURCES: AiAssistantSource[] = [
+  { id: "loan-agreements", name: "Loan Agreements" },
+  { id: "valuation-reports", name: "Valuation Reports" },
+  { id: "financial-metrics", name: "Financial Metrics (ICR / DSCR)" },
+];
+
+export const DEBT_ANALYST_RECENT_CHATS: AiAssistantRecentChat[] = [
+  {
+    id: "debt-chat-1",
+    title: "Show covenant headroom across all facilities",
+    timestampLabel: "Today, 13:10",
+  },
+  {
+    id: "debt-chat-2",
+    title: "Which loans mature in the next 18 months?",
+    timestampLabel: "Today, 10:02",
+  },
+  {
+    id: "debt-chat-3",
+    title: "Assess refinancing risk for the Amsterdam facility",
+    timestampLabel: "Yesterday, 15:48",
+  },
+  {
+    id: "debt-chat-4",
+    title: "Explain what's driving the change in DSCR this quarter",
+    timestampLabel: "3 days ago, 09:15",
+  },
 ];
 
 /** Decorative icon for reporting card header — matches Figma blue tone */

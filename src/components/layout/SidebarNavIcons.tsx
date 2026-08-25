@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 const ICONS = {
   lightbulb: "/sidebar-icons/lightbulb.svg",
   sparkle: "/sidebar-icons/sparkle.svg",
+  ai: "/sidebar-icons/ai.svg",
   aiAssistantsStar: "/sidebar-icons/ai-assistants-star.svg",
   workflows: "/sidebar-icons/workflows.svg",
   dashboards: "/sidebar-icons/dashboards.svg",

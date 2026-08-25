@@ -237,7 +237,7 @@ export function TopNav({
             <AmiioAiDisclaimerTrigger wrapChild>
               <Sparkles className="h-4 w-4 text-[#010309]" />
             </AmiioAiDisclaimerTrigger>
-            <span>Property Partners</span>
+            <span>Penny Lane</span>
           </div>
         </div>
       </div>

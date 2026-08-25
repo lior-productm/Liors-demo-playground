@@ -1,6 +1,7 @@
 "use client";
 
-import type { MutableRefObject } from "react";
+import { useState, type MutableRefObject } from "react";
+import { Check, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   ReportDocumentSection,
@@ -48,7 +49,41 @@ type ReportDocumentProps = {
     paragraphIndex: number,
   ) => void;
   proseOverrides?: Record<string, string[][]>;
+  /** Enables per-section Replace / Remove / Approve controls (Template Studio). */
+  objectEditable?: boolean;
+  onReplaceSection?: (sectionId: string) => void;
+  onRemoveSection?: (sectionId: string) => void;
 };
+
+function SectionToolbarButton({
+  icon: Icon,
+  label,
+  onClick,
+  variant = "default",
+}: {
+  icon: typeof RefreshCw;
+  label: string;
+  onClick: () => void;
+  variant?: "default" | "danger" | "success";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={cn(
+        "flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium leading-none transition-colors",
+        variant === "danger" && "text-[#B23A2F] hover:bg-[#FBE9E7]",
+        variant === "success" && "bg-[#E7F4EC] text-[#1F7A45] hover:bg-[#D8EDDF]",
+        variant === "default" && "text-[#353638] hover:bg-[#F0F2F5]",
+      )}
+    >
+      <Icon className="size-4" strokeWidth={1.9} />
+      {label}
+    </button>
+  );
+}
 
 function ProseBlock({
   sectionId,
@@ -132,10 +167,33 @@ export function ReportDocument({
   onProseApprove,
   onProseReject,
   proseOverrides,
+  objectEditable = false,
+  onReplaceSection,
+  onRemoveSection,
 }: ReportDocumentProps) {
+  const [approvedSections, setApprovedSections] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const toggleApproved = (sectionId: string) => {
+    setApprovedSections((current) => {
+      const next = new Set(current);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  };
+
   return (
     <div className="flex flex-col gap-8">
-      {sections.map((section) => (
+      {sections.map((section) => {
+        const isApproved = approvedSections.has(section.id);
+        const hideStandaloneTitle =
+          !objectEditable &&
+          (section.blocks[0]?.type === "pl-table" ||
+            section.blocks[0]?.type === "heading");
+
+        return (
         <section
           key={section.id}
           id={`report-section-${section.id}`}
@@ -144,7 +202,15 @@ export function ReportDocument({
               sectionRefs.current[section.id] = node;
             }
           }}
-          className="relative scroll-mt-6"
+          className={cn(
+            "relative scroll-mt-6 rounded-xl transition-colors",
+            objectEditable && "border p-5",
+            objectEditable && isApproved
+              ? "border-[#BFE3CC] bg-[#E7F4EC]"
+              : objectEditable
+                ? "border-[#E6E8EB] bg-white"
+                : null,
+          )}
         >
           {insightAnchors
             .filter((anchor) => anchor.scrollTarget === section.id)
@@ -160,15 +226,48 @@ export function ReportDocument({
               />
             ))}
 
-          {section.blocks[0]?.type !== "pl-table" &&
-          section.blocks[0]?.type !== "heading" ? (
-            <h2 className="mb-6 text-[24px] font-medium leading-[1.25] text-[#05091F]">
-              {section.title}
-            </h2>
+          {!hideStandaloneTitle || objectEditable ? (
+            <div
+              className={cn(
+                "mb-6 flex items-start justify-between gap-3",
+                objectEditable && "mb-5",
+              )}
+            >
+              <h2 className="min-w-0 text-[24px] font-medium leading-[1.25] text-[#05091F]">
+                {section.title}
+              </h2>
+              {objectEditable ? (
+                <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-[#E6E8EB] bg-white p-1">
+                  <SectionToolbarButton
+                    icon={RefreshCw}
+                    label="Replace"
+                    onClick={() => onReplaceSection?.(section.id)}
+                  />
+                  <span className="h-4 w-px bg-[#E6E8EB]" />
+                  <SectionToolbarButton
+                    icon={Trash2}
+                    label="Remove"
+                    onClick={() => onRemoveSection?.(section.id)}
+                    variant="danger"
+                  />
+                  <span className="h-4 w-px bg-[#E6E8EB]" />
+                  <SectionToolbarButton
+                    icon={Check}
+                    label={isApproved ? "Approved" : "Approve"}
+                    onClick={() => toggleApproved(section.id)}
+                    variant={isApproved ? "success" : "default"}
+                  />
+                </div>
+              ) : null}
+            </div>
           ) : null}
 
           <div className="flex flex-col gap-8">
             {section.blocks.map((block, blockIndex) => {
+              if (objectEditable && block.type === "heading") return null;
+
+              let content: React.ReactNode;
+
               if (block.type === "prose") {
                 const committed =
                   proseOverrides?.[section.id]?.[blockIndex] ?? block.paragraphs;
@@ -177,9 +276,8 @@ export function ReportDocument({
                   return pendingEdits[key] ?? paragraph;
                 });
 
-                return (
+                content = (
                   <ProseBlock
-                    key={`${section.id}-prose-${blockIndex}`}
                     sectionId={section.id}
                     blockIndex={blockIndex}
                     paragraphs={paragraphs}
@@ -197,11 +295,9 @@ export function ReportDocument({
                     }
                   />
                 );
-              }
-
-              if (block.type === "pl-table") {
-                return (
-                  <div key={`${section.id}-pl`} className="flex flex-col gap-8">
+              } else if (block.type === "pl-table") {
+                content = (
+                  <div className="flex flex-col gap-8">
                     <h3 className="text-[24px] font-medium leading-[1.25] text-[#05091F]">
                       {block.title}
                     </h3>
@@ -215,14 +311,9 @@ export function ReportDocument({
                     />
                   </div>
                 );
-              }
-
-              if (block.type === "metrics") {
-                return (
-                  <div
-                    key={`${section.id}-metrics`}
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-4"
-                  >
+              } else if (block.type === "metrics") {
+                content = (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {block.items.map((item) => (
                       <div
                         key={item.label}
@@ -238,14 +329,9 @@ export function ReportDocument({
                     ))}
                   </div>
                 );
-              }
-
-              if (block.type === "updates") {
-                return (
-                  <ul
-                    key={`${section.id}-updates`}
-                    className="flex flex-col gap-3"
-                  >
+              } else if (block.type === "updates") {
+                content = (
+                  <ul className="flex flex-col gap-3">
                     {block.items.map((item) => (
                       <li
                         key={item}
@@ -257,15 +343,18 @@ export function ReportDocument({
                     ))}
                   </ul>
                 );
+              } else {
+                content = <ReportRichBlock block={block} />;
               }
 
               return (
-                <ReportRichBlock key={`${section.id}-rich-${blockIndex}`} block={block} />
+                <div key={`${section.id}-block-${blockIndex}`}>{content}</div>
               );
             })}
           </div>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }

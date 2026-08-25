@@ -5,6 +5,9 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AiAssistantCard } from "@/src/lib/aiAssistantsData";
 import { pinAiAssistant } from "@/src/lib/aiAssistantNavState";
+import { LeaseAnalystIcon } from "@/src/components/ai-assistants/LeaseAnalystIcon";
+import { FinancialAnalystIcon } from "@/src/components/ai-assistants/FinancialAnalystIcon";
+import { DebtAnalystIcon } from "@/src/components/ai-assistants/DebtAnalystIcon";
 
 function ChatButton() {
   return (
@@ -15,6 +18,41 @@ function ChatButton() {
   );
 }
 
+function CardIcon({ card }: { card: AiAssistantCard }) {
+  if (card.id === "lease-analyst") {
+    return <LeaseAnalystIcon className="size-6 shrink-0" />;
+  }
+  if (card.id === "reporting") {
+    return <FinancialAnalystIcon className="size-6 shrink-0" />;
+  }
+  if (card.id === "esg") {
+    return <DebtAnalystIcon className="size-6 shrink-0" />;
+  }
+
+  if (card.iconSrc) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={card.iconSrc}
+        alt=""
+        width={24}
+        height={24}
+        className="size-6 shrink-0"
+        aria-hidden
+      />
+    );
+  }
+
+  const Icon = card.icon;
+  return (
+    <Icon
+      className={cn("size-6 shrink-0", card.iconClassName ?? "text-[#353638]")}
+      strokeWidth={1.5}
+      aria-hidden
+    />
+  );
+}
+
 export function AiAssistantCardView({
   card,
   onChatClick,
@@ -22,33 +60,37 @@ export function AiAssistantCardView({
   card: AiAssistantCard;
   onChatClick?: () => void;
 }) {
-  const Icon = card.icon;
+  const PIN_BY_ID: Partial<Record<AiAssistantCard["id"], "lease-analyst" | "financial" | "debt">> = {
+    "lease-analyst": "lease-analyst",
+    reporting: "financial",
+    esg: "debt",
+  };
+  const pinId = PIN_BY_ID[card.id];
 
-  const chatControl =
-    card.id === "lease-analyst" ? (
-      <Link
-        href={card.chatHref}
-        onClick={() => {
-          pinAiAssistant("lease-analyst");
-          onChatClick?.();
-        }}
-      >
-        <ChatButton />
-      </Link>
-    ) : (
-      <button
-        type="button"
-        onClick={() =>
-          window.dispatchEvent(
-            new CustomEvent("amiio:toast", {
-              detail: { message: `${card.title} (coming soon)` },
-            }),
-          )
-        }
-      >
-        <ChatButton />
-      </button>
-    );
+  const chatControl = pinId ? (
+    <Link
+      href={card.chatHref}
+      onClick={() => {
+        pinAiAssistant(pinId);
+        onChatClick?.();
+      }}
+    >
+      <ChatButton />
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={() =>
+        window.dispatchEvent(
+          new CustomEvent("amiio:toast", {
+            detail: { message: `${card.title} (coming soon)` },
+          }),
+        )
+      }
+    >
+      <ChatButton />
+    </button>
+  );
 
   return (
     <article className="flex h-[255px] min-w-[240px] flex-1 flex-col gap-5 rounded-[12px] border border-[rgba(230,231,232,0.7)] bg-white p-6">
@@ -56,11 +98,7 @@ export function AiAssistantCardView({
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Icon
-                className={cn("size-6 shrink-0", card.iconClassName ?? "text-[#353638]")}
-                strokeWidth={1.5}
-                aria-hidden
-              />
+              <CardIcon card={card} />
               <h3 className="text-base font-semibold leading-[1.25] text-[#1E1E1E]">
                 {card.title}
               </h3>

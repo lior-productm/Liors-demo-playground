@@ -89,7 +89,7 @@ function Section({
           </span>
         </button>
         <WidgetHeaderLamp
-          chatTopic={`Analyse "${title}" on Tenant Hub (ScaleHub III B.V.) and highlight risks, opportunities, and data gaps.`}
+          chatTopic={`Analyse "${title}" on Tenant Hub (Hey Jude B.V.) and highlight risks, opportunities, and data gaps.`}
           chatLabel={title}
         />
       </div>
@@ -252,7 +252,7 @@ const tenantGeneralAiInsights = [
     summary: "Key decision maker: Sarah van der Berg (Head of Operations)",
     when: "2 days ago",
     fullDescription:
-      "Sarah van der Berg approves facilities spend, lease amendments, and service-charge queries on behalf of ScaleHub NL. Legal and finance counter-sign above certain thresholds.\n\nOutreach on renewal economics should route through Sarah first; she prefers written summaries with two scenario tables.",
+      "Sarah van der Berg approves facilities spend, lease amendments, and service-charge queries on behalf of Hey Jude NL. Legal and finance counter-sign above certain thresholds.\n\nOutreach on renewal economics should route through Sarah first; she prefers written summaries with two scenario tables.",
     recentActionLines: [
       "EA confirmed Sarah’s availability for a 45-minute renewal workshop next week.",
       "Last signed amendment (2023) lists Sarah as authorised signatory for NL ops.",
@@ -288,7 +288,7 @@ const tenantRecentActions = [
     fullDescription:
       "Amiio generated a first-pass renewal proposal pack: headline rent, indexation, and a comparison to the in-place schedule. The document is marked ready for internal legal review before tenant send.\n\nAssumptions include a 5-year term and landlord-funded lobby refresh capped at the prior budget envelope.",
     recentActionLines: [
-      "Draft stored in the leasing workspace under “ScaleHub — renewal v0.9”.",
+      "Draft stored in the leasing workspace under “Hey Jude — renewal v0.9”.",
       "Two footnotes still need FM validation on opex growth.",
       "Asset manager left comments requesting a parking allocation slide.",
     ],
@@ -395,7 +395,7 @@ export function TenantHubView({
               <div className="relative flex h-[201px] w-[192px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">
                 <img
                   src={TENANT_SCALEHUB_LOGO}
-                  alt="ScaleHub III B.V."
+                  alt="Hey Jude B.V."
                   width={192}
                   height={201}
                   decoding="async"
@@ -418,7 +418,7 @@ export function TenantHubView({
             <div className="flex flex-col gap-[10px]">
               <div className="flex items-start justify-between">
                 <h2 className="typo-h4 text-[#353638]">
-                  ScaleHub III B.V.
+                  Hey Jude B.V.
                 </h2>
                 <div className="flex items-center gap-2">
                 <div ref={actionsRef} className="relative">
@@ -466,13 +466,13 @@ export function TenantHubView({
                 </div>
                   <WidgetHeaderLamp
                     revealOnHover
-                    chatTopic="Summarise ScaleHub III B.V. profile: financial health, lease posture, and top questions for the asset manager."
+                    chatTopic="Summarise Hey Jude B.V. profile: financial health, lease posture, and top questions for the asset manager."
                     chatLabel="Company overview"
                   />
                 </div>
               </div>
               <p className="text-[12px] leading-[1.25] text-[#838697]">
-                ScaleHub is a leading data collection and processing company
+                Hey Jude is a leading data collection and processing company
                 specializing in AI-powered document processing and data
                 extraction services for enterprise clients globally.
               </p>
@@ -594,7 +594,7 @@ export function TenantHubView({
                 Company Overview
               </div>
               <p className="mt-[5px] text-[12px] leading-[1.25] text-[#65686B]">
-                ScaleHub is a leading data collection and processing company
+                Hey Jude is a leading data collection and processing company
                 specializing in AI-powered document processing and data
                 extraction services for enterprise clients globally.
               </p>
@@ -650,7 +650,7 @@ export function TenantHubView({
               <InfoCell label="Headquarters" value="Amsterdam, Netherlands" />
             </div>
             <div className="flex flex-col gap-[20px]">
-              <InfoCell label="Corporate Structure" value="ScaleHub Group GmbH" />
+              <InfoCell label="Corporate Structure" value="Hey Jude Group GmbH" />
               <InfoCell label="Website" value="scalehub.com" />
               <InfoCell label="Other NL Locations" value="2" />
             </div>

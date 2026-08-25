@@ -8,7 +8,7 @@ export type AskAiTenantOption = {
 /** Full tenant list in the “Select tenant” dropdown. */
 export const ASK_AI_TENANT_MOCK_OPTIONS: AskAiTenantOption[] = [
   { id: "tenant-abc", name: "ABC Holdings B.V." },
-  { id: "tenant-scalehub", name: "ScaleHub III B.V." },
+  { id: "tenant-scalehub", name: "Hey Jude B.V." },
   { id: "tenant-eiffel", name: "Eiffel Investments LLC" },
   { id: "tenant-stower", name: "S Tower Holdings B.V." },
   { id: "tenant-olympia", name: "Olympia Porperties Ltd." },
@@ -22,9 +22,9 @@ export function getAskAiTenantChipOptions(): AskAiTenantOption[] {
 }
 
 const ENTITY_DISPLAY: Record<string, string> = {
-  "Entity X": "Property Partners",
-  "Entity Y": "Property Partners",
-  "Entity Z": "Z Holdings",
+  "Entity X": "Penny Lane",
+  "Entity Y": "Penny Lane",
+  "Entity Z": "Come Together",
 };
 
 const PROPERTY_DISPLAY: Record<string, string> = {
@@ -66,9 +66,9 @@ export type AskAiExecutiveSummaryContent = {
 const EXECUTIVE_SUMMARY_BY_TENANT: Record<string, AskAiExecutiveSummaryContent> = {
   "tenant-scalehub": {
     preview:
-      "ScaleHub III B.V. has been a tenant since 01-Jul-2019 with 1 successful renewal, demonstrating strong commitment to this location. The current lease expires on 30-Jun-2026 and covers 1,240 m² of office space at €285/m²/year.",
+      "Hey Jude B.V. has been a tenant since 01-Jul-2019 with 1 successful renewal, demonstrating strong commitment to this location. The current lease expires on 30-Jun-2026 and covers 1,240 m² of office space at €285/m²/year.",
     fullParagraphs: [
-      "Payment history is clean: no arrears in the last 36 months and rent has been indexed on schedule. Occupancy at the asset remains above 94%, with ScaleHub representing one of the top three tenants by contracted rent.",
+      "Payment history is clean: no arrears in the last 36 months and rent has been indexed on schedule. Occupancy at the asset remains above 94%, with Hey Jude representing one of the top three tenants by contracted rent.",
       "Market analysis for comparable Grade A offices within 500 m shows asking rents between €270–€310/m²/year. Recent renewals on the same floor averaged +4.2% on headline rent, with incentives typically limited to 3–6 months rent-free on a 5-year term.",
       "Recommended renewal posture: target €295/m²/year (+3.5%) with a 5-year term, 3 months rent-free, and tenant improvement allowance capped at €45/m². Break option at month 36 is acceptable given tenant credit quality and length of tenure.",
       "Key risks to flag in proposal prep: upcoming capex for lobby refurbishment (passed through via service charge), and two nearby vacancies that may soften negotiating leverage if renewal slips past Q3 2026.",

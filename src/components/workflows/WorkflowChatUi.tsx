@@ -403,6 +403,7 @@ export const ELSE_TENANT_LABEL = "My tenant isn't listed";
 
 export const INTENT_LABELS: Record<WorkflowIntentId, string> = {
   "lease-renewal": "Lease Renewal",
+  "service-charge-settlement": "Service Charge Settlement",
   "prepare-report": "Prepare a Report",
   "financial-forecasting": "Financial Forecasting",
   "market-research": "Market Research",

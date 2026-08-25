@@ -34,7 +34,7 @@ import {
   getRecentChatTranscript,
   transcriptToMessages,
 } from "@/src/lib/aiAssistantRecentChatTranscripts";
-import { LEASE_ANALYST_HOME } from "@/src/lib/aiAssistantNavState";
+import { analystHomeEvent, LEASE_ANALYST_HOME } from "@/src/lib/aiAssistantNavState";
 
 const FULL_CHAT_MAX_PX = 720;
 
@@ -105,8 +105,13 @@ export function LeaseAnalystPage() {
   }, [router]);
 
   useEffect(() => {
+    const scopedEvent = analystHomeEvent("/ai-assistants/lease-analyst");
     window.addEventListener(LEASE_ANALYST_HOME, resetToHome);
-    return () => window.removeEventListener(LEASE_ANALYST_HOME, resetToHome);
+    window.addEventListener(scopedEvent, resetToHome);
+    return () => {
+      window.removeEventListener(LEASE_ANALYST_HOME, resetToHome);
+      window.removeEventListener(scopedEvent, resetToHome);
+    };
   }, [resetToHome]);
 
   useEffect(() => {
@@ -204,7 +209,7 @@ export function LeaseAnalystPage() {
           >
             <header className="flex shrink-0 flex-col items-center gap-2 pb-6 pt-16 text-center">
               <LeaseAnalystIcon className="h-8 w-auto" />
-              <h1 className="typo-h3 text-black">Lease Analyst</h1>
+              <h1 className="typo-h3 text-black">Commercial Analyst</h1>
             </header>
 
             <div ref={listRef} className="flex flex-col gap-6 pb-6">
@@ -249,7 +254,7 @@ export function LeaseAnalystPage() {
         <header className="mx-auto flex max-w-[879px] flex-col items-center gap-5 pt-12 text-center">
           <LeaseAnalystIcon className="h-8 w-auto" />
           <div className="flex flex-col gap-2">
-            <h1 className="typo-h3 text-black">Lease Analyst</h1>
+            <h1 className="typo-h3 text-black">Commercial Analyst</h1>
             <p className="max-w-lg typo-p2-r text-[#65686B]">
               Helps you stay ahead of lease events, tenant risks, renewal deadlines, break
               options, and rent review dates.
@@ -265,13 +270,7 @@ export function LeaseAnalystPage() {
           />
         </header>
 
-        <section
-          className={cn(
-            "mx-auto mt-10 flex w-full flex-col gap-8",
-            (activeTab === "recent-chats" || activeTab === "sources") && "max-w-[680px]",
-            activeTab === "recent-chats" && "items-center",
-          )}
-        >
+        <section className="mx-auto mt-10 flex w-full max-w-[900px] flex-col items-center gap-8">
           <AiAssistantTabNav
             activeTab={activeTab}
             onTabChange={setTab}
@@ -282,7 +281,7 @@ export function LeaseAnalystPage() {
                 <NewSourceButton onClick={handleUploadSource} />
               ) : undefined
             }
-            centered={activeTab === "recent-chats" || activeTab === "sources"}
+            centered
           />
 
           {activeTab === "tasks" ? (

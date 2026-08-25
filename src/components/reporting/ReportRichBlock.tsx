@@ -1,14 +1,58 @@
 "use client";
 
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, Sparkles, Wand2 } from "lucide-react";
 import type { ReportDocumentBlock } from "@/src/lib/reportingMockData";
 
 /**
  * Renders the "fitted" custom-section block types (heading, table, chart,
- * photos) shared between the report document and the builder preview.
+ * photos, ai-summary) shared between the report document and the builder preview.
  * Returns null for block types handled elsewhere (prose, metrics, …).
  */
 export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
+  if (block.type === "ai-summary") {
+    return (
+      <div className="flex flex-col gap-3 rounded-xl border border-[#A7B2F2] bg-[#F7F8FF] p-5">
+        <div className="flex items-center gap-2">
+          <Wand2 className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
+          <h3 className="text-[15px] font-semibold leading-[1.25] text-[#05091F]">
+            {block.headline}
+          </h3>
+          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]">
+            <Sparkles className="size-3" strokeWidth={2} />
+            AI generated
+          </span>
+        </div>
+        <div className="flex flex-col gap-2.5">
+          {block.paragraphs.map((paragraph, index) => (
+            <p key={index} className="text-[13px] leading-[1.6] text-[#353638]">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+        {block.entities.length > 0 || block.kpis.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 border-t border-[#DDE1F7] pt-3">
+            {block.entities.map((entity) => (
+              <span
+                key={`e-${entity}`}
+                className="inline-flex items-center rounded-full border border-[#DDE1F7] bg-white px-2.5 py-1 text-[11px] font-medium text-[#4C61DB]"
+              >
+                {entity}
+              </span>
+            ))}
+            {block.kpis.map((kpi) => (
+              <span
+                key={`k-${kpi}`}
+                className="inline-flex items-center rounded-full border border-[#E6E8EB] bg-white px-2.5 py-1 text-[11px] font-medium text-[#65686B]"
+              >
+                {kpi}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   if (block.type === "heading") {
     return (
       <header className="flex flex-col gap-1 border-b border-[#E6E8EB] pb-4">

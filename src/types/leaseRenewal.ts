@@ -6,7 +6,7 @@ export type LeaseRenewalContext = {
 };
 
 export const DEFAULT_LEASE_RENEWAL_CONTEXT: LeaseRenewalContext = {
-  tenantName: "ScaleHub III B.V.",
+  tenantName: "Hey Jude B.V.",
   property: "H.J.E. Wenckebachweg 123",
 };
 

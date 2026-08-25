@@ -9,6 +9,50 @@ import {
 } from "@/src/lib/aiAssistantsData";
 import { pinAiAssistant } from "@/src/lib/aiAssistantNavState";
 import { AiAnalystDetailModal } from "@/src/components/ai-assistants/AiAnalystDetailModal";
+import { LeaseAnalystIcon } from "@/src/components/ai-assistants/LeaseAnalystIcon";
+import { FinancialAnalystIcon } from "@/src/components/ai-assistants/FinancialAnalystIcon";
+import { DebtAnalystIcon } from "@/src/components/ai-assistants/DebtAnalystIcon";
+
+function AnalystCardIcon({
+  card,
+  className,
+}: {
+  card: AiAssistantCard;
+  className?: string;
+}) {
+  if (card.id === "lease-analyst") {
+    return <LeaseAnalystIcon className={cn("size-6 shrink-0", className)} />;
+  }
+  if (card.id === "reporting") {
+    return <FinancialAnalystIcon className={cn("size-6 shrink-0", className)} />;
+  }
+  if (card.id === "esg") {
+    return <DebtAnalystIcon className={cn("size-6 shrink-0", className)} />;
+  }
+
+  if (card.iconSrc) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={card.iconSrc}
+        alt=""
+        width={24}
+        height={24}
+        className={cn("size-6 shrink-0", className)}
+        aria-hidden
+      />
+    );
+  }
+
+  const Icon = card.icon;
+  return (
+    <Icon
+      className={cn("size-6 shrink-0", card.iconClassName ?? "text-[#353638]", className)}
+      strokeWidth={1.5}
+      aria-hidden
+    />
+  );
+}
 
 function AnalystCard({
   card,
@@ -19,8 +63,6 @@ function AnalystCard({
   onOpenDetails: () => void;
   onStart: () => void;
 }) {
-  const Icon = card.icon;
-
   return (
     <article
       role="button"
@@ -32,22 +74,18 @@ function AnalystCard({
           onOpenDetails();
         }
       }}
-      className="flex min-h-[190px] min-w-0 flex-1 cursor-pointer flex-col gap-3 rounded-[12px] border border-[rgba(230,231,232,0.7)] bg-white p-4 text-left transition-shadow hover:shadow-[0px_2px_8px_rgba(0,0,0,0.06)]"
+      className="flex min-h-[150px] min-w-0 flex-1 cursor-pointer flex-col gap-3.5 rounded-[12px] border border-[rgba(230,231,232,0.7)] bg-white p-4 text-left transition-shadow hover:shadow-[0px_2px_8px_rgba(0,0,0,0.06)]"
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <Icon
-                className={cn("size-5 shrink-0", card.iconClassName ?? "text-[#353638]")}
-                strokeWidth={1.5}
-                aria-hidden
-              />
-              <h3 className="typo-p2-b text-[#1E1E1E]">
+              <AnalystCardIcon card={card} className="size-5" />
+              <h3 className="text-sm font-semibold leading-[1.25] text-[#1E1E1E]">
                 {card.title}
               </h3>
             </div>
-            <p className="typo-p3-r text-[#65686B]">
+            <p className="text-[13px] font-normal leading-[1.4] text-[#65686B]">
               {card.description}
             </p>
           </div>
@@ -58,14 +96,14 @@ function AnalystCard({
             event.stopPropagation();
             onStart();
           }}
-          className="inline-flex h-7 shrink-0 items-center justify-center rounded-[32px] border border-[#B3B8BD] px-2.5 py-1 text-xs font-medium leading-[1.24] text-[#010309] transition-colors hover:bg-[#F0F2F5]"
+          className="inline-flex h-7 shrink-0 items-center justify-center rounded-[32px] border border-[#B3B8BD] px-3 py-1 text-xs font-medium leading-[1.24] text-[#010309] transition-colors hover:bg-[#F0F2F5]"
         >
           Start
         </button>
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <p className="text-[11px] font-medium uppercase tracking-[1.1px] text-[#65686B]">
+        <p className="text-[11px] font-medium uppercase tracking-[1.2355px] text-[#65686B]">
           Ouput examples
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -83,14 +121,14 @@ function AnalystCard({
         </div>
       </div>
 
-      <div className="mt-auto flex justify-end pt-0.5">
+      <div className="mt-auto flex justify-end">
         <button
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             onOpenDetails();
           }}
-          className="text-xs font-medium leading-[1.24] text-[#010309] transition-colors hover:text-[#4F65E5]"
+          className="h-7 text-xs font-medium leading-[1.24] text-[#010309] transition-colors hover:text-[#4F65E5]"
         >
           See more
         </button>
@@ -99,7 +137,7 @@ function AnalystCard({
   );
 }
 
-/** "Start with AI Analysts" section on Ask Amiio — Figma 2451:121956. */
+/** "Start with AI Analysts" section on Ask Amiio — Figma 2451:121956 / 2797:63386. */
 export function AskAiAnalystsSection({
   onStartChat,
 }: {
@@ -108,6 +146,12 @@ export function AskAiAnalystsSection({
   const router = useRouter();
   const [activeCard, setActiveCard] = useState<AiAssistantCard | null>(null);
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  const primaryCards = AI_ASSISTANT_CARDS.filter((c) => c.id !== "service-charges");
+  const extraCards = AI_ASSISTANT_CARDS.filter((c) => c.id === "service-charges");
+  const visibleCards = showAll ? AI_ASSISTANT_CARDS : primaryCards;
+  const hasMore = extraCards.length > 0;
 
   const openDetails = (card: AiAssistantCard) => {
     setActiveCard(card);
@@ -121,6 +165,16 @@ export function AskAiAnalystsSection({
       router.push("/ai-assistants/lease-analyst");
       return;
     }
+    if (card.id === "reporting") {
+      pinAiAssistant("financial");
+      router.push(card.chatHref);
+      return;
+    }
+    if (card.id === "esg") {
+      pinAiAssistant("debt");
+      router.push(card.chatHref);
+      return;
+    }
     onStartChat?.(card);
   };
 
@@ -131,13 +185,13 @@ export function AskAiAnalystsSection({
           Start with AI Analysts
         </h2>
         <p className="typo-p3-r text-[#65686B]">
-          Choose a specialized analyst to help with reporting, leasing, ESG, market
-          research, or portfolio performance.
+          Choose a specialized analyst to help with commercial, financial, debt,
+          technical, or portfolio performance.
         </p>
       </div>
 
       <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-        {AI_ASSISTANT_CARDS.map((card) => (
+        {visibleCards.map((card) => (
           <AnalystCard
             key={card.id}
             card={card}
@@ -146,6 +200,16 @@ export function AskAiAnalystsSection({
           />
         ))}
       </div>
+
+      {hasMore ? (
+        <button
+          type="button"
+          onClick={() => setShowAll((prev) => !prev)}
+          className="text-sm font-medium leading-[1.24] text-[#010309] transition-opacity hover:opacity-70"
+        >
+          {showAll ? "See less" : "See more"}
+        </button>
+      ) : null}
 
       <AiAnalystDetailModal
         card={activeCard}

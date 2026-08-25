@@ -16,7 +16,7 @@ const tenants: Array<{
   trend: string;
 }> = [
   {
-    name: "ScaleHub III B.V.",
+    name: "Hey Jude B.V.",
     avatar: "scalehub",
     details: "Energy: C | Condition: Average | Available: Q3 2026",
     gri: "€156,000",

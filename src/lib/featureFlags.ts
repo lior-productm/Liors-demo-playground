@@ -4,7 +4,7 @@
  */
 export const featureFlags = {
   /** Sidebar Workflows section + collapsed icon */
-  showWorkflowsNav: false,
+  showWorkflowsNav: true,
   /** Sidebar Insights nav item (Figma: Ask Amiio → Insights → …) */
   showInsightsNav: true,
   /** Internal-only "Create new section" builder in Reporting (Deep Agent) */

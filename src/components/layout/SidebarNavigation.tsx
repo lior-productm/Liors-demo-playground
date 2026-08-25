@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronUp,
   LogOut,
-  Plus,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,7 +25,6 @@ import {
 import { AmiioCollapsedMark, AmiioLogo } from "@/src/components/layout/AmiioLogo";
 import { SidebarNavIcon } from "@/src/components/layout/SidebarNavIcons";
 import { useWorkflowSessions } from "@/src/hooks/useWorkflowSessions";
-import { startNewWorkflowChat } from "@/src/lib/workflowSessions";
 import {
   WORKFLOW_TOPICS,
   getActiveWorkflowTopicId,
@@ -41,7 +39,7 @@ import {
 import {
   SidebarCountBadge,
 } from "@/src/components/layout/SidebarChatSessionItem";
-import { requestLeaseAnalystHome } from "@/src/lib/aiAssistantNavState";
+import { requestAnalystHome } from "@/src/lib/aiAssistantNavState";
 import { AI_ASSISTANT_CARDS, type AiAssistantId } from "@/src/lib/aiAssistantsData";
 import { TruncatedText } from "@/src/components/ui/TruncatedText";
 
@@ -382,9 +380,11 @@ function AiAssistantsNavDropdown({
     const card = AI_ASSISTANT_CARDS.find((c) => c.id === id);
     if (!card) return;
 
-    if (id === "lease-analyst") {
-      if (pathname.startsWith("/ai-assistants/lease-analyst")) {
-        requestLeaseAnalystHome();
+    // Analysts with a live workspace page navigate; others toast "coming soon".
+    const LIVE_ANALYSTS: AiAssistantId[] = ["lease-analyst", "reporting", "esg"];
+    if (LIVE_ANALYSTS.includes(id)) {
+      if (pathname.startsWith(card.chatHref)) {
+        requestAnalystHome(card.chatHref);
         return;
       }
       router.push(card.chatHref);
@@ -412,7 +412,7 @@ function AiAssistantsNavDropdown({
           onExpand?.();
         }}
       >
-        <SidebarNavIcon name="sparkle" size={20} />
+        <SidebarNavIcon name="ai" size={20} />
       </NavItemBase>
     );
   }
@@ -439,7 +439,7 @@ function AiAssistantsNavDropdown({
           </button>
         }
       >
-        <SidebarNavIcon name="sparkle" size={20} />
+        <SidebarNavIcon name="ai" size={20} />
         <NavLabel focused={isAiAssistantsActive}>AI Assistants</NavLabel>
       </NavSectionHeaderRow>
       <SidebarExpandableSection open={assistantsOpen}>
@@ -489,6 +489,7 @@ function WorkflowsNavDropdown({
   );
   const topicSessionCountsRef = useRef<Record<WorkflowTopicId, number>>({
     "leasing-renewal": 0,
+    "service-charge-settlement": 0,
     reporting: 0,
     "market-research": 0,
     "financial-forecasting": 0,
@@ -564,11 +565,6 @@ function WorkflowsNavDropdown({
     pathname === "/workflows/new" ||
     pathname.startsWith("/workflows/");
 
-  const handleNewWorkflow = () => {
-    startNewWorkflowChat(router);
-    setWorkflowsOpen(true);
-  };
-
   if (collapsed) {
     return (
       <NavItemBase
@@ -595,14 +591,6 @@ function WorkflowsNavDropdown({
             <button
               type="button"
               className={NAV_SECTION_CHEVRON}
-              aria-label="New workflow"
-              onClick={handleNewWorkflow}
-            >
-              <Plus className="size-4" strokeWidth={2} />
-            </button>
-            <button
-              type="button"
-              className={NAV_SECTION_CHEVRON}
               aria-label={workflowsOpen ? "Collapse workflows" : "Expand workflows"}
               aria-expanded={workflowsOpen}
               onClick={() => setWorkflowsOpen((value) => !value)}
@@ -623,7 +611,11 @@ function WorkflowsNavDropdown({
       </NavSectionHeaderRow>
       <SidebarExpandableSection open={workflowsOpen}>
         <div className="flex flex-col gap-1">
-          {WORKFLOW_TOPICS.map((topic) => {
+          {WORKFLOW_TOPICS.filter(
+            (topic) =>
+              topic.id === "leasing-renewal" ||
+              topic.id === "service-charge-settlement",
+          ).map((topic) => {
             const topicSessions = sessionsByTopic[topic.id];
             const count = topicSessions.length;
             const overviewHref = getTopicOverviewHref(topic.id);
@@ -921,7 +913,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                   />
                   <div className="flex min-w-0 flex-col gap-1">
                     <TruncatedText
-                      text="Property Partners"
+                      text="Penny Lane"
                       className="text-[13px] font-semibold leading-5 text-[#171717]"
                     />
                     <TruncatedText

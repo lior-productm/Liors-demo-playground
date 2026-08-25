@@ -23,7 +23,7 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
     entity: "Entity X",
     property: "Wenckebachweg 90-98",
     tenants: [
-      "ScaleHub III B.V.",
+      "Hey Jude B.V.",
       "Verizon Nederland B.V.",
       "Globex Corporation",
       "Schweppes International Ltd.",
@@ -35,7 +35,7 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
     entity: "Entity X",
     property: "H.J.E. Wenckebachweg 123",
     tenants: [
-      "ScaleHub III B.V.",
+      "Hey Jude B.V.",
       "Amsterdam Office Group B.V.",
       "Atlas Legal B.V.",
       "FinEdge Partners B.V.",
@@ -104,10 +104,10 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "All portfolio",
-    entity: "Property Partners",
+    entity: "Penny Lane",
     property: "Wenckebachweg 90-98",
     tenants: [
-      "Property Partners Tenant Co.",
+      "Penny Lane Tenant Co.",
       "North Quarter Retail B.V.",
       "MetroLink Offices B.V.",
       "UrbanMetric B.V.",
@@ -119,7 +119,7 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
     entity: "Entity X",
     property: "Wenckebachweg 90-98",
     tenants: [
-      "ScaleHub III B.V.",
+      "Hey Jude B.V.",
       "Logistics Plus GmbH",
       "Meridian Retail Ltd.",
       "Nova Workspace AG",
@@ -152,11 +152,11 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "Portfolio A",
-    entity: "Property Partners",
+    entity: "Penny Lane",
     property: "Wenckebachweg 90-98",
     tenants: [
       "North Quarter Retail B.V.",
-      "Property Partners Tenant Co.",
+      "Penny Lane Tenant Co.",
       "GreenLeaf Co-working B.V.",
       "Amstel Business Center B.V.",
       "Oranje Media Group B.V.",
@@ -164,7 +164,7 @@ const LEASE_SCOPE_DEFINITIONS: LeaseScopeDef[] = [
   },
   {
     portfolio: "Portfolio A",
-    entity: "Property Partners",
+    entity: "Penny Lane",
     property: "Sloterdijk Central",
     tenants: [
       "MetroLink Offices B.V.",

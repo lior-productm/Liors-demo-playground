@@ -1,9 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Building2, Leaf, Search } from "lucide-react";
+import { BarChart3, Building2, Leaf, Receipt, Search } from "lucide-react";
 import type { WorkflowIntentId } from "@/src/types/workflows";
 
 export type WorkflowCatalogId =
   | "leasing-renewal"
+  | "service-charge-settlement"
   | "market-research"
   | "financial-forecasting"
   | "esg";
@@ -26,6 +27,14 @@ export const WORKFLOW_CATALOG: WorkflowCatalogItem[] = [
       "Helps you prepare, draft, and review renewal proposals for selected tenants.",
     icon: Building2,
     href: "/workflows/leasing-renewal",
+  },
+  {
+    id: "service-charge-settlement",
+    title: "Service Charge Settlement",
+    description:
+      "Validate postings, confirm assumptions, and generate an interactive service charge settlement.",
+    icon: Receipt,
+    href: "/workflows/service-charge-settlement",
   },
   {
     id: "market-research",

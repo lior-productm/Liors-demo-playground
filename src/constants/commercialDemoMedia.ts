@@ -1,6 +1,6 @@
 /** Static assets aligned with [Demo Figma](https://www.figma.com/design/ELdcxHk45kb3hKjn66Fctf/Demo). */
 export const COMMERCIAL_AMIIO_WORDMARK = "/amiio-wordmark.svg";
-/** Tenant Hub + lease renewal — ScaleHub III B.V. logo (vector, 192×201 viewBox). */
+/** Tenant Hub + lease renewal — Hey Jude B.V. logo (vector, 192×201 viewBox). */
 export const TENANT_SCALEHUB_LOGO = "/scalehub-logo.svg";
 /** Hero (Investment Summary 226×226) + default 60×60 thumbnails — same source image. */
 export const COMMERCIAL_BUILDING_IMAGE = "/demo-building.png";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   ACTIVE_REPORTS,
@@ -8,6 +9,7 @@ import {
   REPORT_INSIGHTS,
   REPORT_PL_ROWS,
   REPORT_SECTIONS,
+  type ReportDocumentBlock,
   type ReportDocumentSection,
   type ReportPlRow,
 } from "@/src/lib/reportingMockData";
@@ -20,6 +22,9 @@ import { ReportInsightsPanel } from "@/src/components/reporting/ReportInsightsPa
 import { ReportSectionsNav } from "@/src/components/reporting/ReportSectionsNav";
 import { ReportToolbar } from "@/src/components/reporting/ReportToolbar";
 import { CreateSectionBuilder } from "@/src/components/reporting/CreateSectionBuilder";
+import { SectionLibraryPicker } from "@/src/components/reporting/SectionLibraryPicker";
+import { ReplaceObjectModal } from "@/src/components/reporting/ReplaceObjectModal";
+import { librarySectionToCustom } from "@/src/lib/reportSectionLibrary";
 import type { ReportPlEditableField } from "@/src/components/reporting/ReportPlTable";
 import { useReportInsightSync } from "@/src/hooks/useReportInsightSync";
 import { featureFlags } from "@/src/lib/featureFlags";
@@ -39,6 +44,47 @@ import {
   type MoveDirection,
   type TemplateLayout,
 } from "@/src/lib/reportTemplateLayout";
+import {
+  blockEditKey,
+  readBlockEdits,
+  removeBlockEdit,
+  resolveSectionBlocks,
+  setBlockOverride,
+  writeBlockEdits,
+  type ReportBlockEdits,
+} from "@/src/lib/reportBlockEdits";
+import {
+  clearApprovalRequest,
+  readApprovalRequest,
+  readDistributionStatus,
+  writeApprovalRequest,
+  writeDistributionStatus,
+  type ApprovalRequest,
+  type DistributionStatus,
+} from "@/src/lib/reportDistribution";
+import { RequestApprovalModal } from "@/src/components/reporting/RequestApprovalModal";
+import { readReportRole, writeReportRole, type ReportUserRole } from "@/src/lib/reportRole";
+import {
+  DistributionPill,
+  ReportDistributionControls,
+  ReportRoleSelect,
+} from "@/src/components/reporting/ReportDistributionControls";
+import { listTemplateTitles, setTemplateOwnership } from "@/src/lib/reportTemplates";
+
+type ReportActiveViewProps = {
+  /** "studio" enables full editing; "preview" renders read-only. */
+  variant?: "studio" | "preview";
+  /** Preview → jump to the Template Studio tab. */
+  onEditInStudio?: () => void;
+  /** Studio → open this specific template on mount. */
+  openTitle?: string;
+  /** Studio → return to the templates collection. */
+  onBackToCollection?: () => void;
+  /** Studio → launch the new-template creation flow. */
+  onRequestNewTemplate?: () => void;
+};
+
+type ReplaceTarget = { sectionId: string; editKey: string };
 
 function getCommittedProseParagraph(
   sections: ReportDocumentSection[],
@@ -58,9 +104,24 @@ function getCommittedProseParagraph(
   );
 }
 
-export function ReportActiveView() {
-  const [reportTitle, setReportTitle] = useState<string>(ACTIVE_REPORTS[0]);
-  const [mode, setMode] = useState<"edit" | "preview">("edit");
+export function ReportActiveView({
+  variant = "studio",
+  onEditInStudio,
+  openTitle,
+  onBackToCollection,
+  onRequestNewTemplate,
+}: ReportActiveViewProps = {}) {
+  const isStudio = variant === "studio";
+  const dataEditOnly = variant === "preview";
+  const [reportTitle, setReportTitle] = useState<string>(
+    openTitle ?? ACTIVE_REPORTS[0],
+  );
+  const [templateTitles, setTemplateTitles] = useState<string[]>(() => [
+    ...ACTIVE_REPORTS,
+  ]);
+  const [mode, setMode] = useState<"edit" | "preview">(
+    isStudio ? "edit" : "preview",
+  );
   const [activeSectionId, setActiveSectionId] = useState<string>("introduction");
   const [sectionsCollapsed, setSectionsCollapsed] = useState(false);
   const [insightsCollapsed, setInsightsCollapsed] = useState(false);
@@ -73,6 +134,22 @@ export function ReportActiveView() {
   const [customSections, setCustomSections] = useState<CustomReportSection[]>([]);
   const [isCreatingSection, setIsCreatingSection] = useState(false);
   const [layout, setLayout] = useState<TemplateLayout>({ order: [], removed: [] });
+  const [blockEdits, setBlockEdits] = useState<ReportBlockEdits>({
+    removed: [],
+    overrides: {},
+  });
+  const [replaceTarget, setReplaceTarget] = useState<ReplaceTarget | null>(null);
+  const [replaceChooser, setReplaceChooser] = useState<ReplaceTarget | null>(null);
+  const [showSectionLibrary, setShowSectionLibrary] = useState(false);
+  const [distributionStatus, setDistributionStatus] =
+    useState<DistributionStatus>("draft");
+  const [approvalRequest, setApprovalRequest] = useState<ApprovalRequest | null>(
+    null,
+  );
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [role, setRole] = useState<ReportUserRole>("asset-manager");
+
+  const reports = templateTitles;
 
   const allSections = useMemo<ReportDocumentSection[]>(
     () => [...REPORT_DOCUMENT_SECTIONS, ...customSections],
@@ -100,12 +177,23 @@ export function ReportActiveView() {
     [layout, naturalIds],
   );
 
-  const documentSections = useMemo<ReportDocumentSection[]>(() => {
+  const baseDocumentSections = useMemo<ReportDocumentSection[]>(() => {
     const byId = new Map(allSections.map((section) => [section.id, section]));
     return resolved.visibleIds
       .map((id) => byId.get(id))
       .filter((section): section is ReportDocumentSection => Boolean(section));
   }, [allSections, resolved.visibleIds]);
+
+  // Overlay object-level edits (edit / replace / remove) on top of the layout.
+  const { documentSections, blockEditKeys } = useMemo(() => {
+    const editKeys: Record<string, string[]> = {};
+    const sections = baseDocumentSections.map((section) => {
+      const resolvedBlocks = resolveSectionBlocks(section, blockEdits);
+      editKeys[section.id] = resolvedBlocks.map((entry) => entry.editKey);
+      return { ...section, blocks: resolvedBlocks.map((entry) => entry.block) };
+    });
+    return { documentSections: sections, blockEditKeys: editKeys };
+  }, [baseDocumentSections, blockEdits]);
 
   const navSections = useMemo(
     () =>
@@ -126,9 +214,20 @@ export function ReportActiveView() {
   );
 
   useEffect(() => {
+    setTemplateTitles(listTemplateTitles());
+    setRole(readReportRole());
+  }, []);
+
+  useEffect(() => {
     setCustomSections(readCustomSections(reportTitle));
     setLayout(readTemplateLayout(reportTitle));
+    setBlockEdits(readBlockEdits(reportTitle));
+    setDistributionStatus(readDistributionStatus(reportTitle));
+    setApprovalRequest(readApprovalRequest(reportTitle));
     setIsCreatingSection(false);
+    setReplaceTarget(null);
+    setPendingEdits({});
+    setProseOverrides({});
   }, [reportTitle]);
 
   useEffect(() => {
@@ -180,6 +279,100 @@ export function ReportActiveView() {
     },
     [layout, naturalIds, persistLayout],
   );
+
+  const persistBlockEdits = useCallback(
+    (next: ReportBlockEdits) => {
+      setBlockEdits(next);
+      writeBlockEdits(reportTitle, next);
+    },
+    [reportTitle],
+  );
+
+  // Structural block changes shift indices, so drop stale prose session edits.
+  const clearSectionEditState = useCallback((sectionId: string) => {
+    setPendingEdits((current) => {
+      const prefix = `prose:${sectionId}:`;
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([key]) => !key.startsWith(prefix)),
+      );
+      return next;
+    });
+    setProseOverrides((current) => {
+      if (!(sectionId in current)) return current;
+      const next = { ...current };
+      delete next[sectionId];
+      return next;
+    });
+  }, []);
+
+  const handleReplaceSection = useCallback((sectionId: string) => {
+    setReplaceTarget(null);
+    const firstKey = blockEditKeys[sectionId]?.[0] ?? `${sectionId}#0`;
+    setReplaceChooser({ sectionId, editKey: firstKey });
+  }, [blockEditKeys]);
+
+
+  const changeDistributionStatus = useCallback(
+    (next: DistributionStatus, message: string) => {
+      setDistributionStatus(next);
+      writeDistributionStatus(reportTitle, next);
+      window.dispatchEvent(
+        new CustomEvent("amiio:toast", { detail: { message } }),
+      );
+    },
+    [reportTitle],
+  );
+
+  const handleRoleChange = useCallback((next: ReportUserRole) => {
+    setRole(next);
+    writeReportRole(next);
+  }, []);
+
+  const handleRequestApproval = useCallback(
+    () => setShowApprovalModal(true),
+    [],
+  );
+
+  const submitApprovalRequest = useCallback(
+    (request: ApprovalRequest) => {
+      writeApprovalRequest(reportTitle, request);
+      setApprovalRequest(request);
+      setTemplateOwnership(reportTitle, "organization");
+      changeDistributionStatus(
+        "pending_approval",
+        `Approval requested from ${request.approverName}.`,
+      );
+    },
+    [reportTitle, changeDistributionStatus],
+  );
+
+  const handleApproveDistribution = useCallback(() => {
+    clearApprovalRequest(reportTitle);
+    setApprovalRequest(null);
+    changeDistributionStatus("approved", "Template approved for distribution.");
+  }, [reportTitle, changeDistributionStatus]);
+
+  const handleRejectDistribution = useCallback(() => {
+    clearApprovalRequest(reportTitle);
+    setApprovalRequest(null);
+    setTemplateOwnership(reportTitle, "personal");
+    changeDistributionStatus("draft", "Approval request declined — back to draft.");
+  }, [reportTitle, changeDistributionStatus]);
+
+  const handleDistribute = useCallback(
+    () =>
+      changeDistributionStatus(
+        "distributed",
+        "Template distributed to stakeholders.",
+      ),
+    [changeDistributionStatus],
+  );
+
+  const handleNewRevision = useCallback(() => {
+    clearApprovalRequest(reportTitle);
+    setApprovalRequest(null);
+    changeDistributionStatus("draft", "Started a new revision (draft).");
+  }, [reportTitle, changeDistributionStatus]);
 
   const viewerScrollRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -368,21 +561,46 @@ export function ReportActiveView() {
     setMode(nextMode);
   };
 
-  const handleSave = () => {
-    if (pendingEditCount > 0) return;
-
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", {
-        detail: { message: "Report changes saved." },
-      }),
-    );
-  };
-
   const handleInsightChange = (insightId: string) => {
     scrollToInsight(insightId);
   };
 
+  const applyBlockReplacement = (
+    target: ReplaceTarget,
+    blocks: ReportDocumentBlock[],
+  ) => {
+    const source = baseDocumentSections.find((section) => section.id === target.sectionId);
+    let next = blockEdits;
+    if (source && source.blocks.length > 0) {
+      source.blocks.forEach((_block, index) => {
+        const key = blockEditKey(target.sectionId, index);
+        next =
+          index === 0
+            ? setBlockOverride(next, key, blocks)
+            : removeBlockEdit(next, key);
+      });
+    } else {
+      next = setBlockOverride(blockEdits, target.editKey, blocks);
+    }
+    persistBlockEdits(next);
+    clearSectionEditState(target.sectionId);
+    window.dispatchEvent(
+      new CustomEvent("amiio:toast", {
+        detail: { message: "Section replaced." },
+      }),
+    );
+    window.setTimeout(() => scrollToSection(target.sectionId), 200);
+  };
+
   const handleApproveSection = (section: CustomReportSection) => {
+    // Replace mode: use the generated blocks to swap a single object in place.
+    if (replaceTarget) {
+      const target = replaceTarget;
+      setReplaceTarget(null);
+      applyBlockReplacement(target, section.blocks);
+      return;
+    }
+
     setCustomSections(appendCustomSection(reportTitle, section));
     setIsCreatingSection(false);
     setActiveSectionId(section.id);
@@ -394,18 +612,79 @@ export function ReportActiveView() {
     window.setTimeout(() => scrollToSection(section.id), 200);
   };
 
+  const handleInsertLibrarySection = (
+    section: Parameters<typeof librarySectionToCustom>[0],
+  ) => {
+    const custom = librarySectionToCustom(section);
+    setCustomSections(appendCustomSection(reportTitle, custom));
+    setActiveSectionId(custom.id);
+    window.dispatchEvent(
+      new CustomEvent("amiio:toast", {
+        detail: { message: `“${custom.title}” added from the library.` },
+      }),
+    );
+    window.setTimeout(() => scrollToSection(custom.id), 200);
+  };
+
+  const builderOpen = isCreatingSection;
+  const closeBuilder = () => {
+    setIsCreatingSection(false);
+    setReplaceTarget(null);
+  };
+
   return (
     <div className="flex min-h-0 flex-col gap-4">
+      {onBackToCollection ? (
+        <button
+          type="button"
+          onClick={onBackToCollection}
+          className="flex w-fit items-center gap-1.5 text-[13px] font-medium leading-[1.24] text-[#65686B] hover:text-[#353638]"
+        >
+          <ArrowLeft className="size-4" strokeWidth={1.9} />
+          All templates
+        </button>
+      ) : null}
       <ReportToolbar
         reportTitle={reportTitle}
-        reports={ACTIVE_REPORTS}
+        reports={reports}
         onReportChange={setReportTitle}
         mode={mode}
         onModeChange={handleModeChange}
         pendingEditCount={pendingEditCount}
-        onSave={handleSave}
-        canCreateSection={featureFlags.showReportSectionBuilder && !isCreatingSection}
+        readOnly={false}
+        dataEditOnly={dataEditOnly}
+        onEditInStudio={onEditInStudio}
+        onCreateTemplate={isStudio ? onRequestNewTemplate : undefined}
+        canCreateSection={
+          isStudio && featureFlags.showReportSectionBuilder && !builderOpen
+        }
         onCreateSection={() => setIsCreatingSection(true)}
+        onAddFromLibrary={
+          isStudio && featureFlags.showReportSectionBuilder && !builderOpen
+            ? () => setShowSectionLibrary(true)
+            : undefined
+        }
+        roleSlot={
+          isStudio ? (
+            <ReportRoleSelect role={role} onRoleChange={handleRoleChange} />
+          ) : undefined
+        }
+        distributionSlot={
+          dataEditOnly ? (
+            <DistributionPill status={distributionStatus} />
+          ) : (
+            <ReportDistributionControls
+              status={distributionStatus}
+              role={role}
+              request={approvalRequest}
+              onRequestApproval={handleRequestApproval}
+              onApprove={handleApproveDistribution}
+              onReject={handleRejectDistribution}
+              onDistribute={handleDistribute}
+              onNewRevision={handleNewRevision}
+            />
+          )
+        }
       />
 
       <div className="flex min-h-0 items-start gap-4">
@@ -416,7 +695,9 @@ export function ReportActiveView() {
           updatedLabel="Updated 23 Nov 2025"
           collapsed={sectionsCollapsed}
           onToggleCollapse={() => setSectionsCollapsed((value) => !value)}
-          editable={featureFlags.showReportSectionBuilder && !isCreatingSection}
+          editable={
+            isStudio && featureFlags.showReportSectionBuilder && !builderOpen
+          }
           removedSections={removedNavSections}
           onMoveSection={handleMoveSection}
           onRemoveSection={handleRemoveSection}
@@ -424,11 +705,12 @@ export function ReportActiveView() {
           onReorderSection={handleReorderSection}
         />
 
-        {isCreatingSection ? (
+        {builderOpen ? (
           <div className="flex h-[794px] min-w-0 flex-1">
             <CreateSectionBuilder
               reportTitle={reportTitle}
-              onCancel={() => setIsCreatingSection(false)}
+              mode="create"
+              onCancel={closeBuilder}
               onApprove={handleApproveSection}
             />
           </div>
@@ -473,22 +755,83 @@ export function ReportActiveView() {
                   onProseApprove={handleProseApprove}
                   onProseReject={handleProseReject}
                   proseOverrides={proseOverrides}
+                  objectEditable={isStudio && mode === "edit"}
+                  onReplaceSection={handleReplaceSection}
+                  onRemoveSection={handleRemoveSection}
                 />
               </div>
             </div>
 
-            <ReportInsightsPanel
-              insights={REPORT_INSIGHTS}
-              activeInsightId={activeInsightId}
-              onInsightChange={handleInsightChange}
-              collapsed={insightsCollapsed}
-              onToggleCollapse={() => setInsightsCollapsed((value) => !value)}
-              positions={positions}
-              viewportHeight={viewportHeight}
-            />
+            {dataEditOnly ? (
+              <ReportInsightsPanel
+                insights={REPORT_INSIGHTS}
+                activeInsightId={activeInsightId}
+                onInsightChange={handleInsightChange}
+                collapsed={insightsCollapsed}
+                onToggleCollapse={() => setInsightsCollapsed((value) => !value)}
+                positions={positions}
+                viewportHeight={viewportHeight}
+              />
+            ) : null}
           </div>
         )}
       </div>
+
+      {showSectionLibrary ? (
+        <SectionLibraryPicker
+          onClose={() => setShowSectionLibrary(false)}
+          onInsert={handleInsertLibrarySection}
+        />
+      ) : null}
+
+      {replaceChooser ? (
+        <ReplaceObjectModal
+          onClose={() => setReplaceChooser(null)}
+          onCreateNew={() => {
+            const target = replaceChooser;
+            setReplaceChooser(null);
+            setReplaceTarget(target);
+          }}
+          onUseSection={(section) => {
+            applyBlockReplacement(replaceChooser, section.blocks);
+            setReplaceChooser(null);
+          }}
+        />
+      ) : null}
+
+      {replaceTarget ? (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/30 p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setReplaceTarget(null)}
+        >
+          <div
+            className="flex max-h-[88vh] w-full max-w-[900px] overflow-hidden"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <CreateSectionBuilder
+              reportTitle={reportTitle}
+              mode="replace"
+              onCancel={() => setReplaceTarget(null)}
+              onApprove={handleApproveSection}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {showApprovalModal ? (
+        <RequestApprovalModal
+          reportTitle={reportTitle}
+          customSectionCount={customSections.length}
+          onClose={() => setShowApprovalModal(false)}
+          onSubmit={submitApprovalRequest}
+          onContinue={() => {
+            setShowApprovalModal(false);
+            onBackToCollection?.();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

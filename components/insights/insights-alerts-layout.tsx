@@ -43,7 +43,7 @@ const INSIGHT_ROWS: InsightRow[] = [
   {
     id: "1",
     summary: "Imminent Lease Expiry Risk with Potential Loan Covenant Breach",
-    entity: "Z Holdings",
+    entity: "Come Together",
     showDot: false,
     analysisVariant: "view",
     highlightRow: 0,
@@ -55,7 +55,7 @@ const INSIGHT_ROWS: InsightRow[] = [
   {
     id: "2",
     summary: "Service Charge Recovery Gap increasing in (2025)",
-    entity: "Z Holdings",
+    entity: "Come Together",
     showDot: true,
     analysisVariant: "further",
     highlightRow: 1,

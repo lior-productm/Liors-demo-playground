@@ -28,7 +28,7 @@ export const DEMO_CHAT_HISTORY_ENTRIES: ChatHistoryEntry[] = [
   {
     id: "hist-2",
     title:
-      "Create a one-page strategic summary for Paris Retail Portfolio for the investment committee",
+      "Create a one-page strategic summary for Yellow Submarine Portfolio for the investment committee",
     timestamp: daysAgo(1, 11),
   },
   {

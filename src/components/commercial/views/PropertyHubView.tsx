@@ -825,7 +825,7 @@ function MinorMetricsBar() {
 /* ------------------------------------------------------------------ */
 
 const donutSegments = [
-  { label: "ScaleHub", pct: 25, color: "#040617" },
+  { label: "Hey Jude", pct: 25, color: "#040617" },
   { label: "Verizon Nederland...", pct: 10, color: "#142587" },
   { label: "Schweppes Internat...", pct: 10, color: "#70A4AC" },
   { label: "Aroundtown...", pct: 20, color: "#838697" },
@@ -870,7 +870,7 @@ function GriLegendColumn({
                 className="size-2 shrink-0 rounded-full"
                 style={{ background: s.color }}
               />
-              {onOpenTenantHub && s.label === "ScaleHub" ? (
+              {onOpenTenantHub && s.label === "Hey Jude" ? (
                 <button
                   type="button"
                   onClick={() => onOpenTenantHub()}

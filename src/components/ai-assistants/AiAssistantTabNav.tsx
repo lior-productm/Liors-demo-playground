@@ -28,6 +28,8 @@ export function AiAssistantTabNav({
         centered ? "sm:justify-center" : "sm:justify-between",
       )}
     >
+      {/* When centered with a trailing action, spacer keeps tabs visually centered. */}
+      {centered && trailing ? <div className="hidden sm:block sm:flex-1" aria-hidden /> : null}
       <div
         className={cn(
           "flex flex-wrap items-center gap-4",
@@ -57,7 +59,11 @@ export function AiAssistantTabNav({
           );
         })}
       </div>
-      {trailing}
+      {centered && trailing ? (
+        <div className="flex sm:flex-1 sm:justify-end">{trailing}</div>
+      ) : (
+        trailing
+      )}
     </div>
   );
 }

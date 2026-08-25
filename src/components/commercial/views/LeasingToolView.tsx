@@ -103,8 +103,8 @@ interface PipelineCard {
 const pipelineCards: PipelineCard[] = [
   {
     id: "p1",
-    company: "ScaleHub III B.V.",
-    entityName: "Property Partners",
+    company: "Hey Jude B.V.",
+    entityName: "Penny Lane",
     propertyName: "H.J.E. Wenckebachweg",
     unit: "Unit 3A - 450 sqm",
     status: "Negotiation",
@@ -120,8 +120,8 @@ const pipelineCards: PipelineCard[] = [
   },
   {
     id: "p2",
-    company: "ScaleHub III B.V.",
-    entityName: "Property Partners",
+    company: "Hey Jude B.V.",
+    entityName: "Penny Lane",
     propertyName: "H.J.E. Wenckebachweg",
     unit: "Unit 2B - 350 sqm",
     status: "Proposal",
@@ -138,7 +138,7 @@ const pipelineCards: PipelineCard[] = [
   {
     id: "p3",
     company: "ABC Holdings B.V.",
-    entityName: "Property Partners",
+    entityName: "Penny Lane",
     propertyName: "Herengracht Offices",
     unit: "Unit 3A - 450 sqm",
     status: "Viewing",
@@ -155,7 +155,7 @@ const pipelineCards: PipelineCard[] = [
   {
     id: "p4",
     company: "Eiffel Investments LLC",
-    entityName: "Z Holdings",
+    entityName: "Come Together",
     propertyName: "Zuidas Tower",
     unit: "Unit 4D - 280 sqm",
     status: "Lead",

@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { AiAssistantCard } from "@/src/lib/aiAssistantsData";
+import { LeaseAnalystIcon } from "@/src/components/ai-assistants/LeaseAnalystIcon";
+import { FinancialAnalystIcon } from "@/src/components/ai-assistants/FinancialAnalystIcon";
+import { DebtAnalystIcon } from "@/src/components/ai-assistants/DebtAnalystIcon";
 
 /** Analyst detail modal — Figma 2453:123504. */
 export function AiAnalystDetailModal({
@@ -41,14 +44,32 @@ export function AiAnalystDetailModal({
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
                   <div className="flex items-start gap-2">
-                    <Icon
-                      className={cn(
-                        "size-5 shrink-0",
-                        card.iconClassName ?? "text-[#353638]",
-                      )}
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
+                    {card.id === "lease-analyst" ? (
+                      <LeaseAnalystIcon className="size-5 shrink-0" />
+                    ) : card.id === "reporting" ? (
+                      <FinancialAnalystIcon className="size-5 shrink-0" />
+                    ) : card.id === "esg" ? (
+                      <DebtAnalystIcon className="size-5 shrink-0" />
+                    ) : card.iconSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={card.iconSrc}
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="size-5 shrink-0"
+                        aria-hidden
+                      />
+                    ) : (
+                      <Icon
+                        className={cn(
+                          "size-5 shrink-0",
+                          card.iconClassName ?? "text-[#353638]",
+                        )}
+                        strokeWidth={1.5}
+                        aria-hidden
+                      />
+                    )}
                     <DialogTitle className="text-xl font-medium leading-[1.25] tracking-normal text-[#121212]">
                       {card.title}
                     </DialogTitle>
