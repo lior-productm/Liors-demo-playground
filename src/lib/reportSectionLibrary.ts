@@ -33,10 +33,20 @@ const STANDARD_DESCRIPTIONS: Record<string, string> = {
   distribution: "Distributions and capital movements.",
   metrics: "Headline KPI cards (occupancy, NOI, DSCR, LTV).",
   updates: "General operational updates.",
+  "pl-forecasting": "Forward-looking P&L with FY forecast versus budget.",
 };
 
-export const STANDARD_LIBRARY_SECTIONS: LibrarySection[] =
-  REPORT_DOCUMENT_SECTIONS.map((section) => ({
+const PL_FORECAST_LIBRARY_SECTION: LibrarySection = {
+  id: "standard-pl-forecasting",
+  title: "P&L forecasting",
+  description: "Forward-looking P&L with budget, FY forecast and variance.",
+  blocks: [{ type: "pl-table", title: "P&L forecast 2026", variant: "forecast" }],
+  origin: "standard",
+  createdBy: SYSTEM_CREATOR_NAME,
+};
+
+export const STANDARD_LIBRARY_SECTIONS: LibrarySection[] = [
+  ...REPORT_DOCUMENT_SECTIONS.map((section) => ({
     id: `standard-${section.id}`,
     title: section.title,
     description:
@@ -44,7 +54,9 @@ export const STANDARD_LIBRARY_SECTIONS: LibrarySection[] =
     blocks: section.blocks,
     origin: "standard" as const,
     createdBy: SYSTEM_CREATOR_NAME,
-  }));
+  })),
+  PL_FORECAST_LIBRARY_SECTION,
+];
 
 const BLOCK_TYPE_LABEL: Record<ReportDocumentBlock["type"], string> = {
   prose: "Text",
@@ -63,7 +75,10 @@ export function sectionBlockSummary(blocks: ReportDocumentBlock[]): string[] {
   const seen = new Set<string>();
   const labels: string[] = [];
   blocks.forEach((block) => {
-    const label = BLOCK_TYPE_LABEL[block.type];
+    const label =
+      block.type === "pl-table" && block.variant === "forecast"
+        ? "P&L forecasting"
+        : BLOCK_TYPE_LABEL[block.type];
     if (!seen.has(label)) {
       seen.add(label);
       labels.push(label);

@@ -47,6 +47,7 @@ export type ReportObjectTypeId =
   | "kpi-matrix"
   | "charts"
   | "tables"
+  | "pl-forecasting"
   | "photos";
 
 export type ReportObjectType = {
@@ -101,6 +102,11 @@ export const REPORT_OBJECT_TYPES: ReportObjectType[] = [
     limit: "Object · Max 2 · Columns · Max 3 · Rows · no limit",
     maxDataPoints: 3,
     maxLabel: "columns",
+  },
+  {
+    id: "pl-forecasting",
+    label: "P&L forecasting",
+    limit: "Object · Max 1 · Full P&L with FY forecast vs budget",
   },
   { id: "photos", label: "Photos", limit: "Object · Max 2" },
 ];
@@ -178,6 +184,7 @@ type ScopeObjectOption = {
 export const CUSTOM_FORMULA_OBJECT_ID = "custom-formula";
 
 const SHARED_ENTITY_OBJECTS: ScopeObjectOption[] = [
+  { id: "pl-forecasting", label: "P&L forecasting", preferredSource: "snowflake", sampleValue: "FY forecast", group: "kpi" },
   { id: "noi", label: "Net operating income (NOI)", preferredSource: "snowflake", sampleValue: "€90,908", group: "kpi" },
   { id: "dscr", label: "Debt service & DSCR", preferredSource: "snowflake", sampleValue: "1.18x", group: "kpi" },
   { id: "icr", label: "Interest cover (ICR)", preferredSource: "snowflake", sampleValue: "2.4x", group: "kpi" },
@@ -196,6 +203,7 @@ const SHARED_ENTITY_OBJECTS: ScopeObjectOption[] = [
 ];
 
 const PROPERTY_OBJECTS: ScopeObjectOption[] = [
+  { id: "pl-forecasting", label: "P&L forecasting", preferredSource: "snowflake", sampleValue: "FY forecast", group: "kpi" },
   { id: "occupancy", label: "Occupancy", preferredSource: "snowflake", sampleValue: "94.2%", group: "kpi" },
   { id: "wault", label: "WAULT", preferredSource: "snowflake", sampleValue: "5.4 yrs", group: "kpi" },
   { id: "rent-roll", label: "Rent roll", preferredSource: "snowflake", sampleValue: "24 units", group: "kpi" },
@@ -409,16 +417,26 @@ function buildSummary(
       ? request.scope.targets.join(", ")
       : request.scope.target;
 
-  const calculationLogic = `${sourceVerb}, aggregated ${labels.length} data point${
-    labels.length === 1 ? "" : "s"
-  } (${labels.join(", ")}) at the ${
-    SCOPE_NOUNS[request.scope.kind]
-  } level for ${scopeTargetLabel}, rendered as ${objectType.label.toLowerCase()}. Variances are computed against the prior period and budget.${formulaClause}`;
+  const calculationLogic =
+    objectType.id === "pl-forecasting"
+      ? `${sourceVerb}, built a full-year P&L forecast for ${scopeTargetLabel} at the ${
+          SCOPE_NOUNS[request.scope.kind]
+        } level. Actual YTD is annualized with remaining-year run-rate, then compared to the approved FY budget.${formulaClause}`
+      : `${sourceVerb}, aggregated ${labels.length} data point${
+          labels.length === 1 ? "" : "s"
+        } (${labels.join(", ")}) at the ${
+          SCOPE_NOUNS[request.scope.kind]
+        } level for ${scopeTargetLabel}, rendered as ${objectType.label.toLowerCase()}. Variances are computed against the prior period and budget.${formulaClause}`;
 
   const assumptions = [
     "Figures use the reporting-quarter close; intra-quarter adjustments are excluded.",
     "Currency is normalized to EUR using period-end FX rates.",
   ];
+  if (objectType.id === "pl-forecasting") {
+    assumptions.push(
+      "Remaining-year forecast uses current run-rate unless a lease event or known cost change is already booked.",
+    );
+  }
   if (dataSource.type === "web") {
     assumptions.push("Market comparables reflect the most recent published index, which may lag by one quarter.");
   }
@@ -570,6 +588,15 @@ function buildBlocks(
         },
       ];
 
+    case "pl-forecasting":
+      return [
+        {
+          type: "pl-table",
+          title: `P&L forecast — ${request.scope.target}`,
+          variant: "forecast",
+        },
+      ];
+
     case "charts": {
       const max = Math.max(...cappedPoints.map((point) => parseMagnitude(point.value)), 1);
       return [
@@ -656,6 +683,9 @@ function buildAiSummaryBlock(
 }
 
 function buildTitle(request: GenerateSectionRequest, options: ScopeObjectOption[]): string {
+  if (request.objectType === "pl-forecasting") {
+    return `P&L forecasting — ${request.scope.target}`;
+  }
   const selected = options.filter((option) => request.objects.includes(option.id));
   const lead = selected[0]?.label ?? (request.customFormula ? "Custom formula" : "Custom section");
   const count = selected.length + (request.customFormula ? 1 : 0);

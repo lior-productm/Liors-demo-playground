@@ -167,9 +167,135 @@ export const REPORT_PL_ROWS: ReportPlRow[] = [
   },
 ];
 
+export const REPORT_PL_FORECAST_ROWS: ReportPlRow[] = [
+  {
+    kind: "bank-start",
+    category: "BANK BALANCE",
+    account: "Start of the year",
+    q1Actual: "€441.060",
+    vsBudget: "€368.637",
+  },
+  {
+    kind: "column-header",
+    category: "Category",
+    account: "P&L Account",
+    budget: "Budget FY 2026",
+    q1Actual: "FY Forecast",
+    vsBudget: "Forecast vs Budget",
+  },
+  {
+    kind: "section",
+    category: "INCOME",
+    account: "Rental income",
+    budget: "€557.988",
+    q1Actual: "€530.400",
+    vsBudget: "€-27.588",
+  },
+  {
+    kind: "subtotal",
+    account: "Total Income",
+    budget: "€557.988",
+    q1Actual: "€530.400",
+    vsBudget: "€-27.588",
+  },
+  {
+    kind: "section",
+    category: "COSTS",
+    account: "Taxes & Insurance",
+    budget: "€15.912",
+    q1Actual: "€14.800",
+    vsBudget: "€-1.112",
+  },
+  {
+    kind: "line",
+    account: "Management fees",
+    budget: "€22.796",
+    q1Actual: "€22.796",
+    vsBudget: "-",
+  },
+  {
+    kind: "line",
+    account: "Other general expenses",
+    budget: "€108.332",
+    q1Actual: "€102.400",
+    vsBudget: "€-5.932",
+  },
+  {
+    kind: "subtotal",
+    account: "Total expenses",
+    budget: "€147.040",
+    q1Actual: "€139.996",
+    vsBudget: "€-7.044",
+  },
+  {
+    kind: "highlight",
+    account: "NOI",
+    budget: "€410.948",
+    q1Actual: "€390.404",
+    vsBudget: "€-20.544",
+  },
+  {
+    kind: "line",
+    account: "Depreciation",
+    budget: "€48.000",
+    q1Actual: "€48.000",
+    vsBudget: "-",
+  },
+  {
+    kind: "line",
+    account: "Financial expenses",
+    budget: "€122.828",
+    q1Actual: "€118.200",
+    vsBudget: "€-4.628",
+  },
+  {
+    kind: "profit",
+    category: "PROFIT",
+    budget: "€240.120",
+    q1Actual: "€224.204",
+    vsBudget: "€-15.916",
+  },
+  {
+    kind: "section",
+    category: "CASH FLOW",
+    account: "Capital distributions / Contributions",
+    budget: "€80.000",
+    q1Actual: "€64.000",
+    vsBudget: "€-16.000",
+  },
+  {
+    kind: "line",
+    account: "Loan repayment",
+    budget: "€280.000",
+    q1Actual: "€280.000",
+    vsBudget: "-",
+  },
+  {
+    kind: "line",
+    account: "Changes in WC",
+    budget: "€12.000",
+    q1Actual: "€8.400",
+    vsBudget: "€-3.600",
+  },
+  {
+    kind: "subtotal",
+    account: "Levered net cash flow",
+    budget: "€-131.880",
+    q1Actual: "€-128.196",
+    vsBudget: "€3.684",
+  },
+  {
+    kind: "bank-end",
+    category: "BANK BALANCE",
+    account: "End of the year (forecast)",
+    q1Actual: "€312.864",
+    vsBudget: "",
+  },
+];
+
 export type ReportDocumentBlock =
   | { type: "prose"; paragraphs: string[] }
-  | { type: "pl-table"; title: string }
+  | { type: "pl-table"; title: string; variant?: "actual" | "forecast"; rows?: ReportPlRow[] }
   | { type: "metrics"; items: { label: string; value: string }[] }
   | { type: "updates"; items: string[] }
   | { type: "heading"; title: string; subtitle?: string }

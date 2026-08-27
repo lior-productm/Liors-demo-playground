@@ -19,12 +19,14 @@ import {
   Sparkles,
   Table2,
   TextQuote,
+  TrendingUp,
   Wand2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionReviewSummary } from "@/src/components/reporting/SectionReviewSummary";
 import { ReportRichBlock } from "@/src/components/reporting/ReportRichBlock";
+import { PlForecastReviewEditor } from "@/src/components/reporting/PlForecastReviewEditor";
 import {
   CUSTOM_FORMULA_OBJECT_ID,
   DATA_SOURCE_LABELS,
@@ -45,6 +47,11 @@ import {
   type ReportScopeKind,
 } from "@/src/lib/reportSectionBuilder";
 import { saveSectionToLibrary } from "@/src/lib/reportSectionLibrary";
+import {
+  REPORT_PL_FORECAST_ROWS,
+  type ReportPlRow,
+} from "@/src/lib/reportingMockData";
+import { recomputePlForecast } from "@/src/lib/plForecastModel";
 
 type BuilderStep = "scope" | "objects" | "data-type" | "generating" | "review";
 
@@ -72,6 +79,7 @@ const OBJECT_TYPE_ICON: Record<
   "kpi-matrix": Grid3x3,
   charts: BarChart3,
   tables: Table2,
+  "pl-forecasting": TrendingUp,
   photos: ImageIcon,
 };
 
@@ -109,6 +117,12 @@ const DATA_POINT_CATEGORIES: {
     label: "Financial data",
     description: "P&L, NOI, budget variance and valuations.",
     icon: BarChart3,
+  },
+  {
+    id: "pl-forecasting",
+    label: "P&L forecasting",
+    description: "Full-year P&L with budget, FY forecast and variance.",
+    icon: TrendingUp,
   },
   {
     id: "tenant-payments",
@@ -200,6 +214,7 @@ export function CreateSectionBuilder({
   const [objectType, setObjectType] = useState<ReportObjectTypeId | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | undefined>();
   const [draft, setDraft] = useState<GeneratedSectionDraft | null>(null);
+  const [forecastRows, setForecastRows] = useState<ReportPlRow[] | null>(null);
   const [saveToLibrary, setSaveToLibrary] = useState(false);
   const [dataPointsStatus, setDataPointsStatus] = useState<
     "idle" | "interpreting" | "proposed"
@@ -279,6 +294,21 @@ export function CreateSectionBuilder({
 
   const toggleObject = (id: string) => {
     resetDataPointsInterpretation();
+    if (id === "pl-forecasting") {
+      const nextOn = !selectedObjects.includes(id);
+      setSelectedObjects((current) =>
+        nextOn ? [...current.filter((item) => item !== id), id] : current.filter((item) => item !== id),
+      );
+      setDataCategories((current) => {
+        const has = current.includes("pl-forecasting");
+        if (nextOn && !has) return [...current, "pl-forecasting"];
+        if (!nextOn && has) return current.filter((item) => item !== "pl-forecasting");
+        return current;
+      });
+      if (nextOn) setObjectType("pl-forecasting");
+      else if (objectType === "pl-forecasting") setObjectType(null);
+      return;
+    }
     setSelectedObjects((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
@@ -286,6 +316,21 @@ export function CreateSectionBuilder({
 
   const toggleDataCategory = (id: string) => {
     resetDataPointsInterpretation();
+    if (id === "pl-forecasting") {
+      const nextOn = !dataCategories.includes(id);
+      setDataCategories((current) =>
+        nextOn ? [...current.filter((item) => item !== id), id] : current.filter((item) => item !== id),
+      );
+      setSelectedObjects((current) => {
+        const has = current.includes("pl-forecasting");
+        if (nextOn && !has) return [...current, "pl-forecasting"];
+        if (!nextOn && has) return current.filter((item) => item !== "pl-forecasting");
+        return current;
+      });
+      if (nextOn) setObjectType("pl-forecasting");
+      else if (objectType === "pl-forecasting") setObjectType(null);
+      return;
+    }
     setDataCategories((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
@@ -314,10 +359,13 @@ export function CreateSectionBuilder({
     const targetLabel = formatScopeTargets(targets);
     const categoryClause =
       categories.length > 0 ? `, focused on ${categories.join(", ")}` : "";
+    const isPlForecast = selectedObjects.includes("pl-forecasting");
     return {
-      plainEnglish: `I'll compile ${dataPoints.length} data point${
-        dataPoints.length === 1 ? "" : "s"
-      } for ${targetLabel}${categoryClause}. I'll resolve the right source for each, pull the figures for the reporting period, and compute the variances before building the section.`,
+      plainEnglish: isPlForecast
+        ? `I'll build a full-year P&L forecast for ${targetLabel}${categoryClause}. I'll pull actuals year-to-date, annualize the remaining year at current run-rate, and compare the FY forecast to the approved budget.`
+        : `I'll compile ${dataPoints.length} data point${
+            dataPoints.length === 1 ? "" : "s"
+          } for ${targetLabel}${categoryClause}. I'll resolve the right source for each, pull the figures for the reporting period, and compute the variances before building the section.`,
       dataPoints,
       categories,
     };
@@ -362,14 +410,34 @@ export function CreateSectionBuilder({
     if (!request) return;
     setStep("generating");
     const result = await generateReportSection(request);
-    setDraft(result);
+    if (request.objectType === "pl-forecasting") {
+      const seeded = recomputePlForecast(
+        structuredClone(REPORT_PL_FORECAST_ROWS),
+      ).rows;
+      setForecastRows(seeded);
+      setDraft({
+        ...result,
+        blocks: result.blocks.map((block) =>
+          block.type === "pl-table" ? { ...block, rows: seeded, variant: "forecast" } : block,
+        ),
+      });
+    } else {
+      setForecastRows(null);
+      setDraft(result);
+    }
     setStep("review");
   };
 
   const handleApprove = () => {
     const request = buildRequest();
     if (!draft || !request) return;
-    const section = createApprovedSection(draft, request);
+    const blocks =
+      forecastRows && request.objectType === "pl-forecasting"
+        ? draft.blocks.map((block) =>
+            block.type === "pl-table" ? { ...block, rows: forecastRows, variant: "forecast" } : block,
+          )
+        : draft.blocks;
+    const section = createApprovedSection({ ...draft, blocks }, request);
     if (!isReplace && saveToLibrary) {
       saveSectionToLibrary({
         title: section.title,
@@ -926,7 +994,12 @@ export function CreateSectionBuilder({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep("data-type")}
+                    onClick={() => {
+                      if (selectedObjects.includes("pl-forecasting")) {
+                        setObjectType("pl-forecasting");
+                      }
+                      setStep("data-type");
+                    }}
                     className="flex h-9 items-center gap-1.5 rounded-lg bg-[#1F7A45] px-3 text-[13px] font-medium leading-[1.24] text-white hover:bg-[#1A6B3C]"
                   >
                     <Check className="size-4" strokeWidth={2} />
@@ -1090,7 +1163,9 @@ export function CreateSectionBuilder({
                 Review the generated section
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Approve to add it to the report template, or regenerate to adjust.
+                {objectType === "pl-forecasting"
+                  ? "Edit the forecast figures below. Totals and variances recalculate live, with a formula for each result."
+                  : "Approve to add it to the report template, or regenerate to adjust."}
               </p>
             </div>
 
@@ -1107,13 +1182,24 @@ export function CreateSectionBuilder({
                   </span>
                 ) : null}
               </div>
-              {draft.blocks[0]?.type !== "heading" ? (
+              {draft.blocks[0]?.type !== "heading" &&
+              draft.blocks[0]?.type !== "pl-table" ? (
                 <h2 className="mb-4 text-[20px] font-medium leading-[1.25] text-[#05091F]">
                   {draft.title}
                 </h2>
               ) : null}
               <div className="flex flex-col gap-4">
                 {draft.blocks.map((block, index) => {
+                  if (block.type === "pl-table" && forecastRows) {
+                    return (
+                      <PlForecastReviewEditor
+                        key={index}
+                        title={block.title}
+                        rows={forecastRows}
+                        onRowsChange={setForecastRows}
+                      />
+                    );
+                  }
                   if (block.type === "prose") {
                     return (
                       <div key={index} className="flex flex-col gap-2">

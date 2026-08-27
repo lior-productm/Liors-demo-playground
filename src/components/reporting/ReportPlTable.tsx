@@ -118,11 +118,13 @@ function PlRow({
   rowIndex,
   editable,
   cellEdit,
+  isCellEditable,
 }: {
   row: ReportPlRow;
   rowIndex: number;
   editable: boolean;
   cellEdit: CellEditHandlers;
+  isCellEditable?: (rowIndex: number, field: EditableField, row: ReportPlRow) => boolean;
 }) {
   const cell = (field: EditableField, fallback = "") => ({
     value: cellEdit.getValue(field, (row[field] as string | undefined) ?? fallback),
@@ -131,6 +133,8 @@ function PlRow({
     onApprove: () => cellEdit.onApprove(field),
     onReject: () => cellEdit.onReject(field),
   });
+  const canEdit = (field: EditableField) =>
+    editable && (isCellEditable?.(rowIndex, field, row) ?? true);
 
   switch (row.kind) {
     case "bank-start":
@@ -138,17 +142,17 @@ function PlRow({
       return (
         <RowShell className="border-b border-[#B3B8BD] bg-white">
           <Cell className="font-medium">{row.category}</Cell>
-          <EditableCell editable={editable} {...cell("account", row.account)} />
+          <EditableCell editable={canEdit("account")} {...cell("account", row.account)} />
           <Cell />
           <Cell />
           <EditableCell
-            editable={editable}
+            editable={canEdit("q1Actual")}
             align="right"
             className="font-semibold"
             {...cell("q1Actual", row.q1Actual ?? "")}
           />
           <EditableCell
-            editable={editable}
+            editable={canEdit("vsBudget")}
             align="right"
             className="font-semibold"
             {...cell("vsBudget", row.vsBudget ?? "")}
@@ -178,21 +182,21 @@ function PlRow({
       return (
         <RowShell className="bg-white">
           <Cell className="font-medium">{row.category}</Cell>
-          <EditableCell editable={editable} {...cell("account", row.account)} />
+          <EditableCell editable={canEdit("account")} {...cell("account", row.account)} />
           <EditableCell
-            editable={editable}
+            editable={canEdit("budget")}
             align="right"
             highlight
             {...cell("budget", row.budget ?? "")}
           />
           <Cell />
           <EditableCell
-            editable={editable}
+            editable={canEdit("q1Actual")}
             align="right"
             {...cell("q1Actual", row.q1Actual ?? "")}
           />
           <EditableCell
-            editable={editable}
+            editable={canEdit("vsBudget")}
             align="right"
             {...cell("vsBudget", row.vsBudget ?? "")}
           />
@@ -258,21 +262,21 @@ function PlRow({
       return (
         <RowShell>
           <Cell />
-          <EditableCell editable={editable} {...cell("account", row.account)} />
+          <EditableCell editable={canEdit("account")} {...cell("account", row.account)} />
           <EditableCell
-            editable={editable}
+            editable={canEdit("budget")}
             align="right"
             highlight
             {...cell("budget", row.budget ?? "")}
           />
           <Cell />
           <EditableCell
-            editable={editable}
+            editable={canEdit("q1Actual")}
             align="right"
             {...cell("q1Actual", row.q1Actual ?? "")}
           />
           <EditableCell
-            editable={editable}
+            editable={canEdit("vsBudget")}
             align="right"
             {...cell("vsBudget", row.vsBudget ?? "")}
           />
@@ -284,14 +288,19 @@ function PlRow({
 export function ReportPlTable({
   rows,
   editable = false,
+  live = false,
   pendingEdits = {},
+  isCellEditable,
   onCellDraft,
   onCellApprove,
   onCellReject,
 }: {
   rows: ReportPlRow[];
   editable?: boolean;
+  /** Immediate edits without per-cell approve/reject marks. */
+  live?: boolean;
   pendingEdits?: Record<string, string>;
+  isCellEditable?: (rowIndex: number, field: EditableField, row: ReportPlRow) => boolean;
   onCellDraft?: (rowIndex: number, field: EditableField, value: string) => void;
   onCellApprove?: (rowIndex: number, field: EditableField) => void;
   onCellReject?: (rowIndex: number, field: EditableField) => void;
@@ -308,10 +317,11 @@ export function ReportPlTable({
               row={row}
               rowIndex={index}
               editable={editable}
+              isCellEditable={isCellEditable}
               cellEdit={{
                 getValue: (field, fallback) =>
-                  pendingEdits[keyFor(field)] ?? fallback,
-                isPending: (field) => keyFor(field) in pendingEdits,
+                  live ? fallback : pendingEdits[keyFor(field)] ?? fallback,
+                isPending: (field) => !live && keyFor(field) in pendingEdits,
                 onChange: (field, value) => onCellDraft?.(index, field, value),
                 onApprove: (field) => onCellApprove?.(index, field),
                 onReject: (field) => onCellReject?.(index, field),

@@ -7,6 +7,7 @@ import {
   ACTIVE_REPORTS,
   REPORT_DOCUMENT_SECTIONS,
   REPORT_INSIGHTS,
+  REPORT_PL_FORECAST_ROWS,
   REPORT_PL_ROWS,
   REPORT_SECTIONS,
   type ReportDocumentBlock,
@@ -31,6 +32,7 @@ import { featureFlags } from "@/src/lib/featureFlags";
 import {
   appendCustomSection,
   readCustomSections,
+  writeCustomSections,
   type CustomReportSection,
 } from "@/src/lib/reportSectionBuilder";
 import {
@@ -70,6 +72,7 @@ import {
   ReportRoleSelect,
 } from "@/src/components/reporting/ReportDistributionControls";
 import { listTemplateTitles, setTemplateOwnership } from "@/src/lib/reportTemplates";
+import { buildForecastInsights } from "@/src/lib/plForecastModel";
 
 type ReportActiveViewProps = {
   /** "studio" enables full editing; "preview" renders read-only. */
@@ -195,6 +198,35 @@ export function ReportActiveView({
     return { documentSections: sections, blockEditKeys: editKeys };
   }, [baseDocumentSections, blockEdits]);
 
+  const forecastInsights = useMemo(
+    () =>
+      documentSections.flatMap((section) =>
+        section.blocks.flatMap((block) => {
+          if (block.type !== "pl-table" || block.variant !== "forecast") return [];
+          return buildForecastInsights(
+            section.id,
+            block.rows ?? REPORT_PL_FORECAST_ROWS,
+          );
+        }),
+      ),
+    [documentSections],
+  );
+
+  const documentInsights = useMemo(
+    () =>
+      forecastInsights.length > 0
+        ? [...forecastInsights, ...(dataEditOnly ? REPORT_INSIGHTS : [])]
+        : REPORT_INSIGHTS,
+    [dataEditOnly, forecastInsights],
+  );
+
+  useEffect(() => {
+    if (documentInsights.length === 0) return;
+    if (!documentInsights.some((item) => item.id === activeInsightId)) {
+      setActiveInsightId(documentInsights[0].id);
+    }
+  }, [activeInsightId, documentInsights]);
+
   const navSections = useMemo(
     () =>
       resolved.visibleIds.map((id) => ({
@@ -286,6 +318,52 @@ export function ReportActiveView({
       writeBlockEdits(reportTitle, next);
     },
     [reportTitle],
+  );
+
+  const handleForecastRowsChange = useCallback(
+    (sectionId: string, blockIndex: number, rows: ReportPlRow[]) => {
+      const custom = customSections.find((section) => section.id === sectionId);
+      if (custom) {
+        const next = customSections.map((section) => {
+          if (section.id !== sectionId) return section;
+          const hasSlot =
+            section.blocks[blockIndex]?.type === "pl-table";
+          return {
+            ...section,
+            blocks: section.blocks.map((block, index) => {
+              if (block.type !== "pl-table" || block.variant !== "forecast") {
+                return block;
+              }
+              if (hasSlot ? index === blockIndex : true) {
+                return { ...block, rows, variant: "forecast" as const };
+              }
+              return block;
+            }),
+          };
+        });
+        setCustomSections(next);
+        writeCustomSections(reportTitle, next);
+        return;
+      }
+
+      const rendered = documentSections.find((section) => section.id === sectionId);
+      const current = rendered?.blocks[blockIndex];
+      if (!current || current.type !== "pl-table") return;
+      const editKey = blockEditKeys[sectionId]?.[blockIndex] ?? `${sectionId}#${blockIndex}`;
+      persistBlockEdits(
+        setBlockOverride(blockEdits, editKey, [
+          { ...current, rows, variant: "forecast" },
+        ]),
+      );
+    },
+    [
+      blockEditKeys,
+      blockEdits,
+      customSections,
+      documentSections,
+      persistBlockEdits,
+      reportTitle,
+    ],
   );
 
   // Structural block changes shift indices, so drop stale prose session edits.
@@ -385,7 +463,7 @@ export function ReportActiveView({
     useReportInsightSync({
       scrollContainerRef: viewerScrollRef,
       insightAnchorRefs,
-      insights: REPORT_INSIGHTS,
+      insights: documentInsights,
       activeInsightId,
       onActiveInsightChange: setActiveInsightId,
       isProgrammaticScrollRef: isProgrammaticScroll,
@@ -746,7 +824,7 @@ export function ReportActiveView({
                   editable={mode === "edit"}
                   sectionRefs={sectionRefs}
                   insightAnchorRefs={insightAnchorRefs}
-                  insightAnchors={REPORT_INSIGHTS}
+                  insightAnchors={documentInsights}
                   pendingEdits={pendingEdits}
                   onPlCellDraft={handlePlCellDraft}
                   onPlCellApprove={handlePlCellApprove}
@@ -758,13 +836,14 @@ export function ReportActiveView({
                   objectEditable={isStudio && mode === "edit"}
                   onReplaceSection={handleReplaceSection}
                   onRemoveSection={handleRemoveSection}
+                  onForecastRowsChange={handleForecastRowsChange}
                 />
               </div>
             </div>
 
-            {dataEditOnly ? (
+            {dataEditOnly || forecastInsights.length > 0 ? (
               <ReportInsightsPanel
-                insights={REPORT_INSIGHTS}
+                insights={documentInsights}
                 activeInsightId={activeInsightId}
                 onInsightChange={handleInsightChange}
                 collapsed={insightsCollapsed}
@@ -828,7 +907,7 @@ export function ReportActiveView({
           onSubmit={submitApprovalRequest}
           onContinue={() => {
             setShowApprovalModal(false);
-            onBackToCollection?.();
+            setMode("edit");
           }}
         />
       ) : null}

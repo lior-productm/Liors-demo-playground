@@ -1,7 +1,12 @@
 "use client";
 
 import { ImageIcon, Sparkles, Wand2 } from "lucide-react";
-import type { ReportDocumentBlock } from "@/src/lib/reportingMockData";
+import {
+  REPORT_PL_FORECAST_ROWS,
+  REPORT_PL_ROWS,
+  type ReportDocumentBlock,
+} from "@/src/lib/reportingMockData";
+import { ReportPlTable } from "@/src/components/reporting/ReportPlTable";
 
 /**
  * Renders the "fitted" custom-section block types (heading, table, chart,
@@ -49,6 +54,22 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
             ))}
           </div>
         ) : null}
+      </div>
+    );
+  }
+
+  if (block.type === "pl-table") {
+    return (
+      <div className="flex flex-col gap-4">
+        <h3 className="text-[16px] font-medium leading-[1.25] text-[#05091F]">
+          {block.title}
+        </h3>
+        <ReportPlTable
+          rows={
+            block.rows ??
+            (block.variant === "forecast" ? REPORT_PL_FORECAST_ROWS : REPORT_PL_ROWS)
+          }
+        />
       </div>
     );
   }

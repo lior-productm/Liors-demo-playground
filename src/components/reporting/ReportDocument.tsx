@@ -3,9 +3,10 @@
 import { useState, type MutableRefObject } from "react";
 import { Check, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type {
-  ReportDocumentSection,
-  ReportPlRow,
+import {
+  REPORT_PL_FORECAST_ROWS,
+  type ReportDocumentSection,
+  type ReportPlRow,
 } from "@/src/lib/reportingMockData";
 import {
   ReportEditApprovalMark,
@@ -16,6 +17,7 @@ import {
   type ReportPlEditableField,
 } from "@/src/components/reporting/ReportPlTable";
 import { ReportRichBlock } from "@/src/components/reporting/ReportRichBlock";
+import { PlForecastReviewEditor } from "@/src/components/reporting/PlForecastReviewEditor";
 
 type ReportDocumentProps = {
   sections: ReportDocumentSection[];
@@ -53,6 +55,11 @@ type ReportDocumentProps = {
   objectEditable?: boolean;
   onReplaceSection?: (sectionId: string) => void;
   onRemoveSection?: (sectionId: string) => void;
+  onForecastRowsChange?: (
+    sectionId: string,
+    blockIndex: number,
+    rows: ReportPlRow[],
+  ) => void;
 };
 
 function SectionToolbarButton({
@@ -170,6 +177,7 @@ export function ReportDocument({
   objectEditable = false,
   onReplaceSection,
   onRemoveSection,
+  onForecastRowsChange,
 }: ReportDocumentProps) {
   const [approvedSections, setApprovedSections] = useState<Set<string>>(
     () => new Set(),
@@ -296,21 +304,37 @@ export function ReportDocument({
                   />
                 );
               } else if (block.type === "pl-table") {
-                content = (
-                  <div className="flex flex-col gap-8">
-                    <h3 className="text-[24px] font-medium leading-[1.25] text-[#05091F]">
-                      {block.title}
-                    </h3>
-                    <ReportPlTable
-                      rows={plRows}
+                const isForecast = block.variant === "forecast";
+                if (isForecast) {
+                  content = (
+                    <PlForecastReviewEditor
+                      title={block.title}
+                      rows={block.rows ?? REPORT_PL_FORECAST_ROWS}
                       editable={editable}
-                      pendingEdits={pendingEdits}
-                      onCellDraft={onPlCellDraft}
-                      onCellApprove={onPlCellApprove}
-                      onCellReject={onPlCellReject}
+                      onRowsChange={
+                        onForecastRowsChange
+                          ? (rows) => onForecastRowsChange(section.id, blockIndex, rows)
+                          : undefined
+                      }
                     />
-                  </div>
-                );
+                  );
+                } else {
+                  content = (
+                    <div className="flex flex-col gap-8">
+                      <h3 className="text-[24px] font-medium leading-[1.25] text-[#05091F]">
+                        {block.title}
+                      </h3>
+                      <ReportPlTable
+                        rows={block.rows ?? plRows}
+                        editable={editable}
+                        pendingEdits={pendingEdits}
+                        onCellDraft={onPlCellDraft}
+                        onCellApprove={onPlCellApprove}
+                        onCellReject={onPlCellReject}
+                      />
+                    </div>
+                  );
+                }
               } else if (block.type === "metrics") {
                 content = (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
