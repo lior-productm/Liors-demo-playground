@@ -123,7 +123,7 @@ function LanguagePanel() {
         </p>
       </div>
 
-      <LanguageSelect allLanguages />
+      <LanguageSelect />
 
       <button
         type="button"

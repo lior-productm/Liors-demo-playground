@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LANGUAGE_LIST, LANGUAGES, type LanguageCode } from "@/src/lib/i18n";
+import { LANGUAGES, type LanguageCode } from "@/src/lib/i18n";
 import {
   setInterfaceLanguage,
   useAvailableLanguages,
@@ -39,19 +39,12 @@ type LanguageSelectProps = {
   value?: LanguageCode;
   onChange?: (lang: LanguageCode) => void;
   className?: string;
-  /**
-   * Show every supported language instead of only the user's chosen set.
-   * Used by the interface-language control so a user can always pick any
-   * language; content selectors (e.g. report language) leave this off.
-   */
-  allLanguages?: boolean;
 };
 
 /** Flag-labelled dropdown for picking a language. */
-export function LanguageSelect({ value, onChange, className, allLanguages }: LanguageSelectProps) {
+export function LanguageSelect({ value, onChange, className }: LanguageSelectProps) {
   const storeLang = useInterfaceLanguage();
-  const availableLanguages = useAvailableLanguages();
-  const languages = allLanguages ? LANGUAGE_LIST : availableLanguages;
+  const languages = useAvailableLanguages();
   const selected = value ?? storeLang;
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
