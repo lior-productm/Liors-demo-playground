@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AiPromptBubble } from "@/src/components/commercial/ChatPanel";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { WorkflowIntentId } from "@/src/types/workflows";
 import {
   Select,
@@ -83,12 +84,13 @@ export function WorkflowAiBlock({
 }
 
 export function WorkflowThinkingIndicator() {
+  const { t } = useI18n();
   return (
     <div className="flex w-full min-w-0 items-start gap-2">
       <AiPromptBubble size="md" />
       <div className="flex items-center gap-1.5 rounded-2xl bg-white px-3.5 py-2.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.06)]">
         <Loader2 className="size-3 animate-spin text-[#7E8185]" />
-        <span className="text-[12px] font-normal leading-[1.5] text-[#7E8185]">Thinking...</span>
+        <span className="text-[12px] font-normal leading-[1.5] text-[#7E8185]">{t("Thinking...")}</span>
       </div>
     </div>
   );
@@ -113,6 +115,7 @@ export function WorkflowIntentCards({
   onSelect: (id: WorkflowIntentId) => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-x-3 gap-y-2">
       {INTENT_OPTIONS.map((opt) => {
@@ -131,7 +134,7 @@ export function WorkflowIntentCards({
           >
             <Icon className="size-4 shrink-0 text-[#353638]" strokeWidth={1.75} />
             <span className="text-[14px] font-medium leading-normal text-[#353638]">
-              {opt.label}
+              {t(opt.label)}
             </span>
           </button>
         );
@@ -168,6 +171,7 @@ function WorkflowPromptChip({
   disabled?: boolean;
   onClick: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
@@ -178,7 +182,7 @@ function WorkflowPromptChip({
         "disabled:pointer-events-none disabled:opacity-50",
       )}
     >
-      <span className="typo-p2-b whitespace-nowrap text-[#65686B]">{label}</span>
+      <span className="typo-p2-b whitespace-nowrap text-[#65686B]">{t(label)}</span>
     </button>
   );
 }
@@ -190,10 +194,11 @@ export function WorkflowStageLanding({
   onPromptSelect: (prompt: { label: string; intent: WorkflowIntentId }) => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex w-full min-w-0 flex-col items-center gap-10 pt-8">
       <p className="text-center text-[18px] font-medium leading-[1.25] text-[#65686B]">
-        How can we help you today?
+        {t("How can we help you today?")}
       </p>
       <div className="flex w-full max-w-[729px] flex-wrap gap-3">
         {WORKFLOW_PROMPT_CHIPS.map((prompt) => (
@@ -288,6 +293,7 @@ export function WorkflowScopeSelectors({
   onContinue: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   const tryAutoContinue = (nextEntity: string, nextProperty: string) => {
     if (portfolio && nextEntity && nextProperty && !disabled) {
       onContinue();
@@ -309,7 +315,7 @@ export function WorkflowScopeSelectors({
       <div className="flex flex-wrap gap-x-3 gap-y-2 md:flex-nowrap">
         <ScopeSelector
           icon={Grid2x2}
-          label="All portfolio"
+          label={t("All portfolio")}
           value={portfolio}
           options={portfolioOptions}
           onChange={onPortfolioChange}
@@ -318,7 +324,7 @@ export function WorkflowScopeSelectors({
         />
         <ScopeSelector
           icon={FolderOpen}
-          label="Selected entity"
+          label={t("Selected entity")}
           value={entity}
           options={entityOptions}
           onChange={handleEntityChange}
@@ -327,7 +333,7 @@ export function WorkflowScopeSelectors({
         />
         <ScopeSelector
           icon={Home}
-          label="Selected property"
+          label={t("Selected property")}
           value={property}
           options={propertyOptions}
           onChange={handlePropertyChange}
@@ -350,10 +356,11 @@ export function WorkflowTenantCards({
   disabled?: boolean;
   includeElse?: boolean;
 }) {
+  const { t } = useI18n();
   if (tenants.length === 0 && !includeElse) {
     return (
       <p className="text-[14px] font-normal leading-[1.5] text-[#65686B]">
-        No tenants found for this property. You can type a tenant name in the chat below.
+        {t("No tenants found for this property. You can type a tenant name in the chat below.")}
       </p>
     );
   }
@@ -389,9 +396,9 @@ export function WorkflowTenantCards({
             "disabled:pointer-events-none disabled:opacity-50",
           )}
         >
-          <span className="text-[16px] font-medium text-[#353638]">Else</span>
+          <span className="text-[16px] font-medium text-[#353638]">{t("Else")}</span>
           <span className="mt-0.5 block text-[14px] text-[#65686B]">
-            View all tenants or enter a name in chat
+            {t("View all tenants or enter a name in chat")}
           </span>
         </button>
       ) : null}

@@ -23,6 +23,7 @@ import {
   DashboardPageHeader,
 } from "@/src/components/layout/AppShell";
 import { DashboardPageTabs } from "@/src/components/layout/DashboardPageTabs";
+import { useI18n } from "@/src/hooks/useI18n";
 
 const FinancialOverviewPanel = lazyNamed(
   () => import("@/src/components/pages/FinancialOverviewPanel"),
@@ -60,6 +61,7 @@ export function FinancialDashboard({
   activeTab: TopNavTabId;
   onTabChange: (tab: TopNavTabId) => void;
 }) {
+  const { t } = useI18n();
   const [financialSubTab, setFinancialSubTab] = useState<FinancialSubTabId>("overview");
   const [chatDraftPayload, setChatDraftPayload] = useState<ChatDraftPayload>(null);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -124,10 +126,10 @@ export function FinancialDashboard({
       }
     >
       <DashboardPageHeader
-        title="Financial Dashboard"
+        title={t("Financial Dashboard")}
         tabs={
           <DashboardPageTabs
-            tabs={FINANCIAL_SUB_TABS}
+            tabs={FINANCIAL_SUB_TABS.map((tab) => ({ id: tab.id, label: t(tab.label) }))}
             activeId={financialSubTab}
             onChange={(id) => setFinancialSubTab(id as FinancialSubTabId)}
           />

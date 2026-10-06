@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Calculator, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   ReportPlTable,
   type ReportPlEditableField,
@@ -25,6 +26,7 @@ export function PlForecastReviewEditor({
   onRowsChange?: (rows: ReportPlRow[]) => void;
   editable?: boolean;
 }) {
+  const { t } = useI18n();
   const [lastEditedAccount, setLastEditedAccount] = useState<string | null>(null);
 
   const explanations = useMemo(
@@ -50,12 +52,16 @@ export function PlForecastReviewEditor({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-[16px] font-medium leading-[1.25] text-[#05091F]">
-          {title}
+          {t(title)}
         </h3>
         <p className="text-[12px] leading-[1.5] text-[#65686B]">
           {editable
-            ? "Edit budget or FY forecast on input lines. Totals, NOI, profit, cash flow and variances recalculate live."
-            : "Totals, NOI, profit, cash flow and variances are calculated from the forecast figures below."}
+            ? t(
+                "Edit budget or FY forecast on input lines. Totals, NOI, profit, cash flow and variances recalculate live.",
+              )
+            : t(
+                "Totals, NOI, profit, cash flow and variances are calculated from the forecast figures below.",
+              )}
         </p>
       </div>
 
@@ -71,11 +77,11 @@ export function PlForecastReviewEditor({
         <div className="flex items-center gap-1.5">
           <Calculator className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
           <p className="text-[12px] font-semibold leading-[1.25] text-[#05091F]">
-            Live calculations
+            {t("Live calculations")}
           </p>
           <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]">
             <Sparkles className="size-3" strokeWidth={2} />
-            Updates as you type
+            {t("Updates as you type")}
           </span>
         </div>
         <div className="flex flex-col gap-2">
@@ -101,6 +107,7 @@ function ExplanationCard({
   item: ForecastExplanation;
   highlighted: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -110,7 +117,7 @@ function ExplanationCard({
     >
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[12px] font-semibold leading-[1.25] text-[#05091F]">
-          {item.title}
+          {t(item.title)}
         </p>
         {item.id !== "variance" ? (
           <p className="shrink-0 text-[12px] font-medium tabular-nums text-[#4C61DB]">

@@ -9,6 +9,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   buildDefaultProposalDocument,
   LEASE_PROPOSAL_DOCUMENT_VERSIONS,
@@ -27,11 +28,12 @@ function EditPreviewToggle({
   mode: DocMode;
   onChange: (mode: DocMode) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className="flex items-center gap-2 rounded-[24px] border border-[#E6E8EB] bg-[#F0F2F5] p-0.5 shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
       role="group"
-      aria-label="Document mode"
+      aria-label={t("Document mode")}
     >
       <button
         type="button"
@@ -41,7 +43,7 @@ function EditPreviewToggle({
           mode === "edit" ? "bg-[#111111] text-[#F0F2F5] shadow-[0_2px_3px_rgba(0,0,0,0.16)]" : "text-[#969A9E]",
         )}
       >
-        Edit
+        {t("Edit")}
       </button>
       <button
         type="button"
@@ -53,7 +55,7 @@ function EditPreviewToggle({
             : "text-[#969A9E]",
         )}
       >
-        Preview
+        {t("Preview")}
       </button>
     </div>
   );
@@ -66,32 +68,33 @@ function ProposalDocumentPreview({
   context: LeaseRenewalContext;
   fields: LeaseProposalDocumentFields;
 }) {
+  const { t } = useI18n();
   const meta = proposalDocumentMeta(context);
 
   return (
     <div className="mx-auto w-full max-w-[606px] rounded-sm bg-white p-8 pb-12 shadow-sm">
       <div className="space-y-1 text-center">
-        <h3 className="text-[18px] font-bold text-[#111827]">Lease Renewal Proposal</h3>
-        <p className="text-[12px] text-[#6B7280]">Date: {meta.date}</p>
-        <p className="text-[12px] text-[#6B7280]">Reference: {meta.ref}</p>
+        <h3 className="text-[18px] font-bold text-[#111827]">{t("Lease Renewal Proposal")}</h3>
+        <p className="text-[12px] text-[#6B7280]">{t("Date: {date}", { values: { date: meta.date } })}</p>
+        <p className="text-[12px] text-[#6B7280]">{t("Reference: {ref}", { values: { ref: meta.ref } })}</p>
       </div>
 
       <div className="mt-6 space-y-1 text-[12px] text-[#4B5563]">
         <p>
-          <span className="font-medium">To:</span> {meta.tenant}
+          <span className="font-medium">{t("To:")}</span> {meta.tenant}
         </p>
         <p>
-          <span className="font-medium">From:</span> {meta.property}
+          <span className="font-medium">{t("From:")}</span> {meta.property}
         </p>
       </div>
 
       <div className="mt-6 space-y-5 text-[12px] leading-relaxed text-[#4B5563]">
         <div>
-          <h4 className="font-semibold text-[#111827]">1. SUBJECT PROPERTY</h4>
+          <h4 className="font-semibold text-[#111827]">{t("1. SUBJECT PROPERTY")}</h4>
           <p className="mt-2 whitespace-pre-wrap">{fields.subjectProperty}</p>
         </div>
         <div>
-          <h4 className="font-semibold text-[#111827]">2. PROPOSED TERMS</h4>
+          <h4 className="font-semibold text-[#111827]">{t("2. PROPOSED TERMS")}</h4>
           <div className="mt-3 space-y-2">
             {[
               ["2.1", fields.termLease, "60 months (5 years)"],
@@ -106,14 +109,14 @@ function ProposalDocumentPreview({
                   <span className="font-medium">{num}</span> {text}
                 </p>
                 <span className="shrink-0 rounded border border-[#E6E8EB] px-2 py-0.5 text-[11px] font-medium text-[#233FDE]">
-                  {hint}
+                  {t(hint)}
                 </span>
               </div>
             ))}
           </div>
         </div>
         <div>
-          <h4 className="font-semibold text-[#111827]">3. ADDITIONAL TERMS</h4>
+          <h4 className="font-semibold text-[#111827]">{t("3. ADDITIONAL TERMS")}</h4>
           <p className="mt-2 whitespace-pre-wrap">{fields.additionalTerms}</p>
         </div>
       </div>
@@ -128,15 +131,16 @@ function ProposalDocumentEditor({
   fields: LeaseProposalDocumentFields;
   onChange: (next: LeaseProposalDocumentFields) => void;
 }) {
+  const { t } = useI18n();
   const fieldClass =
     "w-full rounded-lg border border-[#C9DED1] bg-white px-3 py-2 text-[13px] leading-relaxed text-[#353638] outline-none transition-colors focus-visible:border-[#233FDE]/35 focus-visible:ring-2 focus-visible:ring-[#233FDE]/15";
 
   return (
     <div className="mx-auto w-full max-w-[606px] space-y-5 rounded-sm bg-white p-8 pb-12 shadow-sm">
-      <p className="text-[14px] font-medium text-[#2C2C2C]">Edit proposal content</p>
+      <p className="text-[14px] font-medium text-[#2C2C2C]">{t("Edit proposal content")}</p>
 
       <label className="block space-y-1.5">
-        <span className="text-[12px] font-medium text-[#65686B]">1. Subject property</span>
+        <span className="text-[12px] font-medium text-[#65686B]">{t("1. Subject property")}</span>
         <textarea
           rows={4}
           value={fields.subjectProperty}
@@ -146,7 +150,7 @@ function ProposalDocumentEditor({
       </label>
 
       <div className="space-y-3">
-        <p className="text-[12px] font-medium text-[#65686B]">2. Proposed terms</p>
+        <p className="text-[12px] font-medium text-[#65686B]">{t("2. Proposed terms")}</p>
         {(
           [
             ["termLease", "2.1 Lease term"],
@@ -158,7 +162,7 @@ function ProposalDocumentEditor({
           ] as const
         ).map(([key, label]) => (
           <label key={key} className="block space-y-1">
-            <span className="text-[11px] text-[#969A9E]">{label}</span>
+            <span className="text-[11px] text-[#969A9E]">{t(label)}</span>
             <textarea
               rows={2}
               value={fields[key]}
@@ -170,7 +174,7 @@ function ProposalDocumentEditor({
       </div>
 
       <label className="block space-y-1.5">
-        <span className="text-[12px] font-medium text-[#65686B]">3. Additional terms</span>
+        <span className="text-[12px] font-medium text-[#65686B]">{t("3. Additional terms")}</span>
         <textarea
           rows={5}
           value={fields.additionalTerms}
@@ -190,6 +194,7 @@ export function LeaseProposalReviewWorkspace({
   context: LeaseRenewalContext;
   onDraftReady?: () => void;
 }) {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ReviewTab>("lease-proposal");
   const [docMode, setDocMode] = useState<DocMode>("preview");
   const [versionsOpen, setVersionsOpen] = useState(false);
@@ -241,7 +246,7 @@ export function LeaseProposalReviewWorkspace({
                 : "text-[#65686B] hover:text-[#353638]",
             )}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -255,15 +260,15 @@ export function LeaseProposalReviewWorkspace({
         >
           <p className="text-[14px] text-[#65686B]">
             {activeTab === "analysis"
-              ? "Negotiation analysis is available on the Lease Proposal step."
-              : "Live status tracking is available on the Lease Proposal step."}
+              ? t("Negotiation analysis is available on the Lease Proposal step.")
+              : t("Live status tracking is available on the Lease Proposal step.")}
           </p>
           <button
             type="button"
             onClick={() => setActiveTab("lease-proposal")}
             className="mt-3 text-[14px] font-medium text-[#233FDE] hover:underline"
           >
-            Go to Lease Proposal
+            {t("Go to Lease Proposal")}
           </button>
         </div>
       ) : (
@@ -274,13 +279,13 @@ export function LeaseProposalReviewWorkspace({
           )}
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="typo-h4 text-[#353638]">Lease Proposal</p>
+            <p className="typo-h4 text-[#353638]">{t("Lease Proposal")}</p>
 
             <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2 sm:justify-center">
               {viewingHistorical ? (
                 <>
                   <History className="size-4 shrink-0 text-[#65686B]" aria-hidden />
-                  <span className="text-[14px] text-[#65686B]">Viewing previous version</span>
+                  <span className="text-[14px] text-[#65686B]">{t("Viewing previous version")}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -289,7 +294,7 @@ export function LeaseProposalReviewWorkspace({
                     }}
                     className="inline-flex items-center gap-1 text-[14px] font-medium text-[#2C2C2C] hover:underline"
                   >
-                    Go to latest
+                    {t("Go to latest")}
                     <ArrowRight className="size-4" />
                   </button>
                 </>
@@ -309,13 +314,13 @@ export function LeaseProposalReviewWorkspace({
               <div className="flex w-[208px] flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <span className="rounded-[34px] bg-[#FBF2DC] px-2 py-1 text-[14px] font-medium text-[#E7B65A]">
-                    Draft
+                    {t("Draft")}
                   </span>
                   <button
                     type="button"
                     onClick={() => setVersionsOpen(false)}
                     className="flex size-8 items-center justify-center rounded-lg text-[#353638] hover:bg-[#F2F4F7]"
-                    aria-label="Collapse versions panel"
+                    aria-label={t("Collapse versions panel")}
                   >
                     <PanelLeftClose className="size-5" />
                   </button>
@@ -323,7 +328,7 @@ export function LeaseProposalReviewWorkspace({
                 <p className="text-[12px] text-[#65686B]">{meta.updatedLabel}</p>
 
                 <div className="space-y-0.5">
-                  <p className="h-8 text-[14px] text-[#65686B]">Versions</p>
+                  <p className="h-8 text-[14px] text-[#65686B]">{t("Versions")}</p>
                   {LEASE_PROPOSAL_DOCUMENT_VERSIONS.map((v) => (
                     <button
                       key={v.label}
@@ -339,7 +344,7 @@ export function LeaseProposalReviewWorkspace({
                           : "text-[#353638] hover:bg-[#F2F4F7]",
                       )}
                     >
-                      <span>{v.label}</span>
+                      <span>{t(v.label)}</span>
                       {v.date ? (
                         <span className="flex items-center gap-1 text-[12px] text-[#65686B]">
                           <Clock className="size-3.5" />
@@ -352,7 +357,7 @@ export function LeaseProposalReviewWorkspace({
                     type="button"
                     className="h-8 w-full rounded-lg px-2 text-left text-[12px] font-medium text-[#353638] hover:bg-[#F2F4F7]"
                   >
-                    See all versions
+                    {t("See all versions")}
                   </button>
                 </div>
               </div>
@@ -365,7 +370,7 @@ export function LeaseProposalReviewWorkspace({
                 className="flex h-8 shrink-0 items-center gap-1 self-start rounded-lg border border-[#E6E8EB] px-2 text-[12px] font-medium text-[#65686B] hover:bg-[#F2F4F7]"
               >
                 <PanelLeftOpen className="size-4" />
-                Versions
+                {t("Versions")}
               </button>
             ) : null}
 

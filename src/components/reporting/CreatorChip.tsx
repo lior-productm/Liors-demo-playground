@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import {
   OWNERSHIP_LABELS,
@@ -5,6 +7,7 @@ import {
   initialsOf,
   type ItemOwnership,
 } from "@/src/lib/reportUser";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /** Small "created by {name}" avatar + label used on template/section cards. */
 export function CreatorChip({
@@ -36,6 +39,7 @@ export function OwnershipBadge({
 }: {
   ownership: ItemOwnership;
 }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -45,7 +49,7 @@ export function OwnershipBadge({
           : "bg-[#EEF0FF] text-[#4C61DB]",
       )}
     >
-      {OWNERSHIP_LABELS[ownership]}
+      {t(OWNERSHIP_LABELS[ownership])}
     </span>
   );
 }

@@ -13,6 +13,7 @@ import { AMIIO_AI_DISCLAIMER } from "@/src/components/commercial/AmiioAiDisclaim
 import { WidgetExportMenu } from "@/src/components/commercial/WidgetExportMenu";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { COMMERCIAL_BAR_CHART_BAR_CLASS, lightenHexColor } from "@/src/lib/chartColors";
 import {
   CHART_AXIS_EUR_K,
@@ -77,6 +78,7 @@ export function OverviewTrendBarChartCard({
   showExport?: boolean;
 }) {
   const exportRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const [clickedBarIdx, setClickedBarIdx] = useState<number | null>(null);
   const highlightIdx = defaultHighlightIndex(chart.title, chart.values);
@@ -113,7 +115,7 @@ export function OverviewTrendBarChartCard({
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <h3 className="typo-h4 text-[#353638]">{chart.title}</h3>
+        <h3 className="typo-h4 text-[#353638]">{t(chart.title)}</h3>
         <div className="flex items-center gap-2">
           {showExport && fileName ? (
             <WidgetExportMenu

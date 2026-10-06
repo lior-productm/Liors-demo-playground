@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { useI18n } from "@/src/hooks/useI18n";
 import { CreatorChip, OwnershipBadge } from "@/src/components/reporting/CreatorChip";
 import { SectionPreviewModal } from "@/src/components/reporting/SectionPreviewModal";
 import {
@@ -38,6 +39,7 @@ export function SectionCollection({
   /** Bump to force a re-read of saved sections after creating one. */
   refreshKey?: number;
 }) {
+  const { t } = useI18n();
   const [sections, setSections] = useState<LibrarySection[]>(() =>
     listLibrarySections(),
   );
@@ -67,10 +69,10 @@ export function SectionCollection({
               <Plus className="size-5" strokeWidth={2} />
             </span>
             <span className="text-[14px] font-medium leading-[1.25] text-[#05091F]">
-              Create new section
+              {t("Create new section")}
             </span>
             <span className="text-[12px] leading-[1.4] text-[#65686B]">
-              Generate a reusable section and save it to the library.
+              {t("Generate a reusable section and save it to the library.")}
             </span>
           </button>
         ) : null}
@@ -90,7 +92,7 @@ export function SectionCollection({
                     type="button"
                     onClick={() => handleRemove(section.id)}
                     className="flex size-7 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#FBE9E7] hover:text-[#B23A2F]"
-                    aria-label={`Remove ${section.title}`}
+                    aria-label={t("Remove {title}", { values: { title: section.title } })}
                   >
                     <Trash2 className="size-4" strokeWidth={1.75} />
                   </button>
@@ -99,10 +101,10 @@ export function SectionCollection({
 
               <div className="flex flex-1 flex-col gap-1.5">
                 <h3 className="text-[15px] font-semibold leading-[1.3] text-[#05091F]">
-                  {section.title}
+                  {t(section.title)}
                 </h3>
                 <p className="line-clamp-2 text-[12px] leading-[1.5] text-[#65686B]">
-                  {section.description}
+                  {t(section.description)}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {chips.map((chip) => (
@@ -110,7 +112,7 @@ export function SectionCollection({
                       key={chip}
                       className="inline-flex items-center rounded-full bg-[#F0F2F5] px-2 py-0.5 text-[10px] font-medium text-[#65686B]"
                     >
-                      {chip}
+                      {t(chip)}
                     </span>
                   ))}
                 </div>
@@ -125,7 +127,7 @@ export function SectionCollection({
                     className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#A7B2F2] bg-[#F7F8FF] px-3 text-[12px] font-medium leading-[1.24] text-[#4C61DB] hover:bg-[#EEF0FF]"
                   >
                     <Plus className="size-3.5" strokeWidth={2} />
-                    {insertLabel}
+                    {t(insertLabel)}
                   </button>
                 ) : (
                   <span />
@@ -135,7 +137,7 @@ export function SectionCollection({
                   onClick={() => setPreviewSection(section)}
                   className="inline-flex items-center gap-1 text-[12px] font-medium text-[#4C61DB] opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  Preview
+                  {t("Preview")}
                   <ArrowRight className="size-3.5" strokeWidth={2} />
                 </button>
               </div>
@@ -144,7 +146,7 @@ export function SectionCollection({
         })}
 
         {sections.length === 0 && emptyHint ? (
-          <p className="text-[13px] leading-[1.5] text-[#65686B]">{emptyHint}</p>
+          <p className="text-[13px] leading-[1.5] text-[#65686B]">{t(emptyHint)}</p>
         ) : null}
       </div>
 

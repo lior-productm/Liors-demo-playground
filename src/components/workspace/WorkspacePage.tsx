@@ -16,7 +16,6 @@ import {
 import { FloatingAmiioChat } from "@/src/components/commercial/FloatingAmiioChat";
 import { useAmiioChat } from "@/src/hooks/useAmiioChat";
 import { cn } from "@/lib/utils";
-import { pinAiAssistant } from "@/src/lib/aiAssistantNavState";
 import {
   WORKSPACE_ANALYSTS,
   WORKSPACE_OUTPUTS,
@@ -257,9 +256,6 @@ export function WorkspacePage() {
         onOpenChange={setTaskInfoOpen}
         onGoToAnalyst={(output) => {
           const href = getAnalystPageHref(output.analyst);
-          if (output.analyst === "leasing") {
-            pinAiAssistant("lease-analyst");
-          }
           setTaskInfoOpen(false);
           setTaskInfoOutput(null);
           router.push(href);

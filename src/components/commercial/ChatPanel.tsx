@@ -19,6 +19,7 @@ import { ChatHistoryTrigger } from "@/src/components/commercial/ChatHistoryTrigg
 import { ASK_AI_CHIP_SUGGESTIONS } from "@/src/components/ask-ai/AskAiLanding";
 import type { ChatMessage } from "@/src/types/commercial";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { AmiioFocusChatBar, type AmiioFocusChatBarLayout } from "@/src/components/commercial/AmiioFocusChatBar";
 import {
   SHELL_SIDEBAR_CHAT_INPUT_MAX_PX,
@@ -475,6 +476,7 @@ export function SidebarChatInputDock({
   className?: string;
   layout?: AmiioFocusChatBarLayout;
 }) {
+  const { t } = useI18n();
   const isFull = layout === "full";
 
   return (
@@ -504,7 +506,7 @@ export function SidebarChatInputDock({
           isFull ? "text-[12px]" : "text-[11px]",
         )}
       >
-        Amiio AI can make mistakes. Check important info.
+        {t("Amiio AI can make mistakes. Check important info.")}
       </p>
     </div>
   );

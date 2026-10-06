@@ -6,6 +6,7 @@ import {
   REPORT_PL_ROWS,
   type ReportDocumentBlock,
 } from "@/src/lib/reportingMockData";
+import { useI18n } from "@/src/hooks/useI18n";
 import { ReportPlTable } from "@/src/components/reporting/ReportPlTable";
 
 /**
@@ -14,23 +15,24 @@ import { ReportPlTable } from "@/src/components/reporting/ReportPlTable";
  * Returns null for block types handled elsewhere (prose, metrics, …).
  */
 export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
+  const { t } = useI18n();
   if (block.type === "ai-summary") {
     return (
       <div className="flex flex-col gap-3 rounded-xl border border-[#A7B2F2] bg-[#F7F8FF] p-5">
         <div className="flex items-center gap-2">
           <Wand2 className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
           <h3 className="text-[15px] font-semibold leading-[1.25] text-[#05091F]">
-            {block.headline}
+            {t(block.headline)}
           </h3>
           <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]">
             <Sparkles className="size-3" strokeWidth={2} />
-            AI generated
+            {t("AI generated")}
           </span>
         </div>
         <div className="flex flex-col gap-2.5">
           {block.paragraphs.map((paragraph, index) => (
             <p key={index} className="text-[13px] leading-[1.6] text-[#353638]">
-              {paragraph}
+              {t(paragraph)}
             </p>
           ))}
         </div>
@@ -49,7 +51,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
                 key={`k-${kpi}`}
                 className="inline-flex items-center rounded-full border border-[#E6E8EB] bg-white px-2.5 py-1 text-[11px] font-medium text-[#65686B]"
               >
-                {kpi}
+                {t(kpi)}
               </span>
             ))}
           </div>
@@ -62,7 +64,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
     return (
       <div className="flex flex-col gap-4">
         <h3 className="text-[16px] font-medium leading-[1.25] text-[#05091F]">
-          {block.title}
+          {t(block.title)}
         </h3>
         <ReportPlTable
           rows={
@@ -78,10 +80,10 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
     return (
       <header className="flex flex-col gap-1 border-b border-[#E6E8EB] pb-4">
         <h2 className="text-[28px] font-semibold leading-[1.2] text-[#05091F]">
-          {block.title}
+          {t(block.title)}
         </h2>
         {block.subtitle ? (
-          <p className="text-[13px] leading-[1.5] text-[#65686B]">{block.subtitle}</p>
+          <p className="text-[13px] leading-[1.5] text-[#65686B]">{t(block.subtitle)}</p>
         ) : null}
       </header>
     );
@@ -98,7 +100,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
                   key={column}
                   className="border-b border-[#E6E8EB] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.4px] text-[#65686B]"
                 >
-                  {column}
+                  {t(column)}
                 </th>
               ))}
             </tr>
@@ -111,7 +113,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
                     key={cellIndex}
                     className="border-b border-[#F0F2F5] px-3 py-2 text-[12px] leading-[1.5] text-[#353638] last:font-medium"
                   >
-                    {cell}
+                    {t(cell)}
                   </td>
                 ))}
               </tr>
@@ -128,7 +130,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
         {block.items.map((item) => (
           <div key={item.label} className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-[12px] leading-[1.4]">
-              <span className="text-[#65686B]">{item.label}</span>
+              <span className="text-[#65686B]">{t(item.label)}</span>
               <span className="font-medium text-[#05091F]">{item.value}</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-[#F0F2F5]">
@@ -153,7 +155,7 @@ export function ReportRichBlock({ block }: { block: ReportDocumentBlock }) {
           >
             <ImageIcon className="size-6" strokeWidth={1.5} />
             <span className="px-2 text-center text-[11px] leading-[1.3] text-[#65686B]">
-              {item.label}
+              {t(item.label)}
             </span>
           </div>
         ))}

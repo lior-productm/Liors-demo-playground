@@ -2,6 +2,7 @@
 
 import { FileSpreadsheet, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { FinancialChartInsightLamp } from "@/src/components/commercial/FinancialChartInsightLamp";
 import {
   computeSettlement,
@@ -20,29 +21,30 @@ function LineRow({
   item: SettlementLineItem;
   onAnalyseFurther?: (topic: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#F8FAFC]">
       <div className="min-w-0">
         <p className="truncate text-[14px] font-medium leading-[1.4] text-[#353638]">
-          {item.category}
+          {t(item.category)}
         </p>
         {item.note ? (
           <span className="mt-1 inline-flex rounded-full bg-[#FBF2DC] px-2 py-0.5 text-[11px] font-medium leading-[1.3] text-[#856404]">
-            {item.note}
+            {t(item.note)}
           </span>
         ) : null}
       </div>
       <p className="min-w-0 truncate text-[13px] font-normal leading-[1.4] text-[#65686B]">
-        {item.basis}
+        {t(item.basis)}
       </p>
       <div className="flex items-center justify-end gap-2">
         <span className="text-[14px] font-medium leading-[1.4] text-[#010309]">
           {formatEuro(item.grossAmount)}
         </span>
         <FinancialChartInsightLamp
-          summary={item.summary}
+          summary={t(item.summary)}
           analyseTopic={item.analysePrompt}
-          ariaLabel={`Analyse ${item.category}`}
+          ariaLabel={t("Analyse {category}", { values: { category: t(item.category) } })}
           popoverSide="left"
           className="size-[26px]"
         />
@@ -64,8 +66,22 @@ export function ServiceChargeSettlementPreview({
   onAnalyseFurther?: (topic: string) => void;
   onExport?: (kind: "xlsx" | "pdf") => void;
 }) {
+  const { t } = useI18n();
   const settlement = computeSettlement(answers, overrides);
   const vatPct = Math.round(settlement.vatRate * 100);
+  const feePct = Math.round(settlement.managementFeeRate * 100);
+  // The management fee line is built with template literals in the data module, so
+  // translate its display fields here with templated keys and reconstructed tokens.
+  const managementFeeItem = {
+    ...settlement.managementFee,
+    category: t("Management fee ({pct}%)", { values: { pct: feePct } }),
+    basis: t("{pct}% of recoverable costs", { values: { pct: feePct } }),
+    note: t("Assumption confirmed: {pct}%", { values: { pct: feePct } }),
+    summary: t(
+      "The management fee is {amount}, calculated as {pct}% of total recoverable costs.",
+      { values: { amount: formatEuro(settlement.managementFee.grossAmount), pct: feePct } },
+    ),
+  };
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-[rgba(230,231,232,0.7)] bg-white shadow-[inset_0_1px_4px_rgba(0,0,0,0.04)]">
@@ -74,11 +90,13 @@ export function ServiceChargeSettlementPreview({
         <div className="flex items-center gap-2">
           <FileSpreadsheet className="size-4 shrink-0 text-[#233FDE]" strokeWidth={1.8} aria-hidden />
           <p className="text-[14px] font-medium leading-[1.3] text-[#010309]">
-            {SERVICE_CHARGE_YEAR} Service Charge Settlement — {SERVICE_CHARGE_PROPERTY}
+            {t("{year} Service Charge Settlement — {property}", {
+              values: { year: SERVICE_CHARGE_YEAR, property: SERVICE_CHARGE_PROPERTY },
+            })}
           </p>
         </div>
         <span className="rounded-full bg-[#EBEDF9] px-2 py-0.5 text-[11px] font-medium text-[#233FDE]">
-          Preview
+          {t("Preview")}
         </span>
       </div>
 
@@ -86,13 +104,13 @@ export function ServiceChargeSettlementPreview({
       <div className="flex flex-col divide-y divide-[#F0F2F5]">
         <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 px-4 py-2">
           <span className="text-[11px] font-medium uppercase tracking-wide text-[#969A9E]">
-            Cost category
+            {t("Cost category")}
           </span>
           <span className="text-[11px] font-medium uppercase tracking-wide text-[#969A9E]">
-            Allocation basis
+            {t("Allocation basis")}
           </span>
           <span className="text-right text-[11px] font-medium uppercase tracking-wide text-[#969A9E]">
-            Recoverable
+            {t("Recoverable")}
           </span>
         </div>
 
@@ -102,7 +120,7 @@ export function ServiceChargeSettlementPreview({
 
         {/* Recoverable subtotal */}
         <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 bg-[#FBFCFD] px-4 py-2.5">
-          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">Recoverable subtotal</p>
+          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">{t("Recoverable subtotal")}</p>
           <span />
           <span className="text-right text-[14px] font-medium leading-[1.4] text-[#353638]">
             {formatEuro(settlement.recoverableSubtotal)}
@@ -110,11 +128,11 @@ export function ServiceChargeSettlementPreview({
         </div>
 
         {/* Management fee (derived) */}
-        <LineRow item={settlement.managementFee} onAnalyseFurther={onAnalyseFurther} />
+        <LineRow item={managementFeeItem} onAnalyseFurther={onAnalyseFurther} />
 
         {/* Net total */}
         <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 bg-[#FBFCFD] px-4 py-2.5">
-          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">Net total</p>
+          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">{t("Net total")}</p>
           <span />
           <span className="text-right text-[14px] font-medium leading-[1.4] text-[#353638]">
             {formatEuro(settlement.netTotal)}
@@ -123,7 +141,7 @@ export function ServiceChargeSettlementPreview({
 
         {/* VAT */}
         <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 px-4 py-2.5">
-          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">VAT ({vatPct}%)</p>
+          <p className="text-[13px] font-medium leading-[1.4] text-[#65686B]">{t("VAT ({pct}%)", { values: { pct: vatPct } })}</p>
           <span />
           <span className="text-right text-[14px] font-medium leading-[1.4] text-[#353638]">
             {formatEuro(settlement.vatAmount)}
@@ -133,7 +151,7 @@ export function ServiceChargeSettlementPreview({
         {/* Gross total */}
         <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_auto] items-center gap-3 bg-[#FAFBFC] px-4 py-3">
           <p className="text-[14px] font-semibold leading-[1.4] text-[#010309]">
-            Total incl. VAT
+            {t("Total incl. VAT")}
           </p>
           <span />
           <span className="text-right text-[15px] font-semibold leading-[1.4] text-[#010309]">
@@ -145,16 +163,16 @@ export function ServiceChargeSettlementPreview({
       {/* Confirmed assumptions & notes */}
       <div className="border-t border-[#E6E8EB] px-4 py-3">
         <p className="mb-2 text-[12px] font-medium uppercase tracking-wide text-[#969A9E]">
-          Confirmed assumptions
+          {t("Confirmed assumptions")}
         </p>
         <div className="flex flex-col gap-1.5">
           {SERVICE_CHARGE_ASSUMPTIONS.map((assumption) => (
             <div key={assumption.id} className="flex items-start justify-between gap-3">
               <span className="text-[13px] font-normal leading-[1.4] text-[#65686B]">
-                {assumption.label}
+                {t(assumption.label)}
               </span>
               <span className="shrink-0 text-right text-[13px] font-medium leading-[1.4] text-[#1CAB9F]">
-                {answers[assumption.id] ?? assumption.defaultAnswer}
+                {t(answers[assumption.id] ?? assumption.defaultAnswer)}
               </span>
             </div>
           ))}
@@ -163,14 +181,14 @@ export function ServiceChargeSettlementPreview({
         {SERVICE_CHARGE_EXCLUSIONS.length > 0 ? (
           <>
             <p className="mb-1.5 mt-3 text-[12px] font-medium uppercase tracking-wide text-[#969A9E]">
-              Excluded from settlement
+              {t("Excluded from settlement")}
             </p>
             <div className="flex flex-col gap-1.5">
               {SERVICE_CHARGE_EXCLUSIONS.map((exclusion) => (
                 <div key={exclusion.label} className="flex items-start justify-between gap-3">
                   <span className="text-[13px] font-normal leading-[1.4] text-[#65686B]">
-                    {exclusion.label}{" "}
-                    <span className="text-[#969A9E]">— {exclusion.reason}</span>
+                    {t(exclusion.label)}{" "}
+                    <span className="text-[#969A9E]">— {t(exclusion.reason)}</span>
                   </span>
                   <span className="shrink-0 text-right text-[13px] font-medium leading-[1.4] text-[#B23A48]">
                     {formatEuro(exclusion.amount)}
@@ -190,7 +208,7 @@ export function ServiceChargeSettlementPreview({
           className="inline-flex h-9 items-center gap-2 rounded-[32px] bg-[#010309] px-3.5 text-[13px] font-medium leading-[1.24] text-[#F0F2F5] transition-colors hover:bg-[#252628]"
         >
           <FileSpreadsheet className="size-4" strokeWidth={1.8} aria-hidden />
-          Export to Excel
+          {t("Export to Excel")}
         </button>
         <button
           type="button"
@@ -198,15 +216,15 @@ export function ServiceChargeSettlementPreview({
           className="inline-flex h-9 items-center gap-2 rounded-[32px] border border-[#B3B8BD] bg-white px-3.5 text-[13px] font-medium leading-[1.24] text-[#010309] transition-colors hover:bg-[#F0F2F5]"
         >
           <FileText className="size-4" strokeWidth={1.8} aria-hidden />
-          Generate PDF
+          {t("Generate PDF")}
         </button>
       </div>
 
       <div className={cn("border-t border-[#E6E8EB] bg-[#F9FAFB] px-4 py-2.5")}>
         <p className="text-[11px] font-normal leading-[1.4] text-[#969A9E]">
-          The Excel export writes these confirmed values and allocation notes into your firm&apos;s
-          formatted template with live formulas (SUM, fee %, VAT). Customer-facing PDFs are prepared
-          from the finalized settlement.
+          {t(
+            "The Excel export writes these confirmed values and allocation notes into your firm's formatted template with live formulas (SUM, fee %, VAT). Customer-facing PDFs are prepared from the finalized settlement.",
+          )}
         </p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export function plEditKey(rowIndex: number, field: string) {
   return `pl:${rowIndex}:${field}`;
@@ -22,6 +23,7 @@ export function ReportEditApprovalMark({
   onReject: () => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -33,8 +35,8 @@ export function ReportEditApprovalMark({
         type="button"
         onClick={onApprove}
         className="flex size-5 items-center justify-center rounded text-[#2E7D32] hover:bg-[#E8F5E9]"
-        aria-label="Approve change"
-        title="Keep change"
+        aria-label={t("Approve change")}
+        title={t("Keep change")}
       >
         <Check className="size-3" strokeWidth={2.5} />
       </button>
@@ -42,8 +44,8 @@ export function ReportEditApprovalMark({
         type="button"
         onClick={onReject}
         className="flex size-5 items-center justify-center rounded text-[#65686B] hover:bg-[#F0F2F5]"
-        aria-label="Discard change"
-        title="Discard change"
+        aria-label={t("Discard change")}
+        title={t("Discard change")}
       >
         <X className="size-3" strokeWidth={2.5} />
       </button>

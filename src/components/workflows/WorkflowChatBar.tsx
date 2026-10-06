@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { AmiioFocusChatBar } from "@/src/components/commercial/AmiioFocusChatBar";
+import { useI18n } from "@/src/hooks/useI18n";
 import { SHELL_ASK_AI_CHAT_BAR_MAX_PX } from "@/src/lib/shellLayout";
 
 /** Full-view workflow chat bar — matches Ask Amiio {@link AmiioFocusChatBar} layout. */
@@ -29,6 +30,7 @@ export function WorkflowChatBar({
   inputRef?: React.RefObject<HTMLInputElement | null>;
   onSend?: (message: string) => void;
 }) {
+  const { t } = useI18n();
   const [uncontrolledDraft, setUncontrolledDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const internalInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +53,7 @@ export function WorkflowChatBar({
     if (!onSend) {
       window.dispatchEvent(
         new CustomEvent("amiio:toast", {
-          detail: { message: "Workflow assistant is processing your request…" },
+          detail: { message: t("Workflow assistant is processing your request…") },
         }),
       );
     }
@@ -76,7 +78,7 @@ export function WorkflowChatBar({
           draft={draft}
           error={error}
           isTyping={isTyping || isSending}
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           inputRef={inputRef}
           onDraftChange={setDraft}
           onSubmit={handleSubmit}
@@ -84,7 +86,7 @@ export function WorkflowChatBar({
         />
       </form>
       <p className="whitespace-nowrap text-center text-[12px] font-normal leading-[1.5] text-[#969A9E]">
-        Amiio AI can make mistakes. Check important info.
+        {t("Amiio AI can make mistakes. Check important info.")}
       </p>
     </div>
   );

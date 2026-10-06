@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AppShell, DashboardPageBody } from "@/src/components/layout/AppShell";
 import { WorkflowOverviewCard } from "@/src/components/workflows/WorkflowOverviewCard";
 import { INTENT_LABELS } from "@/src/components/workflows/WorkflowChatUi";
+import { useI18n } from "@/src/hooks/useI18n";
 import { WORKFLOW_CATALOG } from "@/src/lib/workflowCatalog";
 import {
   createWorkflowSessionForIntent,
@@ -12,6 +13,7 @@ import {
 } from "@/src/lib/workflowSessions";
 
 export function WorkflowsOverview() {
+  const { t } = useI18n();
   const router = useRouter();
 
   const handleNewWorkflow = () => {
@@ -22,7 +24,11 @@ export function WorkflowsOverview() {
     if (item.comingSoon) {
       window.dispatchEvent(
         new CustomEvent("amiio:toast", {
-          detail: { message: `${item.title} workflow is coming soon in this demo.` },
+          detail: {
+            message: t("{title} workflow is coming soon in this demo.", {
+              values: { title: t(item.title) },
+            }),
+          },
         }),
       );
       return;
@@ -41,7 +47,9 @@ export function WorkflowsOverview() {
           window.dispatchEvent(
             new CustomEvent("amiio:toast", {
               detail: {
-                message: `${INTENT_LABELS[item.intent!]} workflow is coming soon in this demo.`,
+                message: t("{title} workflow is coming soon in this demo.", {
+                  values: { title: t(INTENT_LABELS[item.intent!]) },
+                }),
               },
             }),
           ),
@@ -53,14 +61,14 @@ export function WorkflowsOverview() {
   return (
     <AppShell activeNav="workflow-new">
       <header className="flex items-start justify-between gap-4 px-6 pt-8">
-        <h1 className="typo-page-title text-[#010309]">Workflows</h1>
+        <h1 className="typo-page-title text-[#010309]">{t("Workflows")}</h1>
         <button
           type="button"
           onClick={handleNewWorkflow}
           className="inline-flex h-10 shrink-0 items-center gap-2 rounded-[32px] bg-[#010309] px-3.5 text-[14px] font-medium leading-[1.24] text-[#F0F2F5] transition-colors hover:bg-[#252628]"
         >
           <Plus className="size-4" strokeWidth={2} />
-          New
+          {t("New")}
         </button>
       </header>
       <DashboardPageBody className="pt-[25px]">

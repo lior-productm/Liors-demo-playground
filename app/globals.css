@@ -544,6 +544,11 @@ svg .amiio-chart-svg-grid-line {
   animation: amiio-portfolio-chart-roll 12s linear infinite;
 }
 
+/* A dialog is the only scroller while it is open. The page scroller stays put. */
+body[data-scroll-locked] [data-app-scroll] {
+  overflow: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .recharts-wrapper .recharts-cartesian-grid line,
   svg .amiio-chart-svg-grid-line {

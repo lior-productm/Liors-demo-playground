@@ -67,6 +67,7 @@ import {
 import { LeaseRenewalProcessFlow } from "@/src/components/workflows/LeaseRenewalProcessFlow";
 import { StartLeaseRenewalDialog } from "@/src/components/workflows/StartLeaseRenewalDialog";
 import { LeaseProposalReviewWorkspace } from "@/src/components/workflows/LeaseProposalReviewWorkspace";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -275,12 +276,13 @@ const metricCardGradient =
   "linear-gradient(-88deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%)";
 
 function MetricInsightButton({ onClick }: { onClick?: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#D1D5D9] text-[#65686B] transition-colors hover:bg-[#F3F6FA]"
-      aria-label="Analyse with Amiio"
+      aria-label={t("Analyse with Amiio")}
     >
       <Lightbulb className="h-4 w-4" strokeWidth={1.75} />
     </button>
@@ -298,6 +300,7 @@ function LeaseRenewalPageHeader({
   tenantName: string;
   onOpenTenantHub?: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex min-w-0 items-start gap-[26px]">
       <div className="relative h-[60px] w-[60px] shrink-0 overflow-hidden rounded-[8px] bg-white">
@@ -332,7 +335,7 @@ function LeaseRenewalPageHeader({
         </div>
         <div className="mt-2">
           <Badge className="border-0 bg-[#FEF3CD] text-[12px] font-medium text-[#856404]">
-            Negotiation
+            {t("Negotiation")}
           </Badge>
         </div>
       </div>
@@ -341,11 +344,12 @@ function LeaseRenewalPageHeader({
 }
 
 function RecentLeaseRenewalChip() {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-4">
-      <span className="text-[14px] font-medium leading-[1.25] text-[#65686B]">Recent:</span>
+      <span className="text-[14px] font-medium leading-[1.25] text-[#65686B]">{t("Recent:")}</span>
       <div className="flex h-8 items-center gap-2 rounded-full border border-[#E6E8EB] bg-white px-3 text-[14px] font-medium leading-[1.25] text-[#010309] shadow-sm">
-        Lease Renewal
+        {t("Lease Renewal")}
         <button type="button" className="rounded-full p-0.5 text-[#969A9E] hover:bg-[#F2F4F7]">
           <X className="h-4 w-4" />
         </button>
@@ -363,6 +367,7 @@ function ProposalDraftPanelAccess({
   panelOpen?: boolean;
   onOpen?: () => void;
 }) {
+  const { t } = useI18n();
   if (!available || !onOpen) return null;
 
   return (
@@ -378,7 +383,7 @@ function ProposalDraftPanelAccess({
         )}
       >
         <FileText className="h-3.5 w-3.5" />
-        {panelOpen ? "Proposal draft open" : "View proposal draft"}
+        {panelOpen ? t("Proposal draft open") : t("View proposal draft")}
       </button>
     </div>
   );
@@ -395,11 +400,12 @@ function TermSliderBlock({
   fillPct: number;
   refs: { left: string; mid: string }[];
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       <div className="flex items-start justify-between gap-2 leading-[1.5]">
-        <span className="text-[14px] font-medium text-[#65686B]">{label}</span>
-        <span className="text-right text-[16px] font-medium text-[#2C2C2C]">{valueLabel}</span>
+        <span className="text-[14px] font-medium text-[#65686B]">{t(label)}</span>
+        <span className="text-right text-[16px] font-medium text-[#2C2C2C]">{t(valueLabel)}</span>
       </div>
       <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#F7F9FB]">
         <div
@@ -410,8 +416,8 @@ function TermSliderBlock({
       <div className="flex flex-col gap-1 text-[12px] leading-[1.5] text-[#65686B]">
         {refs.map((r) => (
           <div key={`${r.left}-${r.mid}`} className="flex h-5 items-center justify-between">
-            <span className="font-normal">{r.left}</span>
-            <span className="font-medium">{r.mid}</span>
+            <span className="font-normal">{t(r.left)}</span>
+            <span className="font-medium">{t(r.mid)}</span>
           </div>
         ))}
       </div>
@@ -424,6 +430,7 @@ function ProposedTermsConditionsFigma({
 }: {
   onAnalyseWithAmiio?: (topic: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -438,7 +445,7 @@ function ProposedTermsConditionsFigma({
       <div className="flex items-center gap-2">
         <ChevronUp className="h-6 w-6 shrink-0 text-[#969A9E]" />
         <h3 className="typo-h5 text-[#2C2C2C]">
-          Proposed Terms &amp; Conditions
+          {t("Proposed Terms & Conditions")}
         </h3>
       </div>
 
@@ -483,7 +490,7 @@ function ProposedTermsConditionsFigma({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-[rgba(230,231,232,0.7)] p-4">
-          <p className="text-[16px] font-medium leading-[1.5] text-[#2C2C2C]">Proposed Terms Summary</p>
+          <p className="text-[16px] font-medium leading-[1.5] text-[#2C2C2C]">{t("Proposed Terms Summary")}</p>
           <div className="mt-4 divide-y divide-[rgba(230,231,232,0.7)]">
             {[
               ["Proposed Rent", "€245/sqm/yr"],
@@ -494,7 +501,7 @@ function ProposedTermsConditionsFigma({
               ["Indexation", "CPI annually"],
             ].map(([k, v]) => (
               <div key={k} className="flex h-10 items-center justify-between py-3 first:pt-0">
-                <span className="text-[14px] font-medium text-[#65686B]">{k}</span>
+                <span className="text-[14px] font-medium text-[#65686B]">{t(k)}</span>
                 {k === "Rent Increase" ? (
                   <TrendPill direction="up" pct="33%" />
                 ) : (
@@ -511,26 +518,26 @@ function ProposedTermsConditionsFigma({
               "linear-gradient(153deg, rgba(236, 241, 247, 0.8) 0.6%, rgba(236, 244, 247, 0.7) 98%)",
           }}
         >
-          <p className="text-[16px] font-medium leading-[1.5] text-[#2C2C2C]">Financial Impact</p>
+          <p className="text-[16px] font-medium leading-[1.5] text-[#2C2C2C]">{t("Financial Impact")}</p>
           <div className="mt-4 space-y-0">
             <div className="flex h-10 items-center justify-between border-b border-[rgba(230,231,232,0.7)] py-3">
-              <span className="text-[14px] font-medium text-[#65686B]">Annual Rent (new)</span>
+              <span className="text-[14px] font-medium text-[#65686B]">{t("Annual Rent (new)")}</span>
               <span className="text-[14px] font-normal text-[#2C2C2C]">€952,820</span>
             </div>
             <div className="flex h-10 items-center justify-between border-b border-[rgba(230,231,232,0.7)] py-3">
-              <span className="text-[14px] font-medium text-[#65686B]">Total Contract Value</span>
+              <span className="text-[14px] font-medium text-[#65686B]">{t("Total Contract Value")}</span>
               <span className="text-[14px] font-normal text-[#2C2C2C]">€4,764,100</span>
             </div>
             <div className="flex h-10 items-center justify-between border-b border-[#121212] py-3">
-              <span className="text-[14px] font-medium text-[#65686B]">Less Incentive Value</span>
+              <span className="text-[14px] font-medium text-[#65686B]">{t("Less Incentive Value")}</span>
               <span className="text-[14px] font-normal text-[#B23A48]">-€157,803</span>
             </div>
             <div className="flex items-center justify-between pb-1 pt-3">
-              <span className="text-[14px] font-medium text-[#2C2C2C]">Effective Annual Rent</span>
+              <span className="text-[14px] font-medium text-[#2C2C2C]">{t("Effective Annual Rent")}</span>
               <span className="text-[16px] font-medium text-[#2C2C2C]">€921,059</span>
             </div>
             <div className="flex items-center justify-between pt-1">
-              <span className="text-[12px] font-medium text-[#65686B]">Break Option</span>
+              <span className="text-[12px] font-medium text-[#65686B]">{t("Break Option")}</span>
               <span className="text-[12px] font-normal text-[#65686B]">€236/sqm/yr</span>
             </div>
           </div>
@@ -543,20 +550,19 @@ function ProposedTermsConditionsFigma({
             <button
               type="button"
               className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[#010309] transition-colors hover:bg-[#F3F6FA]"
-              aria-label="Amiio AI"
+              aria-label={t("Amiio AI")}
             >
               <Sparkles className="h-4 w-4 text-[#010309]" aria-hidden />
             </button>
           </AmiioAiDisclaimerTrigger>
           <div className="min-w-0 flex-1 space-y-2">
             <p className="text-[16px] font-medium leading-[1.5] text-[#353638]">
-              Amiio&apos;s recommendation
+              {t("Amiio's recommendation")}
             </p>
             <p className="text-[14px] font-normal leading-[1.4] text-[#353638]">
-              Based on tenant history, market conditions, and asset positioning, I recommend a €244/sqm
-              rent with 2 months rent-free incentive over a 5-year term. This represents a 5.2%
-              increase from current rent, which is above average — consider negotiation buffer. The
-              effective rent of €236/sqm is at the higher end of the current market range.
+              {t(
+                "Based on tenant history, market conditions, and asset positioning, I recommend a €244/sqm rent with 2 months rent-free incentive over a 5-year term. This represents a 5.2% increase from current rent, which is above average — consider negotiation buffer. The effective rent of €236/sqm is at the higher end of the current market range.",
+              )}
             </p>
             <button
               type="button"
@@ -567,7 +573,7 @@ function ProposedTermsConditionsFigma({
                 )
               }
             >
-              Analyse further
+              {t("Analyse further")}
             </button>
           </div>
         </div>
@@ -586,15 +592,16 @@ function LeaseRenewalMetricStrip({
     subC?: string;
   }[];
 }) {
+  const { t } = useI18n();
   return (
     <div className="grid grid-cols-2 gap-3 rounded-xl border border-[rgba(230,231,232,0.7)] p-3 sm:grid-cols-4 sm:gap-4 sm:p-4">
       {metrics.map((m) => (
         <div key={m.label} className="min-w-0 text-left">
-          <p className="text-[11px] font-medium leading-tight text-[#65686B] sm:text-[12px]">{m.label}</p>
+          <p className="text-[11px] font-medium leading-tight text-[#65686B] sm:text-[12px]">{t(m.label)}</p>
           <p className="mt-1 text-[15px] font-medium leading-tight text-[#010309] sm:text-[18px]">{m.value}</p>
           {m.sub ? (
             <p className={cn("text-[11px] font-medium leading-tight sm:text-[12px]", m.subC ?? "text-[#65686B]")}>
-              {m.sub}
+              {t(m.sub)}
             </p>
           ) : null}
         </div>
@@ -604,6 +611,7 @@ function LeaseRenewalMetricStrip({
 }
 
 function ComparableLeasesMiniTable() {
+  const { t } = useI18n();
   const rows = [
     {
       name: "Wonderkind Technologies B.V.",
@@ -643,17 +651,17 @@ function ComparableLeasesMiniTable() {
     >
       <div className="flex items-center gap-2">
         <ChevronUp className="h-6 w-6 text-[#969A9E]" />
-        <span className="typo-h5 text-[#121212]">Recent Comparable Leases</span>
+        <span className="typo-h5 text-[#121212]">{t("Recent Comparable Leases")}</span>
       </div>
-      <p className="text-[14px] font-medium leading-[1.5] text-[#121212]">For Rental Assessment</p>
+      <p className="text-[14px] font-medium leading-[1.5] text-[#121212]">{t("For Rental Assessment")}</p>
       <div className="overflow-x-auto rounded-2xl border border-[rgba(230,231,232,0.7)] [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#D1D5D9] [&::-webkit-scrollbar-track]:bg-transparent">
         <div className="min-w-[min(100%,520px)] sm:min-w-[700px]">
           <div className="grid grid-cols-[240px_100px_160px_100px_100px] items-center justify-between border-b border-[rgba(230,231,232,0.7)] bg-[#F2F4F7] px-3 py-[13px] text-[14px] font-medium text-[#65686B]">
-            <span>Tenant</span>
-            <span className="text-right">AREA</span>
-            <span className="text-right">RENT/SQM</span>
-            <span className="text-right">LEASE START</span>
-            <span className="text-right">Term</span>
+            <span>{t("Tenant")}</span>
+            <span className="text-right">{t("AREA")}</span>
+            <span className="text-right">{t("RENT/SQM")}</span>
+            <span className="text-right">{t("LEASE START")}</span>
+            <span className="text-right">{t("Term")}</span>
           </div>
           {rows.map((r) => (
             <div
@@ -669,7 +677,7 @@ function ComparableLeasesMiniTable() {
                 ) : (
                   <TrendPill direction="neutral" pct={r.trendValue} />
                 )}
-                <span className="shrink-0 text-[12px] text-[#65686B]">vs current</span>
+                <span className="shrink-0 text-[12px] text-[#65686B]">{t("vs current")}</span>
               </div>
               <span className="text-right text-[12px] font-normal leading-[1.5] text-[#65686B]">{r.lease}</span>
               <span className="text-right text-[14px] font-normal leading-[1.4] text-[#2C2C2C]">{r.term}</span>
@@ -692,6 +700,7 @@ function LeaseRenewalWorkflowFooter({
   onPrimary: () => void;
   primaryIcon?: "arrow" | "download";
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(230,231,232,0.7)] pt-6">
       <button
@@ -700,21 +709,21 @@ function LeaseRenewalWorkflowFooter({
         className="inline-flex h-12 items-center gap-2 rounded-full border border-[#B3B8BD] px-4 text-[14px] font-medium text-[#010309] transition-colors hover:bg-[#F2F4F7]"
       >
         <ArrowLeft className="h-5 w-5" />
-        Back
+        {t("Back")}
       </button>
       <div className="flex flex-wrap items-center gap-3 sm:gap-6">
         <button
           type="button"
           className="inline-flex h-12 items-center justify-center rounded-full border border-[#B3B8BD] px-4 text-[14px] font-medium text-[#010309] hover:bg-[#F2F4F7]"
         >
-          Save Draft
+          {t("Save Draft")}
         </button>
         <button
           type="button"
           onClick={onPrimary}
           className="inline-flex h-12 items-center gap-2 rounded-full bg-[#010309] px-4 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#252628]"
         >
-          {primaryLabel}
+          {t(primaryLabel)}
           {primaryIcon === "download" ? (
             <Download className="h-5 w-5" />
           ) : (
@@ -788,6 +797,7 @@ function ProspectModalDialog({
   card: PipelineCard | null;
   onStartLeaseWorkflow?: (context: LeaseRenewalContext) => void;
 }) {
+  const { t } = useI18n();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadActivity, setUploadActivity] = useState("");
 
@@ -815,7 +825,7 @@ function ProspectModalDialog({
             type="button"
             onClick={() => onOpenChange(false)}
             className="absolute right-5 top-3 z-20 flex size-6 items-center justify-center rounded-full p-1.5 text-[#65686B] hover:bg-[#F3F6FA]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -838,11 +848,11 @@ function ProspectModalDialog({
                   <select
                     defaultValue={card.status}
                     className="h-10 w-full appearance-none rounded-lg border border-[#E6E8EB] bg-white py-2 pl-3 pr-10 text-[14px] font-medium text-[#2C2C2C] accent-auto outline-none focus-visible:[outline:2px_solid_Highlight] focus-visible:[outline-offset:2px]"
-                    aria-label="Pipeline stage"
+                    aria-label={t("Pipeline stage")}
                   >
                     {stages.map((s) => (
                       <option key={s} value={s}>
-                        {s}
+                        {t(s)}
                       </option>
                     ))}
                   </select>
@@ -853,14 +863,14 @@ function ProspectModalDialog({
                     <button
                       type="button"
                       className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[#2C2C2C] transition-colors hover:bg-[#F3F6FA]"
-                      aria-label="Amiio AI"
+                      aria-label={t("Amiio AI")}
                     >
                       <Sparkles className="h-4 w-4 text-[#2C2C2C]" aria-hidden />
                     </button>
                   </AmiioAiDisclaimerTrigger>
                   <ProbabilityDonut value={card.probability} size={24} />
                   <span className="whitespace-nowrap text-[14px] font-medium leading-none text-[#2C2C2C]">
-                    {card.probability}% success probability
+                    {card.probability}{t("% success probability")}
                   </span>
                 </div>
               </div>
@@ -872,7 +882,7 @@ function ProspectModalDialog({
                   key={i}
                   className="rounded-xl border border-[rgba(230,231,232,0.7)] bg-[rgba(255,255,255,0.8)] p-3"
                 >
-                  <p className="text-[12px] font-medium leading-[1.5] text-[#65686B]">Indicative Value</p>
+                  <p className="text-[12px] font-medium leading-[1.5] text-[#65686B]">{t("Indicative Value")}</p>
                   <p className="mt-1 typo-h5 text-[#2C2C2C]">€47,225,000</p>
                 </div>
               ))}
@@ -887,7 +897,7 @@ function ProspectModalDialog({
               )}
             >
             <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <p className="typo-h5 text-[#2C2C2C]">Activities</p>
+              <p className="typo-h5 text-[#2C2C2C]">{t("Activities")}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex lg:flex-nowrap lg:gap-3">
                 <button
                   type="button"
@@ -898,7 +908,7 @@ function ProspectModalDialog({
                   className="inline-flex h-8 min-w-[108px] items-center justify-center gap-2 rounded-full bg-[#05091F] px-3 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#0E195B]"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  Transcript
+                  {t("Transcript")}
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -907,7 +917,7 @@ function ProspectModalDialog({
                       className="inline-flex h-8 min-w-[108px] items-center justify-center gap-2 rounded-full bg-[#05091F] px-3 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#0E195B]"
                     >
                       <Mail className="h-4 w-4" />
-                      Email
+                      {t("Email")}
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-[10rem] border-[#E6E8EB] bg-white text-[#353638]">
@@ -916,12 +926,12 @@ function ProspectModalDialog({
                       onSelect={() => {
                         window.dispatchEvent(
                           new CustomEvent("amiio:toast", {
-                            detail: { message: "Send Email — opening composer…" },
+                            detail: { message: t("Send Email — opening composer…") },
                           }),
                         );
                       }}
                     >
-                      Send Email
+                      {t("Send Email")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer text-[14px] focus:bg-[#F2F4F7]"
@@ -930,7 +940,7 @@ function ProspectModalDialog({
                         setUploadOpen(true);
                       }}
                     >
-                      Upload Email
+                      {t("Upload Email")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -943,7 +953,7 @@ function ProspectModalDialog({
                   className="inline-flex h-8 min-w-[108px] items-center justify-center gap-2 rounded-full bg-[#05091F] px-3 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#0E195B]"
                 >
                   <FileText className="h-4 w-4" />
-                  Notes
+                  {t("Notes")}
                 </button>
                 <button
                   type="button"
@@ -954,7 +964,7 @@ function ProspectModalDialog({
                   className="inline-flex h-8 min-w-[108px] items-center justify-center gap-2 rounded-full bg-[#05091F] px-3 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#0E195B]"
                 >
                   <Upload className="h-4 w-4" />
-                  Document
+                  {t("Document")}
                 </button>
               </div>
             </div>
@@ -967,22 +977,22 @@ function ProspectModalDialog({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
                       <ActivityLogIcon type={row.type} />
-                      <span className="text-[16px] font-medium text-[#2C2C2C]">{row.type}</span>
+                      <span className="text-[16px] font-medium text-[#2C2C2C]">{t(row.type)}</span>
                       <Link2 className="h-4 w-4 shrink-0 text-[#233FDE]" />
                     </div>
                     <span className="shrink-0 text-[12px] font-normal text-[#65686B]">{row.date}</span>
                   </div>
-                  <p className="text-[14px] font-normal leading-[1.4] text-[#2C2C2C]">{row.text}</p>
+                  <p className="text-[14px] font-normal leading-[1.4] text-[#2C2C2C]">{t(row.text)}</p>
                 </div>
               ))}
             </div>
             <div className="mt-4">
               <div className="mb-1.5 flex items-start justify-between gap-2">
-                <span className="text-[16px] font-normal text-[#2C2C2C]">Notes</span>
+                <span className="text-[16px] font-normal text-[#2C2C2C]">{t("Notes")}</span>
                 <span className="text-[14px] font-normal text-[#65686B]">0/1000</span>
               </div>
               <Textarea
-                placeholder="Enter your information"
+                placeholder={t("Enter your information")}
                 className="min-h-[157px] rounded-2xl border-[#D1D5D9] bg-white text-[16px] placeholder:text-[#969A9E]"
               />
             </div>
@@ -995,14 +1005,14 @@ function ProspectModalDialog({
                 type="button"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-[#B23A48] px-4 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#9A3240]"
               >
-                Mark as Lost
+                {t("Mark as Lost")}
               </button>
               <div className="flex flex-wrap gap-4">
                 <button
                   type="button"
                   className="inline-flex h-12 items-center justify-center rounded-full border border-[#B3B8BD] px-4 text-[14px] font-medium text-[#010309] hover:bg-[#F3F6FA]"
                 >
-                  Generate Proposal
+                  {t("Generate Proposal")}
                 </button>
                 <button
                   type="button"
@@ -1017,7 +1027,7 @@ function ProspectModalDialog({
                   }}
                   className="inline-flex h-12 items-center justify-center rounded-full bg-[#121212] px-4 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#353638]"
                 >
-                  Start Lease Workflow
+                  {t("Start Lease Workflow")}
                 </button>
               </div>
             </div>
@@ -1043,6 +1053,7 @@ function PipelineView({
   onStartLeaseWorkflow?: (context: LeaseRenewalContext) => void;
   onAnalyseWithAmiio?: (topic: string) => void;
 }) {
+  const { t } = useI18n();
   const [listTab, setListTab] = useState<"active" | "archived">("active");
   const [searchQuery, setSearchQuery] = useState("");
   const [startRenewalOpen, setStartRenewalOpen] = useState(false);
@@ -1073,14 +1084,14 @@ function PipelineView({
   return (
     <div className="flex flex-col gap-[26px]">
       <div className="flex items-start justify-between gap-4">
-        <h1 className="typo-page-title text-[#010309]">Lease Renewals</h1>
+        <h1 className="typo-page-title text-[#010309]">{t("Lease Renewals")}</h1>
         <button
           type="button"
           onClick={() => setStartRenewalOpen(true)}
           className="inline-flex h-10 shrink-0 items-center gap-2 rounded-[32px] bg-[#010309] px-3.5 text-[14px] font-medium leading-[1.24] text-[#F0F2F5] transition-colors hover:bg-[#252628]"
         >
           <Plus className="size-4" strokeWidth={2} />
-          New
+          {t("New")}
         </button>
       </div>
 
@@ -1096,7 +1107,7 @@ function PipelineView({
                 : "text-[#2C2C2C] hover:bg-[#F3F6FA]",
             )}
           >
-            Active
+            {t("Active")}
           </button>
           <button
             type="button"
@@ -1108,7 +1119,7 @@ function PipelineView({
                 : "text-[#2C2C2C] hover:bg-[#F3F6FA]",
             )}
           >
-            Archived
+            {t("Archived")}
           </button>
         </div>
 
@@ -1118,7 +1129,7 @@ function PipelineView({
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
+            placeholder={t("Search...")}
             className="h-8 w-full rounded-[32px] border border-[#D1D5D9] bg-[#F0F2F5] py-1.5 pl-8 pr-3 text-[14px] text-[#353638] placeholder:text-[#969A9E] outline-none focus-visible:border-[#233FDE]/35 focus-visible:ring-2 focus-visible:ring-[#233FDE]/15"
           />
         </label>
@@ -1142,7 +1153,7 @@ function PipelineView({
                       label === "Name" && "pl-3",
                     )}
                   >
-                    {label}
+                    {t(label)}
                   </div>
                 ),
               )}
@@ -1152,8 +1163,8 @@ function PipelineView({
               {filteredCards.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-[#E6E8EB] bg-white px-4 py-10 text-center text-[14px] text-[#65686B]">
                   {listTab === "archived"
-                    ? "No archived lease renewals."
-                    : "No active lease renewals match your search."}
+                    ? t("No archived lease renewals.")
+                    : t("No active lease renewals match your search.")}
                 </p>
               ) : (
                 filteredCards.map((card) => (
@@ -1190,7 +1201,7 @@ function PipelineView({
                           statusBadgeClasses(card.status),
                         )}
                       >
-                        {card.status}
+                        {t(card.status)}
                       </Badge>
                     </div>
                     <div className="flex min-w-0 items-center gap-2 px-2">
@@ -1237,12 +1248,18 @@ function PipelineView({
 /*  Sub-view: Proposal Prep                                            */
 /* ------------------------------------------------------------------ */
 
-function buildProposalPrepExecSummaryParts(tenantName: string): { text: string; className?: string }[] {
+function buildProposalPrepExecSummaryParts(
+  tenantName: string,
+  t: ReturnType<typeof useI18n>["t"],
+): { text: string; className?: string }[] {
   return [
     {
-      text: `${tenantName} has been a tenant since 01-Jul-2019 with 1 successful renewals, demonstrating strong commitment to this location. The current lease expires on 30-Jun-2032. Based on their excellent payment history (100% on-time), positive communication sentiment (8.2/10), and recent business activity indicating stability, I assess the renewal probability as `,
+      text: t(
+        "{tenantName} has been a tenant since 01-Jul-2019 with 1 successful renewals, demonstrating strong commitment to this location. The current lease expires on 30-Jun-2032. Based on their excellent payment history (100% on-time), positive communication sentiment (8.2/10), and recent business activity indicating stability, I assess the renewal probability as ",
+        { values: { tenantName } },
+      ),
     },
-    { text: "Very High (85%+)", className: "font-semibold text-[#1F9E8B]" },
+    { text: t("Very High (85%+)"), className: "font-semibold text-[#1F9E8B]" },
     { text: "." },
   ];
 }
@@ -1268,8 +1285,9 @@ function ProposalPrepView({
   proposalPanelOpen?: boolean;
   onOpenProposalPanel?: () => void;
 }) {
+  const { t } = useI18n();
   const { tenantName, property } = renewalContext;
-  const execSummaryParts = buildProposalPrepExecSummaryParts(tenantName);
+  const execSummaryParts = buildProposalPrepExecSummaryParts(tenantName, t);
 
   return (
     <div className="w-full min-w-0 space-y-5">
@@ -1302,13 +1320,13 @@ function ProposalPrepView({
             <button
               type="button"
               className="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[#010309] transition-colors hover:bg-[#F3F6FA]"
-              aria-label="Amiio AI"
+              aria-label={t("Amiio AI")}
             >
               <Sparkles className="h-4 w-4 text-[#010309]" aria-hidden />
             </button>
           </AmiioAiDisclaimerTrigger>
           <h3 className="typo-h5 text-[#2C2C2C]">
-            Amiio&apos;s Executive Summary
+            {t("Amiio's Executive Summary")}
           </h3>
         </div>
         <div className="rounded-xl bg-[#FBFBFB] px-4 py-4">
@@ -1340,26 +1358,27 @@ function ProposalPrepView({
                 text={tenantName}
                 className="text-[14px] font-semibold leading-[1.25] text-[#010309]"
               />
-              <p className="mt-1 text-[12px] font-normal leading-[1.25] text-[#65686B]">Tenant Profile</p>
+              <p className="mt-1 text-[12px] font-normal leading-[1.25] text-[#65686B]">{t("Tenant Profile")}</p>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 sm:gap-x-4">
-            <MetricCell label="First lease" value="01-Jul-2019" />
-            <MetricCell label="Employees" value="150-200" />
-            <MetricCell label="Parking Spaces" value="40 spaces" />
-            <MetricCell label="Renewals" value="1x" />
-            <MetricCell label="Leased Area" value="3,905 sqm" />
-            <MetricCell label="Annual Value" value="€904,302" />
-            <MetricCell label="Expires" value="30-Jun-2032" />
-            <MetricCell label="Current Rent" value="€232/sqm/yr" />
+            <MetricCell label={t("First lease")} value="01-Jul-2019" />
+            <MetricCell label={t("Employees")} value="150-200" />
+            <MetricCell label={t("Parking Spaces")} value="40 spaces" />
+            <MetricCell label={t("Renewals")} value="1x" />
+            <MetricCell label={t("Leased Area")} value="3,905 sqm" />
+            <MetricCell label={t("Annual Value")} value="€904,302" />
+            <MetricCell label={t("Expires")} value="30-Jun-2032" />
+            <MetricCell label={t("Current Rent")} value="€232/sqm/yr" />
           </div>
           <div className="mt-6 border-t border-[rgba(230,231,232,0.7)] pt-4">
             <p className="text-[12px] font-medium uppercase tracking-wide text-[#65686B]">
-              Recent Business Changes
+              {t("Recent Business Changes")}
             </p>
             <p className="mt-2 text-[12px] leading-[1.5] text-[#353638]">
-              Announced Series C funding of €45M in Q3 2025 Expanding AI capabilities with new machine
-              learning team Opened new office in Rotterdam for customer success team
+              {t(
+                "Announced Series C funding of €45M in Q3 2025 Expanding AI capabilities with new machine learning team Opened new office in Rotterdam for customer success team",
+              )}
             </p>
           </div>
         </div>
@@ -1379,37 +1398,37 @@ function ProposalPrepView({
                 text={property ?? "Selected property"}
                 className="text-[14px] font-semibold leading-[1.25] text-[#010309]"
               />
-              <p className="mt-1 text-[12px] font-normal leading-[1.25] text-[#65686B]">Asset Profile</p>
+              <p className="mt-1 text-[12px] font-normal leading-[1.25] text-[#65686B]">{t("Asset Profile")}</p>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 sm:gap-x-4">
             <div>
-              <p className="text-[12px] text-[#65686B]">Condition</p>
+              <p className="text-[12px] text-[#65686B]">{t("Condition")}</p>
               <Badge variant="outline" className="mt-1 border-[#E6E8EB] text-[12px] font-medium">
-                Good
+                {t("Good")}
               </Badge>
             </div>
             <div>
-              <p className="text-[12px] text-[#65686B]">Location</p>
+              <p className="text-[12px] text-[#65686B]">{t("Location")}</p>
               <Badge variant="outline" className="mt-1 border-[#E6E8EB] text-[12px] font-medium">
                 Amsterdam SE
               </Badge>
             </div>
-            <MetricCell label="Built" value="2000" />
-            <MetricCell label="Total LFA" value="45,000 sqm" />
-            <MetricCell label="Occupancy" value="100%" />
+            <MetricCell label={t("Built")} value="2000" />
+            <MetricCell label={t("Total LFA")} value="45,000 sqm" />
+            <MetricCell label={t("Occupancy")} value="100%" />
             <div>
-              <p className="text-[12px] text-[#65686B]">Energy</p>
+              <p className="text-[12px] text-[#65686B]">{t("Energy")}</p>
               <Badge className="mt-1 border-0 bg-[#E6F6F3] text-[12px] font-medium text-[#1F9E8B]">
                 A
               </Badge>
             </div>
-            <MetricCell label="Avg. Asset Rent" value="€221/sqm/yr" />
-            <MetricCell label="Asset Valuation" value="€47,225,000" />
+            <MetricCell label={t("Avg. Asset Rent")} value="€221/sqm/yr" />
+            <MetricCell label={t("Asset Valuation")} value="€47,225,000" />
           </div>
           <div className="mt-6">
             <p className="text-[12px] font-medium text-[#65686B]">
-              Tenant Concentration — {tenantName}
+              {t("Tenant Concentration — {tenantName}", { values: { tenantName } })}
             </p>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#E6E8EB]">
               <div className="h-full w-[65%] rounded-full bg-[#010309]" />
@@ -1427,10 +1446,10 @@ function ProposalPrepView({
       >
         <div className="flex items-center gap-2">
           <ChevronDown className="h-6 w-6 shrink-0 text-[#969A9E]" />
-          <span className="typo-h5 text-[#2C2C2C]">Market Analysis</span>
+          <span className="typo-h5 text-[#2C2C2C]">{t("Market Analysis")}</span>
         </div>
         <p className="text-[16px] font-medium leading-[1.25] text-[#2C2C2C]">
-          Amsterdam Southeast Office Market
+          {t("Amsterdam Southeast Office Market")}
         </p>
 
         <LeaseRenewalMetricStrip
@@ -1459,10 +1478,10 @@ function ProposalPrepView({
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold text-[#010309]">{p.name}</p>
                   <p className="mt-1 text-[14px] text-[#65686B]">
-                    {p.location} | {p.area} | {p.type}
+                    {p.location} | {p.area} | {t(p.type)}
                   </p>
                   <p className="mt-1 text-[12px] text-[#65686B]">
-                    Energy: {p.energy} Condition: {p.condition} Available: {p.available}
+                    {t("Energy:")} {p.energy} {t("Condition:")} {p.condition} {t("Available:")} {p.available}
                   </p>
                 </div>
               </div>
@@ -1472,7 +1491,7 @@ function ProposalPrepView({
                   <span className="text-[14px] font-medium text-[#010309]">{p.rent}</span>
                   <span className="flex items-center gap-1">
                     <span className={cn("text-[12px] font-medium", p.diffColor)}>{p.diff}</span>
-                    <span className="text-[12px] text-[#65686B]">vs subject</span>
+                    <span className="text-[12px] text-[#65686B]">{t("vs subject")}</span>
                   </span>
                 </div>
               </div>
@@ -1494,17 +1513,16 @@ function ProposalPrepView({
             <button
               type="button"
               className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[#010309] transition-colors hover:bg-[#F3F6FA]"
-              aria-label="Amiio AI"
+              aria-label={t("Amiio AI")}
             >
               <Sparkles className="h-4 w-4 text-[#010309]" aria-hidden />
             </button>
           </AmiioAiDisclaimerTrigger>
           <div className="min-w-0 flex-1">
             <p className="text-[14px] font-medium leading-[1.5] text-[#353638]">
-              Market Insight: Based on 4 comparable units currently for lease in Amsterdam Southeast,
-              the average asking rent is €179/sqm. Current tenant rent of €232/sqm is above market
-              asking prices. Given the asset&apos;s good condition, excellent location, and Energy Label
-              A, a rent in the range of €175-185/sqm is justified for renewal negotiations.
+              {t(
+                "Market Insight: Based on 4 comparable units currently for lease in Amsterdam Southeast, the average asking rent is €179/sqm. Current tenant rent of €232/sqm is above market asking prices. Given the asset's good condition, excellent location, and Energy Label A, a rent in the range of €175-185/sqm is justified for renewal negotiations.",
+              )}
             </p>
             <button
               type="button"
@@ -1515,7 +1533,7 @@ function ProposalPrepView({
                 )
               }
             >
-              Analyse further
+              {t("Analyse further")}
             </button>
           </div>
         </div>
@@ -1551,6 +1569,7 @@ function LeaseProposalView({
   proposalPanelOpen?: boolean;
   onOpenProposalPanel?: () => void;
 }) {
+  const { t } = useI18n();
   const { tenantName } = renewalContext;
   const [inputTab, setInputTab] = useState<"Transcript" | "Email" | "Notes" | "Document">(
     "Transcript"
@@ -1608,10 +1627,10 @@ function LeaseProposalView({
             <AmiioAiDisclaimerTrigger wrapChild wrapperClassName="shrink-0">
               <Sparkles className="h-4 w-4 text-[#010309]" aria-hidden />
             </AmiioAiDisclaimerTrigger>
-            <h3 className="text-[16px] font-medium text-[#2C2C2C] sm:text-[18px]">Amiio&apos;s Live Status</h3>
+            <h3 className="text-[16px] font-medium text-[#2C2C2C] sm:text-[18px]">{t("Amiio's Live Status")}</h3>
             <span className="flex items-center gap-1 rounded-full bg-[#DCFCE7] px-2 py-0.5 text-xs font-medium text-[#16A34A]">
               <Radio className="h-2.5 w-2.5 animate-pulse" />
-              Live
+              {t("Live")}
             </span>
           </div>
           <button
@@ -1635,12 +1654,12 @@ function LeaseProposalView({
             {isEditing ? (
               <>
                 <Check className="h-3 w-3" />
-                Save
+                {t("Save")}
               </>
             ) : (
               <>
                 <Pencil className="h-3 w-3" />
-                Edit
+                {t("Edit")}
               </>
             )}
           </button>
@@ -1648,7 +1667,7 @@ function LeaseProposalView({
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           <div className="min-w-0 space-y-1">
-            <p className="text-xs text-[#6B7280]">Agreed Rent</p>
+            <p className="text-xs text-[#6B7280]">{t("Agreed Rent")}</p>
             {isEditing ? (
               <input
                 type="number"
@@ -1663,12 +1682,12 @@ function LeaseProposalView({
               </p>
             )}
             <p className="text-xs text-[#16A34A]">
-              ↗ {(((liveStatus.agreedRent - 232) / 232) * 100).toFixed(1)}% vs current
+              ↗ {(((liveStatus.agreedRent - 232) / 232) * 100).toFixed(1)}% {t("vs current")}
             </p>
-            <p className="text-xs text-[#6B7280]">Aligned with recommendations</p>
+            <p className="text-xs text-[#6B7280]">{t("Aligned with recommendations")}</p>
           </div>
           <div className="min-w-0 space-y-1">
-            <p className="text-xs text-[#6B7280]">Agreed Term</p>
+            <p className="text-xs text-[#6B7280]">{t("Agreed Term")}</p>
             {isEditing ? (
               <input
                 type="number"
@@ -1678,13 +1697,13 @@ function LeaseProposalView({
               />
             ) : (
               <p className="text-[15px] font-bold leading-tight text-[#111827] sm:text-lg">
-                {liveStatus.agreedTerm} years
+                {liveStatus.agreedTerm} {t("years")}
               </p>
             )}
-            <p className="text-xs text-[#6B7280]">Aligned with recommendations</p>
+            <p className="text-xs text-[#6B7280]">{t("Aligned with recommendations")}</p>
           </div>
           <div className="min-w-0 space-y-1">
-            <p className="text-xs text-[#6B7280]">Incentive</p>
+            <p className="text-xs text-[#6B7280]">{t("Incentive")}</p>
             {isEditing ? (
               <input
                 type="text"
@@ -1695,10 +1714,10 @@ function LeaseProposalView({
             ) : (
               <p className="text-[15px] font-bold leading-tight text-[#111827] sm:text-lg">{liveStatus.incentive}</p>
             )}
-            <p className="text-xs text-[#6B7280]">Within budget</p>
+            <p className="text-xs text-[#6B7280]">{t("Within budget")}</p>
           </div>
           <div className="min-w-0 space-y-1">
-            <p className="text-xs text-[#6B7280]">Start Date</p>
+            <p className="text-xs text-[#6B7280]">{t("Start Date")}</p>
             {isEditing ? (
               <input
                 type="text"
@@ -1709,13 +1728,13 @@ function LeaseProposalView({
             ) : (
               <p className="text-[15px] font-bold leading-tight text-[#111827] sm:text-lg">{liveStatus.startDate}</p>
             )}
-            <p className="text-xs text-[#6B7280]">Within budget</p>
+            <p className="text-xs text-[#6B7280]">{t("Within budget")}</p>
           </div>
         </div>
 
         {/* Agreed terms chips */}
         <div>
-          <p className="text-xs font-medium text-[#6B7280] mb-2">Additional Agreed Terms</p>
+          <p className="text-xs font-medium text-[#6B7280] mb-2">{t("Additional Agreed Terms")}</p>
           <div className="flex flex-wrap items-center gap-2">
             {agreedTerms.map((term, idx) => (
               <Badge
@@ -1727,7 +1746,7 @@ function LeaseProposalView({
                   className="h-4 w-4 cursor-pointer text-[#65686B] hover:text-red-500"
                   onClick={() => setAgreedTerms((prev) => prev.filter((_, i) => i !== idx))}
                 />
-                {term}
+                {t(term)}
               </Badge>
             ))}
             {isEditing ? (
@@ -1745,7 +1764,7 @@ function LeaseProposalView({
                   type="text"
                   value={newTerm}
                   onChange={(e) => setNewTerm(e.target.value)}
-                  placeholder="New term..."
+                  placeholder={t("New term...")}
                   className="rounded-md border border-[#C9DED1] bg-[rgba(255,255,255,0.85)] px-2 py-0.5 text-xs outline-none transition-colors focus-visible:border-[#233FDE]/35 focus-visible:ring-2 focus-visible:ring-[#233FDE]/15"
                 />
                 <button
@@ -1753,7 +1772,7 @@ function LeaseProposalView({
                   className="flex items-center gap-1 text-xs font-medium text-[#16A34A] hover:underline"
                 >
                   <Plus className="h-3 w-3" />
-                  Add
+                  {t("Add")}
                 </button>
               </form>
             ) : (
@@ -1762,7 +1781,7 @@ function LeaseProposalView({
                 className="flex items-center gap-1 text-xs font-medium text-[#353638] hover:underline"
               >
                 <Plus className="h-3 w-3" />
-                Add Term
+                {t("Add Term")}
               </button>
             )}
           </div>
@@ -1779,7 +1798,7 @@ function LeaseProposalView({
             amiioCardHoverSurface,
           )}
         >
-          <h3 className="typo-h5 text-[#2C2C2C]">Input Negotiation Data</h3>
+          <h3 className="typo-h5 text-[#2C2C2C]">{t("Input Negotiation Data")}</h3>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -1795,7 +1814,7 @@ function LeaseProposalView({
                   : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E6E8EB]",
               )}
             >
-              Transcript
+              {t("Transcript")}
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -1808,7 +1827,7 @@ function LeaseProposalView({
                       : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E6E8EB]",
                   )}
                 >
-                  Email
+                  {t("Email")}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -1821,7 +1840,7 @@ function LeaseProposalView({
                     setInputTab("Email");
                   }}
                 >
-                  Send Email
+                  {t("Send Email")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer text-xs focus:bg-[#F2F4F7]"
@@ -1831,7 +1850,7 @@ function LeaseProposalView({
                     setNegotiationDataUploadOpen(true);
                   }}
                 >
-                  Upload Email
+                  {t("Upload Email")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1849,7 +1868,7 @@ function LeaseProposalView({
                   : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E6E8EB]",
               )}
             >
-              Notes
+              {t("Notes")}
             </button>
             <button
               type="button"
@@ -1865,7 +1884,7 @@ function LeaseProposalView({
                   : "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E6E8EB]",
               )}
             >
-              Document
+              {t("Document")}
             </button>
           </div>
 
@@ -1873,52 +1892,52 @@ function LeaseProposalView({
           <div className="space-y-3">
             <div className="rounded-2xl border border-[rgba(230,231,232,0.7)] p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="typo-h5 text-[#2C2C2C]">Transcript</p>
+                <p className="typo-h5 text-[#2C2C2C]">{t("Transcript")}</p>
                 <span className="text-xs text-[#6B7280]">15-Feb-2026</span>
               </div>
               <p className="text-xs text-[#4B5563]">
-                Initial renewal discussion with tenant representative
+                {t("Initial renewal discussion with tenant representative")}
               </p>
               <ul className="space-y-1 text-xs text-[#4B5563]">
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Tenant expressed interest in extending for 5 years
+                  {t("Tenant expressed interest in extending for 5 years")}
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Requested 10% rent reduction due to market conditions
+                  {t("Requested 10% rent reduction due to market conditions")}
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Mentioned possible need for additional 200 sqm
+                  {t("Mentioned possible need for additional 200 sqm")}
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Preferred lease start date: July 2026
+                  {t("Preferred lease start date: July 2026")}
                 </li>
               </ul>
             </div>
 
             <div className="rounded-2xl border border-[rgba(230,231,232,0.7)] p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="typo-h5 text-[#2C2C2C]">Email</p>
+                <p className="typo-h5 text-[#2C2C2C]">{t("Email")}</p>
                 <span className="text-xs text-[#6B7280]">15-Feb-2026</span>
               </div>
               <p className="text-xs text-[#4B5563]">
-                Follow-up email confirming meeting points
+                {t("Follow-up email confirming meeting points")}
               </p>
               <ul className="space-y-1 text-xs text-[#4B5563]">
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Confirmed 5-year term preference
+                  {t("Confirmed 5-year term preference")}
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Agreed to 3% rent reduction as compromise
+                  {t("Agreed to 3% rent reduction as compromise")}
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#6B7280]" />
-                  Break option at year 3 accepted
+                  {t("Break option at year 3 accepted")}
                 </li>
               </ul>
             </div>
@@ -1937,41 +1956,50 @@ function LeaseProposalView({
               <Sparkles className="h-4 w-4 text-[#010309]" aria-hidden />
             </AmiioAiDisclaimerTrigger>
             <h3 className="typo-h5 text-[#2C2C2C]">
-              Amiio&apos;s Negotiation Analysis
+              {t("Amiio's Negotiation Analysis")}
             </h3>
           </div>
           <p className="text-xs leading-relaxed text-[#4B5563]">
-            Based on 2 input(s), the tenant shows strong commitment to renewal but is seeking
-            concessions. Key negotiation points identified:
+            {t(
+              "Based on 2 input(s), the tenant shows strong commitment to renewal but is seeking concessions. Key negotiation points identified:",
+            )}
           </p>
 
           <div className="space-y-3">
             <NegotiationPoint
-              title="Rent Reduction Request"
-              priority="High Priority"
+              title={t("Rent Reduction Request")}
+              priority={t("High Priority")}
               priorityColor="bg-red-100 text-red-700"
-              description={`${tenantName} requested 10% reduction. Market data supports only 3% decrease. Counter with €225/sqm (-3%) citing building improvements and energy efficiency upgrades.`}
+              description={t(
+                "{tenantName} requested 10% reduction. Market data supports only 3% decrease. Counter with €225/sqm (-3%) citing building improvements and energy efficiency upgrades.",
+                { values: { tenantName } },
+              )}
             />
             <NegotiationPoint
-              title="Expansion Interest"
-              priority="Medium"
+              title={t("Expansion Interest")}
+              priority={t("Medium")}
               priorityColor="bg-orange-100 text-orange-700"
-              description="Additional 200 sqm request aligns with their growth trajectory. Unit 4B (209 sqm) available at €209/sqm. Bundle expansion with main renewal for leverage."
+              description={t(
+                "Additional 200 sqm request aligns with their growth trajectory. Unit 4B (209 sqm) available at €209/sqm. Bundle expansion with main renewal for leverage.",
+              )}
             />
             <NegotiationPoint
-              title="Term Length"
-              priority="Aligned"
+              title={t("Term Length")}
+              priority={t("Aligned")}
               priorityColor="bg-green-100 text-green-700"
-              description="5-year term preference matches our target. Use this alignment to negotiate on rent level - longer commitment justifies modest concession."
+              description={t(
+                "5-year term preference matches our target. Use this alignment to negotiate on rent level - longer commitment justifies modest concession.",
+              )}
             />
           </div>
 
           {/* Recommended Counter-Offer */}
           <div className="rounded-lg bg-[#FFFBEB] p-3">
-            <p className="text-xs font-semibold text-[#92400E]">Recommended Counter-Offer</p>
+            <p className="text-xs font-semibold text-[#92400E]">{t("Recommended Counter-Offer")}</p>
             <p className="mt-1 text-xs leading-relaxed text-[#92400E]">
-              Offer €225/sqm (-3%) for main space + €209/sqm for expansion with 3 months rent-free
-              on combined space.
+              {t(
+                "Offer €225/sqm (-3%) for main space + €209/sqm for expansion with 3 months rent-free on combined space.",
+              )}
             </p>
           </div>
         </div>
@@ -2008,6 +2036,7 @@ function ReviewProposalView({
   proposalDraftAvailable?: boolean;
   onProposalDraftReady?: () => void;
 }) {
+  const { t } = useI18n();
   const { tenantName } = renewalContext;
 
   return (
@@ -2018,7 +2047,7 @@ function ReviewProposalView({
         className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#65686B] transition-colors hover:text-[#353638]"
       >
         <ArrowLeft className="size-5" />
-        All Lease Renewals
+        {t("All Lease Renewals")}
       </button>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -2037,13 +2066,13 @@ function ReviewProposalView({
             type="button"
             onClick={() =>
               window.dispatchEvent(
-                new CustomEvent("amiio:toast", { detail: { message: "Download started" } }),
+                new CustomEvent("amiio:toast", { detail: { message: t("Download started") } }),
               )
             }
             className="inline-flex h-8 items-center gap-2 rounded-[32px] bg-[#010309] px-3 text-[14px] font-medium text-[#F0F2F5] hover:bg-[#252628]"
           >
             <Download className="size-4" />
-            Finalize &amp; Download
+            {t("Finalize & Download")}
           </button>
         </div>
       </div>
@@ -2060,7 +2089,7 @@ function ReviewProposalView({
           className="inline-flex h-12 items-center gap-2 rounded-full border border-[#B3B8BD] px-4 text-[14px] font-medium text-[#010309] transition-colors hover:bg-[#F2F4F7]"
         >
           <ArrowLeft className="h-5 w-5" />
-          Back
+          {t("Back")}
         </button>
       </div>
     </div>

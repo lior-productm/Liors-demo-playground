@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { ALL_REPORTS_LIST } from "@/src/lib/reportingMockData";
 import {
   DISTRIBUTION_LABELS,
@@ -24,6 +25,7 @@ type Row = {
 };
 
 export function ReportsAllList() {
+  const { t } = useI18n();
   const [rows, setRows] = useState<Row[]>(() =>
     ALL_REPORTS_LIST.map((report) => ({
       title: report.title,
@@ -44,7 +46,7 @@ export function ReportsAllList() {
         title,
         statusLabel: DISTRIBUTION_LABELS[status],
         pillClass: DISTRIBUTION_PILL_STYLES[status],
-        updated: "Updated in Template Studio",
+        updated: t("Updated in Template Studio"),
       };
     });
 
@@ -64,9 +66,9 @@ export function ReportsAllList() {
   return (
     <div className="rounded-xl border border-[#E8EAED] bg-white shadow-[0px_2px_8px_0px_rgba(0,0,0,0.04)]">
       <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-[#E8EAED] px-6 py-3 text-[12px] font-medium uppercase tracking-wide text-[#6B7280]">
-        <span>Report</span>
-        <span>Status</span>
-        <span>Updated</span>
+        <span>{t("Report")}</span>
+        <span>{t("Status")}</span>
+        <span>{t("Updated")}</span>
       </div>
       <ul>
         {rows.map((report) => (
@@ -83,7 +85,7 @@ export function ReportsAllList() {
                 report.pillClass,
               )}
             >
-              {report.statusLabel}
+              {t(report.statusLabel)}
             </span>
             <span className="text-[14px] leading-[1.24] text-[#6B7280]">
               {report.updated}

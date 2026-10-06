@@ -14,6 +14,7 @@ import {
 } from "@/src/components/workflows/WorkflowChatUi";
 import { WorkflowLeaseRenewalAskFlow } from "@/src/components/workflows/WorkflowLeaseRenewalAskFlow";
 import { useWorkflowSessions } from "@/src/hooks/useWorkflowSessions";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { WorkflowIntentId, WorkflowSession } from "@/src/types/workflows";
 import { notifyWorkflowSessionsChanged } from "@/src/lib/workflowSessions";
 import { intentToTopic } from "@/src/lib/workflowTopics";
@@ -79,6 +80,7 @@ type Props = {
 };
 
 export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
+  const { t } = useI18n();
   const { saveSession } = useWorkflowSessions();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -264,7 +266,11 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
       () =>
         window.dispatchEvent(
           new CustomEvent("amiio:toast", {
-            detail: { message: `${INTENT_LABELS[intent]} workflow is coming soon in this demo.` },
+            detail: {
+              message: t("{title} workflow is coming soon in this demo.", {
+                values: { title: t(INTENT_LABELS[intent]) },
+              }),
+            },
           }),
         ),
       THINKING_MS + 50,
@@ -292,8 +298,9 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
         window.dispatchEvent(
           new CustomEvent("amiio:toast", {
             detail: {
-              message:
+              message: t(
                 "Thanks for the details — custom workflow creation is coming soon in this demo.",
+              ),
             },
           }),
         ),
@@ -414,7 +421,7 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
       <AppShell activeNav="leasing-renewal">
         <div className="min-h-screen bg-[#F7F8FA]">
           <DashboardPageBody className="pt-8">
-            <Suspense fallback={<DashboardLoading label="Loading renewal workspace…" />}>
+            <Suspense fallback={<DashboardLoading label={t("Loading renewal workspace…")} />}>
               <LeasingToolView
                 entryIntent="proposal-prep"
                 renewalContext={renewalContext}
@@ -447,11 +454,11 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
       {session.intent === "something-else" ? (
         <div className={chatColumnClass}>
           {somethingElseSubmitted ? (
-            <WorkflowUserBubble>{somethingElsePromptLabel}</WorkflowUserBubble>
+            <WorkflowUserBubble>{t(somethingElsePromptLabel)}</WorkflowUserBubble>
           ) : null}
           {thinkingAfterSomethingElse ? <WorkflowThinkingIndicator /> : null}
           {showSomethingElsePrompt ? (
-            <WorkflowAiBlock question={SOMETHING_ELSE_PROMPT} />
+            <WorkflowAiBlock question={t(SOMETHING_ELSE_PROMPT)} />
           ) : null}
           {customDescriptionSubmitted ? (
             <WorkflowUserBubble>
@@ -488,7 +495,7 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
       ) : session.intent && revealedStep !== "intent" ? (
         <div className={chatColumnClass}>
           <WorkflowUserBubble>
-            {selectedPromptLabel ?? INTENT_LABELS[session.intent]}
+            {selectedPromptLabel ? t(selectedPromptLabel) : t(INTENT_LABELS[session.intent])}
           </WorkflowUserBubble>
           {isTyping ? <WorkflowThinkingIndicator /> : null}
         </div>
@@ -521,14 +528,14 @@ export function WorkflowCreationChat({ sessionId, initialSession }: Props) {
         >
           <div className="mb-6 flex shrink-0 items-center gap-2">
             <EditableWorkflowTitle
-              title={session.title}
+              title={t(session.title)}
               className="typo-page-title text-[#010309]"
               onRename={(title) => {
                 persist({ ...session, title });
               }}
             />
             <span className="rounded-full bg-[#EBEDF9] px-2 py-0.5 text-[11px] font-medium text-[#233FDE]">
-              Workflows
+              {t("Workflows")}
             </span>
           </div>
 

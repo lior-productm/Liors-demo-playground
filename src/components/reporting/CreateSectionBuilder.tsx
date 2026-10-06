@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { SectionReviewSummary } from "@/src/components/reporting/SectionReviewSummary";
 import { ReportRichBlock } from "@/src/components/reporting/ReportRichBlock";
 import { PlForecastReviewEditor } from "@/src/components/reporting/PlForecastReviewEditor";
@@ -152,6 +153,7 @@ const STEP_LABELS: { id: BuilderStep; label: string }[] = [
 ];
 
 function StepDots({ step }: { step: BuilderStep }) {
+  const { t } = useI18n();
   const activeIndex =
     step === "generating"
       ? STEP_LABELS.findIndex((s) => s.id === "data-type")
@@ -172,7 +174,7 @@ function StepDots({ step }: { step: BuilderStep }) {
             )}
           >
             {index < activeIndex ? <Check className="size-3" strokeWidth={2.5} /> : null}
-            {item.label}
+            {t(item.label)}
           </span>
           {index < STEP_LABELS.length - 1 ? (
             <span className="h-px w-4 bg-[#E6E8EB]" />
@@ -198,6 +200,7 @@ export function CreateSectionBuilder({
   onCancel: () => void;
   onApprove: (section: CustomReportSection) => void;
 }) {
+  const { t } = useI18n();
   const isReplace = mode === "replace";
   const isLibrary = mode === "library";
   const [step, setStep] = useState<BuilderStep>("scope");
@@ -358,14 +361,29 @@ export function CreateSectionBuilder({
     );
     const targetLabel = formatScopeTargets(targets);
     const categoryClause =
-      categories.length > 0 ? `, focused on ${categories.join(", ")}` : "";
+      categories.length > 0
+        ? t(", focused on {categories}", {
+            values: { categories: categories.map((c) => t(c)).join(", ") },
+          })
+        : "";
     const isPlForecast = selectedObjects.includes("pl-forecasting");
     return {
       plainEnglish: isPlForecast
-        ? `I'll build a full-year P&L forecast for ${targetLabel}${categoryClause}. I'll pull actuals year-to-date, annualize the remaining year at current run-rate, and compare the FY forecast to the approved budget.`
-        : `I'll compile ${dataPoints.length} data point${
-            dataPoints.length === 1 ? "" : "s"
-          } for ${targetLabel}${categoryClause}. I'll resolve the right source for each, pull the figures for the reporting period, and compute the variances before building the section.`,
+        ? t(
+            "I'll build a full-year P&L forecast for {target}{categoryClause}. I'll pull actuals year-to-date, annualize the remaining year at current run-rate, and compare the FY forecast to the approved budget.",
+            { values: { target: targetLabel, categoryClause } },
+          )
+        : t(
+            "I'll compile {count} {unit} for {target}{categoryClause}. I'll resolve the right source for each, pull the figures for the reporting period, and compute the variances before building the section.",
+            {
+              values: {
+                count: dataPoints.length,
+                unit: dataPoints.length === 1 ? t("data point") : t("data points"),
+                target: targetLabel,
+                categoryClause,
+              },
+            },
+          ),
       dataPoints,
       categories,
     };
@@ -454,7 +472,7 @@ export function CreateSectionBuilder({
         <div className="flex items-center gap-2">
           <Sparkles className="size-5 text-[#4C61DB]" strokeWidth={1.75} />
           <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-            {isReplace ? "Replace object" : "Create new section"}
+            {isReplace ? t("Replace object") : t("Create new section")}
           </h3>
         </div>
         <StepDots step={step} />
@@ -462,7 +480,7 @@ export function CreateSectionBuilder({
           type="button"
           onClick={onCancel}
           className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-          aria-label="Close section builder"
+          aria-label={t("Close section builder")}
         >
           <X className="size-5" strokeWidth={1.75} />
         </button>
@@ -474,10 +492,12 @@ export function CreateSectionBuilder({
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Select scope
+                {t("Select scope")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Choose whether this section reports at the shared entity or property level.
+                {t(
+                  "Choose whether this section reports at the shared entity or property level.",
+                )}
               </p>
             </div>
 
@@ -499,10 +519,10 @@ export function CreateSectionBuilder({
                   >
                     <Icon className="size-5 text-[#353638]" strokeWidth={1.75} />
                     <span className="text-[14px] font-medium leading-[1.25] text-[#05091F]">
-                      {SCOPE_LABELS[card.kind]}
+                      {t(SCOPE_LABELS[card.kind])}
                     </span>
                     <span className="text-[12px] leading-[1.5] text-[#65686B]">
-                      {card.description}
+                      {t(card.description)}
                     </span>
                   </button>
                 );
@@ -514,23 +534,23 @@ export function CreateSectionBuilder({
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[12px] font-medium leading-[1.5] text-[#353638]">
                     {scopeKind === "shared-entity"
-                      ? "Select entities"
-                      : "Select properties"}
+                      ? t("Select entities")
+                      : t("Select properties")}
                     <span className="ml-1 font-normal text-[#65686B]">
-                      · choose one or more
+                      {t("· choose one or more")}
                     </span>
                   </p>
                   {targets.length > 0 ? (
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-medium text-[#4C61DB]">
-                        {targets.length} selected
+                        {t("{count} selected", { values: { count: targets.length } })}
                       </span>
                       <button
                         type="button"
                         onClick={() => setTargets([])}
                         className="text-[11px] font-medium text-[#65686B] underline hover:text-[#353638]"
                       >
-                        Clear
+                        {t("Clear")}
                       </button>
                     </div>
                   ) : null}
@@ -579,7 +599,7 @@ export function CreateSectionBuilder({
                           type="button"
                           onClick={() => toggleTarget(option)}
                           className="text-[#65686B] hover:text-[#B23A2F]"
-                          aria-label={`Remove ${option}`}
+                          aria-label={t("Remove {name}", { values: { name: option } })}
                         >
                           <X className="size-3" strokeWidth={2} />
                         </button>
@@ -602,7 +622,7 @@ export function CreateSectionBuilder({
                     : "bg-[#111] hover:bg-[#333]",
                 )}
               >
-                Continue
+                {t("Continue")}
               </button>
             </div>
           </div>
@@ -613,10 +633,10 @@ export function CreateSectionBuilder({
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Data points
+                {t("Data points")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Choose the data domains this section should draw from.
+                {t("Choose the data domains this section should draw from.")}
               </p>
             </div>
 
@@ -648,13 +668,13 @@ export function CreateSectionBuilder({
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="flex items-center gap-1.5 text-[13px] font-semibold leading-[1.25] text-[#05091F]">
-                        {category.label}
+                        {t(category.label)}
                         {isSelected ? (
                           <Check className="size-3.5 text-[#4C61DB]" strokeWidth={2.5} />
                         ) : null}
                       </span>
                       <span className="text-[12px] leading-[1.4] text-[#65686B]">
-                        {category.description}
+                        {t(category.description)}
                       </span>
                     </span>
                   </button>
@@ -664,11 +684,12 @@ export function CreateSectionBuilder({
 
             <div className="flex flex-col gap-1 border-t border-[#F0F2F5] pt-4">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Select the KPIs
+                {t("Select the KPIs")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Pick the headline metrics for this section. The Deep Agent identifies the
-                right source (Snowflake, Web, or your uploaded file) for each one.
+                {t(
+                  "Pick the headline metrics for this section. The Deep Agent identifies the right source (Snowflake, Web, or your uploaded file) for each one.",
+                )}
               </p>
             </div>
 
@@ -688,7 +709,7 @@ export function CreateSectionBuilder({
                     )}
                   >
                     {isSelected ? <Check className="size-3.5" strokeWidth={2.5} /> : null}
-                    {option.label}
+                    {t(option.label)}
                   </button>
                 );
               })}
@@ -696,10 +717,10 @@ export function CreateSectionBuilder({
 
             <div className="flex flex-col gap-2 border-t border-[#F0F2F5] pt-4">
               <p className="text-[12px] font-semibold leading-[1.25] text-[#353638]">
-                Suggested options
+                {t("Suggested options")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Add supporting data points related to your scope and selected KPIs.
+                {t("Add supporting data points related to your scope and selected KPIs.")}
               </p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {suggestedOptions.map((option) => {
@@ -717,7 +738,7 @@ export function CreateSectionBuilder({
                       )}
                     >
                       {isSelected ? <Check className="size-3.5" strokeWidth={2.5} /> : null}
-                      {option.label}
+                      {t(option.label)}
                     </button>
                   );
                 })}
@@ -738,7 +759,7 @@ export function CreateSectionBuilder({
                   )}
                 >
                   <Plus className="size-3.5" strokeWidth={2} />
-                  Else — write a formula
+                  {t("Else — write a formula")}
                 </button>
               </div>
             </div>
@@ -747,14 +768,14 @@ export function CreateSectionBuilder({
               <div className="flex flex-col gap-2.5 rounded-xl border border-[#E6E8EB] bg-[#FAFBFC] p-3.5">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[12px] font-medium leading-[1.5] text-[#353638]">
-                    Custom formula
+                    {t("Custom formula")}
                   </label>
                   <textarea
                     value={customFormula}
                     onChange={(event) => handleFormulaChange(event.target.value)}
                     disabled={formulaStatus === "accepted" || formulaStatus === "interpreting"}
                     rows={2}
-                    placeholder="e.g. (Rental income − Operating expenses) ÷ GAV × 100"
+                    placeholder={t("e.g. (Rental income − Operating expenses) ÷ GAV × 100")}
                     className="w-full resize-y rounded-lg border border-[#E6E8EB] bg-white px-3 py-2 text-[13px] leading-[1.5] text-[#353638] outline-none focus:border-[#A7B2F2] disabled:bg-[#F0F2F5] disabled:text-[#65686B]"
                   />
                 </div>
@@ -764,8 +785,12 @@ export function CreateSectionBuilder({
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-[11px] leading-[1.4] text-[#65686B]">
                       {formulaStatus === "declined"
-                        ? "No problem — adjust your formula and ask the agent to check it again."
-                        : "The Deep Agent will read back the calculation it plans to run before you continue."}
+                        ? t(
+                            "No problem — adjust your formula and ask the agent to check it again.",
+                          )
+                        : t(
+                            "The Deep Agent will read back the calculation it plans to run before you continue.",
+                          )}
                     </p>
                     <button
                       type="button"
@@ -779,7 +804,9 @@ export function CreateSectionBuilder({
                       )}
                     >
                       <Sparkles className="size-4" strokeWidth={1.75} />
-                      {formulaStatus === "declined" ? "Re-check formula" : "Interpret with Deep Agent"}
+                      {formulaStatus === "declined"
+                        ? t("Re-check formula")
+                        : t("Interpret with Deep Agent")}
                     </button>
                   </div>
                 ) : null}
@@ -789,7 +816,7 @@ export function CreateSectionBuilder({
                   <div className="flex items-center gap-2 rounded-lg border border-[#E6E8EB] bg-white px-3 py-2.5">
                     <Loader2 className="size-4 animate-spin text-[#4C61DB]" strokeWidth={1.75} />
                     <p className="text-[12px] leading-[1.4] text-[#65686B]">
-                      Deep Agent is interpreting your formula…
+                      {t("Deep Agent is interpreting your formula…")}
                     </p>
                   </div>
                 ) : null}
@@ -800,7 +827,7 @@ export function CreateSectionBuilder({
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
                       <p className="text-[12px] font-semibold leading-[1.25] text-[#05091F]">
-                        Deep Agent — here&apos;s the calculation I&apos;ll run
+                        {t("Deep Agent — here's the calculation I'll run")}
                       </p>
                     </div>
                     <p className="text-[12px] leading-[1.5] text-[#353638]">
@@ -810,7 +837,7 @@ export function CreateSectionBuilder({
                     {interpretation.inputs.length > 0 ? (
                       <div className="flex flex-col gap-1.5">
                         <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-                          Inputs resolved
+                          {t("Inputs resolved")}
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {interpretation.inputs.map((input) => (
@@ -821,7 +848,7 @@ export function CreateSectionBuilder({
                               {input.token}
                               <span className="text-[#969A9E]">·</span>
                               <span className="text-[#65686B]">
-                                {DATA_SOURCE_LABELS[input.source]}
+                                {t(DATA_SOURCE_LABELS[input.source])}
                               </span>
                             </span>
                           ))}
@@ -831,7 +858,7 @@ export function CreateSectionBuilder({
 
                     <div className="flex flex-col gap-1.5">
                       <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-                        Calculation steps
+                        {t("Calculation steps")}
                       </p>
                       <ol className="flex flex-col gap-1.5">
                         {interpretation.steps.map((stepText, index) => (
@@ -849,7 +876,7 @@ export function CreateSectionBuilder({
                     </div>
 
                     <p className="text-[12px] leading-[1.4] text-[#353638]">
-                      <span className="font-medium">Output:</span> {interpretation.output}
+                      <span className="font-medium">{t("Output:")}</span> {interpretation.output}
                     </p>
 
                     <div className="flex items-center justify-end gap-2 border-t border-[#F0F2F5] pt-3">
@@ -859,7 +886,7 @@ export function CreateSectionBuilder({
                         className="flex h-9 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-3 text-[13px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
                       >
                         <X className="size-4" strokeWidth={1.75} />
-                        Decline
+                        {t("Decline")}
                       </button>
                       <button
                         type="button"
@@ -867,7 +894,7 @@ export function CreateSectionBuilder({
                         className="flex h-9 items-center gap-1.5 rounded-lg bg-[#1F7A45] px-3 text-[13px] font-medium leading-[1.24] text-white hover:bg-[#1A6B3C]"
                       >
                         <Check className="size-4" strokeWidth={2} />
-                        Accept calculation
+                        {t("Accept calculation")}
                       </button>
                     </div>
                   </div>
@@ -882,7 +909,7 @@ export function CreateSectionBuilder({
                           <Check className="size-3.5 text-white" strokeWidth={2.5} />
                         </span>
                         <p className="text-[12px] font-semibold leading-[1.25] text-[#1F5C36]">
-                          Formula confirmed
+                          {t("Formula confirmed")}
                         </p>
                       </div>
                       <button
@@ -890,15 +917,17 @@ export function CreateSectionBuilder({
                         onClick={resetFormulaInterpretation}
                         className="text-[12px] font-medium text-[#1F7A45] underline hover:text-[#1A6B3C]"
                       >
-                        Edit formula
+                        {t("Edit formula")}
                       </button>
                     </div>
                     <code className="block rounded-md border border-[#BFE3CC] bg-white px-3 py-2 font-mono text-[12px] leading-[1.5] text-[#1F5C36]">
                       {interpretation.formula}
                     </code>
                     <p className="text-[11px] leading-[1.4] text-[#1F5C36]">
-                      Output: {interpretation.output} · this data point is now included in the
-                      section.
+                      {t(
+                        "Output: {output} · this data point is now included in the section.",
+                        { values: { output: interpretation.output } },
+                      )}
                     </p>
                   </div>
                 ) : null}
@@ -908,7 +937,7 @@ export function CreateSectionBuilder({
             <div className="flex flex-col gap-2">
               <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[#B3B8BD] px-3 py-2 text-[13px] font-medium text-[#65686B] hover:bg-[#FAFBFC]">
                 <Paperclip className="size-4" strokeWidth={1.75} />
-                {uploadedFileName ? uploadedFileName : "Attach a file (optional)"}
+                {uploadedFileName ? uploadedFileName : t("Attach a file (optional)")}
                 <input
                   type="file"
                   className="hidden"
@@ -923,7 +952,7 @@ export function CreateSectionBuilder({
                   onClick={() => setUploadedFileName(undefined)}
                   className="w-fit text-[12px] text-[#65686B] underline hover:text-[#353638]"
                 >
-                  Remove file
+                  {t("Remove file")}
                 </button>
               ) : null}
             </div>
@@ -933,7 +962,7 @@ export function CreateSectionBuilder({
               <div className="flex items-center gap-2 rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] px-3.5 py-3">
                 <Loader2 className="size-4 animate-spin text-[#4C61DB]" strokeWidth={1.75} />
                 <p className="text-[12px] leading-[1.4] text-[#65686B]">
-                  Deep Agent is reviewing your KPIs &amp; data points…
+                  {t("Deep Agent is reviewing your KPIs & data points…")}
                 </p>
               </div>
             ) : null}
@@ -943,7 +972,7 @@ export function CreateSectionBuilder({
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="size-4 text-[#4C61DB]" strokeWidth={1.75} />
                   <p className="text-[12px] font-semibold leading-[1.25] text-[#05091F]">
-                    Deep Agent — here&apos;s what I&apos;ll pull
+                    {t("Deep Agent — here's what I'll pull")}
                   </p>
                 </div>
                 <p className="text-[12px] leading-[1.5] text-[#353638]">
@@ -957,7 +986,7 @@ export function CreateSectionBuilder({
                         key={category}
                         className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-[#4C61DB] ring-1 ring-[#D9DEF3]"
                       >
-                        {category}
+                        {t(category)}
                       </span>
                     ))}
                   </div>
@@ -965,7 +994,7 @@ export function CreateSectionBuilder({
 
                 <div className="flex flex-col gap-1.5">
                   <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-                    Data points resolved
+                    {t("Data points resolved")}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {dataPointsSummary.dataPoints.map((point) => (
@@ -973,10 +1002,10 @@ export function CreateSectionBuilder({
                         key={point.label}
                         className="inline-flex items-center gap-1.5 rounded-full border border-[#E6E8EB] bg-white px-2.5 py-1 text-[11px] font-medium text-[#353638]"
                       >
-                        {point.label}
+                        {t(point.label)}
                         <span className="text-[#969A9E]">·</span>
                         <span className="text-[#65686B]">
-                          {DATA_SOURCE_LABELS[point.source]}
+                          {t(DATA_SOURCE_LABELS[point.source])}
                         </span>
                       </span>
                     ))}
@@ -990,7 +1019,7 @@ export function CreateSectionBuilder({
                     className="flex h-9 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-3 text-[13px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
                   >
                     <ArrowLeft className="size-4" strokeWidth={1.75} />
-                    Adjust selection
+                    {t("Adjust selection")}
                   </button>
                   <button
                     type="button"
@@ -1003,7 +1032,7 @@ export function CreateSectionBuilder({
                     className="flex h-9 items-center gap-1.5 rounded-lg bg-[#1F7A45] px-3 text-[13px] font-medium leading-[1.24] text-white hover:bg-[#1A6B3C]"
                   >
                     <Check className="size-4" strokeWidth={2} />
-                    Approve &amp; continue
+                    {t("Approve & continue")}
                   </button>
                 </div>
               </div>
@@ -1016,13 +1045,13 @@ export function CreateSectionBuilder({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
               >
                 <ArrowLeft className="size-4" strokeWidth={1.75} />
-                Back
+                {t("Back")}
               </button>
               {dataPointsStatus !== "proposed" ? (
                 <div className="flex items-center gap-3">
                   {formulaPending ? (
                     <span className="text-[11px] leading-[1.4] text-[#B23A2F]">
-                      Accept the Deep Agent&apos;s formula read-back to continue.
+                      {t("Accept the Deep Agent's formula read-back to continue.")}
                     </span>
                   ) : null}
                   <button
@@ -1045,12 +1074,12 @@ export function CreateSectionBuilder({
                     {dataPointsStatus === "interpreting" ? (
                       <>
                         <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
-                        Analyzing…
+                        {t("Analyzing…")}
                       </>
                     ) : (
                       <>
                         <Sparkles className="size-4" strokeWidth={1.75} />
-                        Continue
+                        {t("Continue")}
                       </>
                     )}
                   </button>
@@ -1065,10 +1094,12 @@ export function CreateSectionBuilder({
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Select the data type
+                {t("Select the data type")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Choose how this section is rendered. Each object type has its own page limits.
+                {t(
+                  "Choose how this section is rendered. Each object type has its own page limits.",
+                )}
               </p>
             </div>
 
@@ -1095,15 +1126,23 @@ export function CreateSectionBuilder({
                     </span>
                     <span className="flex min-w-0 flex-col gap-0.5">
                       <span className="text-[13px] font-medium leading-[1.3] text-[#05091F]">
-                        {type.label}
+                        {t(type.label)}
                       </span>
                       <span className="text-[11px] leading-[1.4] text-[#65686B]">
-                        {type.limit}
+                        {t(type.limit)}
                       </span>
                       {isActive && exceeds ? (
                         <span className="mt-0.5 text-[11px] leading-[1.4] text-[#B23A2F]">
-                          You selected {dataPointCount} data points — extras will be truncated to{" "}
-                          {type.maxDataPoints} {type.maxLabel}.
+                          {t(
+                            "You selected {count} data points — extras will be truncated to {max} {maxLabel}.",
+                            {
+                              values: {
+                                count: dataPointCount,
+                                max: type.maxDataPoints ?? 0,
+                                maxLabel: type.maxLabel ?? "",
+                              },
+                            },
+                          )}
                         </span>
                       ) : null}
                     </span>
@@ -1119,7 +1158,7 @@ export function CreateSectionBuilder({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
               >
                 <ArrowLeft className="size-4" strokeWidth={1.75} />
-                Back
+                {t("Back")}
               </button>
               <button
                 type="button"
@@ -1131,7 +1170,7 @@ export function CreateSectionBuilder({
                 )}
               >
                 <Sparkles className="size-4" strokeWidth={1.75} />
-                Generate section
+                {t("Generate section")}
               </button>
             </div>
           </div>
@@ -1146,10 +1185,12 @@ export function CreateSectionBuilder({
             </div>
             <div className="flex flex-col items-center gap-1 text-center">
               <p className="text-[14px] font-medium leading-[1.25] text-[#05091F]">
-                Deep Agent is generating your section
+                {t("Deep Agent is generating your section")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
-                Identifying the data source, querying figures, and computing variances…
+                {t(
+                  "Identifying the data source, querying figures, and computing variances…",
+                )}
               </p>
             </div>
           </div>
@@ -1160,12 +1201,14 @@ export function CreateSectionBuilder({
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <p className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-                Review the generated section
+                {t("Review the generated section")}
               </p>
               <p className="text-[12px] leading-[1.5] text-[#65686B]">
                 {objectType === "pl-forecasting"
-                  ? "Edit the forecast figures below. Totals and variances recalculate live, with a formula for each result."
-                  : "Approve to add it to the report template, or regenerate to adjust."}
+                  ? t(
+                      "Edit the forecast figures below. Totals and variances recalculate live, with a formula for each result.",
+                    )
+                  : t("Approve to add it to the report template, or regenerate to adjust.")}
               </p>
             </div>
 
@@ -1174,11 +1217,11 @@ export function CreateSectionBuilder({
             <div className="rounded-xl border border-[#E6E8EB] p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-                  Section preview
+                  {t("Section preview")}
                 </p>
                 {objectType ? (
                   <span className="inline-flex items-center rounded-full bg-[#F0F2F5] px-2.5 py-1 text-[11px] font-medium text-[#65686B]">
-                    {getReportObjectType(objectType).label}
+                    {t(getReportObjectType(objectType).label)}
                   </span>
                 ) : null}
               </div>
@@ -1226,7 +1269,7 @@ export function CreateSectionBuilder({
                             className="rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] px-4 py-3"
                           >
                             <p className="text-[11px] leading-[1.5] text-[#65686B]">
-                              {item.label}
+                              {t(item.label)}
                             </p>
                             <p className="mt-1 text-[16px] font-medium leading-[1.25] text-[#05091F]">
                               {item.value}
@@ -1249,7 +1292,7 @@ export function CreateSectionBuilder({
                           </p>
                           <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#4C61DB]">
                             <Sparkles className="size-3" strokeWidth={2} />
-                            AI generated
+                            {t("AI generated")}
                           </span>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1315,10 +1358,10 @@ export function CreateSectionBuilder({
                 />
                 <span className="flex flex-col">
                   <span className="text-[13px] font-medium leading-[1.3] text-[#05091F]">
-                    Also save to the section library
+                    {t("Also save to the section library")}
                   </span>
                   <span className="text-[12px] leading-[1.4] text-[#65686B]">
-                    Reuse this section across other templates.
+                    {t("Reuse this section across other templates.")}
                   </span>
                 </span>
               </label>
@@ -1331,7 +1374,7 @@ export function CreateSectionBuilder({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
               >
                 <ArrowLeft className="size-4" strokeWidth={1.75} />
-                Regenerate
+                {t("Regenerate")}
               </button>
               <div className="flex items-center gap-2">
                 <button
@@ -1339,7 +1382,7 @@ export function CreateSectionBuilder({
                   onClick={onCancel}
                   className="flex h-10 items-center rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
                 >
-                  Discard
+                  {t("Discard")}
                 </button>
                 <button
                   type="button"
@@ -1348,10 +1391,12 @@ export function CreateSectionBuilder({
                 >
                   <Check className="size-4" strokeWidth={2} />
                   {isReplace
-                    ? "Replace object with this"
+                    ? t("Replace object with this")
                     : isLibrary
-                      ? "Save section to library"
-                      : `Approve & add to ${reportTitle.split(" ")[0]} template`}
+                      ? t("Save section to library")
+                      : t("Approve & add to {name} template", {
+                          values: { name: reportTitle.split(" ")[0] },
+                        })}
                 </button>
               </div>
             </div>

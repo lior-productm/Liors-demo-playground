@@ -16,6 +16,7 @@ import { amiioCardHoverSurface, cn } from "@/lib/utils";
 import { dsChartCard, dsFinTypo } from "@/src/lib/designSystem";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { useCommercialChatInject } from "@/src/components/commercial/CommercialChatContext";
+import { useI18n } from "@/src/hooks/useI18n";
 
 const DS_CARD = `${dsChartCard} ds-card-gradient shadow-[0px_2px_12px_rgba(0,0,0,0.04)]`;
 
@@ -29,6 +30,7 @@ function fmtVariance(n: number) {
 }
 
 function AnalyseWithAmiioButton({ topic }: { topic: string }) {
+  const { t } = useI18n();
   const inject = useCommercialChatInject();
   const onClick = useCallback(() => {
     const prompt = `Budgeting — Analyse with Amiio:\n\n${topic}`;
@@ -54,7 +56,7 @@ function AnalyseWithAmiioButton({ topic }: { topic: string }) {
       )}
     >
       <Lightbulb className="size-4 shrink-0 text-[#7E8185]" strokeWidth={1.8} />
-      Analyse with Amiio
+      {t("Analyse with Amiio")}
     </button>
   );
 }
@@ -212,6 +214,7 @@ const BUDGET_INPUT_SOURCES: {
 ];
 
 export function FinancialBudgetingPanel() {
+  const { t } = useI18n();
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
   const [expandedSourceId, setExpandedSourceId] = useState<string | null>(null);
   const [monthlyRows, setMonthlyRows] = useState<MonthRow[]>(MONTHLY_ROWS);
@@ -279,7 +282,7 @@ export function FinancialBudgetingPanel() {
           }
         >
           <MoreVertical className="size-4 opacity-90" strokeWidth={2} />
-          Actions
+          {t("Actions")}
         </button>
       </div>
 
@@ -293,7 +296,7 @@ export function FinancialBudgetingPanel() {
             )}
           >
             <div className="flex items-start justify-between gap-2">
-              <p className={dsFinTypo.kpiLabel}>{k.title}</p>
+              <p className={dsFinTypo.kpiLabel}>{t(k.title)}</p>
               <WidgetHeaderLamp
                 chatLabel={k.title}
                 chatTopic={`Analyse ${k.title} in budget context.`}
@@ -309,7 +312,7 @@ export function FinancialBudgetingPanel() {
                 k.subTone === "success" ? "text-[#146B3A]" : "text-[#969A9E]",
               )}
             >
-              {k.sub}
+              {t(k.sub)}
             </p>
           </div>
         ))}
@@ -317,7 +320,7 @@ export function FinancialBudgetingPanel() {
 
       <div className={cn(DS_CARD, "p-6")}>
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <h3 className={dsFinTypo.sectionTitle}>Budget vs Actual by Category</h3>
+          <h3 className={dsFinTypo.sectionTitle}>{t("Budget vs Actual by Category")}</h3>
           <WidgetHeaderLamp
             chatLabel="Budget vs actual by category"
             chatTopic="Compare YTD actuals to annual budget by category and explain utilization and phasing."
@@ -334,12 +337,12 @@ export function FinancialBudgetingPanel() {
                   className="flex w-full flex-col gap-2 text-left"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <span className={dsFinTypo.rowTitle}>{c.name}</span>
+                    <span className={dsFinTypo.rowTitle}>{t(c.name)}</span>
                     <div className="text-right">
                       <span className={cn(dsFinTypo.tableCellMedium, "tabular-nums")}>
                         {fmtEuroAmount(c.actual)} / {fmtEuroAmount(c.budget)}
                       </span>
-                      <p className={dsFinTypo.kpiSubMuted}>{c.utilizedPct}% utilized</p>
+                      <p className={dsFinTypo.kpiSubMuted}>{c.utilizedPct}% {t("utilized")}</p>
                     </div>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--Neutral-200)]">
@@ -351,7 +354,7 @@ export function FinancialBudgetingPanel() {
                 </button>
                 {open ? (
                   <div className="mt-3 rounded-xl border border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] p-3">
-                    <p className={dsFinTypo.bodySm}>{c.detail}</p>
+                    <p className={dsFinTypo.bodySm}>{t(c.detail)}</p>
                     <div className="mt-3 flex justify-end">
                       <AnalyseWithAmiioButton topic={`Budget category: ${c.name}\n\n${c.detail}`} />
                     </div>
@@ -365,7 +368,7 @@ export function FinancialBudgetingPanel() {
 
       <div className={cn(DS_CARD, "overflow-hidden p-6")}>
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <h3 className={dsFinTypo.sectionTitle}>Monthly Budget Tracking</h3>
+          <h3 className={dsFinTypo.sectionTitle}>{t("Monthly Budget Tracking")}</h3>
           <div className="flex flex-wrap items-center gap-2">
             {isBudgetEditMode ? (
               <>
@@ -378,7 +381,7 @@ export function FinancialBudgetingPanel() {
                   onClick={saveMonthlyBudgetEdit}
                 >
                   <LayoutGrid className="size-4 text-white" strokeWidth={1.5} />
-                  Save Budget
+                  {t("Save Budget")}
                 </button>
                 <button
                   type="button"
@@ -389,7 +392,7 @@ export function FinancialBudgetingPanel() {
                   )}
                   onClick={cancelMonthlyBudgetEdit}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </button>
               </>
             ) : (
@@ -403,7 +406,7 @@ export function FinancialBudgetingPanel() {
                 onClick={startMonthlyBudgetEdit}
               >
                 <LayoutGrid className="size-4 text-[#65686B]" strokeWidth={1.5} />
-                Edit Budget
+                {t("Edit Budget")}
               </button>
             )}
             <WidgetHeaderLamp
@@ -425,7 +428,7 @@ export function FinancialBudgetingPanel() {
                       h !== "Month" && h !== "Status" && "text-right",
                     )}
                   >
-                    {h}
+                    {t(h)}
                   </th>
                 ))}
               </tr>
@@ -493,11 +496,11 @@ export function FinancialBudgetingPanel() {
                   <td className="px-4 py-3">
                     {(actualPreview == null ? "pending" : "complete") === "complete" ? (
                       <span className={cn("inline-flex rounded-full bg-[#E6F6F3] px-2.5 py-1 text-[#1F9E8B]", dsFinTypo.badge)}>
-                        Complete
+                        {t("Complete")}
                       </span>
                     ) : (
                       <span className={cn("inline-flex rounded-full bg-[#EDEEF2] px-2.5 py-1 text-[#676A6E]", dsFinTypo.badge)}>
-                        Pending
+                        {t("Pending")}
                       </span>
                     )}
                   </td>
@@ -510,7 +513,7 @@ export function FinancialBudgetingPanel() {
 
       <div className={cn(DS_CARD, "p-6")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h3 className={dsFinTypo.sectionTitle}>Input Sources</h3>
+          <h3 className={dsFinTypo.sectionTitle}>{t("Input Sources")}</h3>
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -521,7 +524,7 @@ export function FinancialBudgetingPanel() {
                 )
               }
             >
-              View all
+              {t("View all")}
             </button>
             <WidgetHeaderLamp
               chatLabel="Budget input sources"
@@ -565,13 +568,13 @@ export function FinancialBudgetingPanel() {
                     <Icon className="size-5" strokeWidth={1.5} />
                   </div>
                   <div className="min-w-0">
-                    <p className={cn(dsFinTypo.rowTitle, "text-[#010309]")}>{s.title}</p>
+                    <p className={cn(dsFinTypo.rowTitle, "text-[#010309]")}>{t(s.title)}</p>
                     <p className={cn("mt-0.5", dsFinTypo.meta)}>{s.date}</p>
                   </div>
                 </button>
                 {open ? (
                   <div className="mt-2 rounded-xl border border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] p-3">
-                    <p className={dsFinTypo.bodySm}>{s.detail}</p>
+                    <p className={dsFinTypo.bodySm}>{t(s.detail)}</p>
                     <div className="mt-3 flex justify-end">
                       <AnalyseWithAmiioButton topic={`Budget input: ${s.title}\n\n${s.detail}`} />
                     </div>

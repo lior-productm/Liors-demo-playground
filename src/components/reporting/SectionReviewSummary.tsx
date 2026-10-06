@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Database, FileText, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   DATA_SOURCE_LABELS,
   type ReportDataSourceType,
@@ -24,13 +25,14 @@ const CONFIDENCE_STYLE: Record<SectionGenerationSummary["confidence"], string> =
 };
 
 export function SectionReviewSummary({ summary }: { summary: SectionGenerationSummary }) {
+  const { t } = useI18n();
   const SourceIcon = SOURCE_ICON[summary.dataSource.type];
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-[#E6E8EB] bg-[#FAFBFC] p-4">
       <div className="flex items-center justify-between gap-3">
         <h4 className="text-[14px] font-semibold leading-[1.25] text-[#05091F]">
-          Deep Agent summary
+          {t("Deep Agent summary")}
         </h4>
         <span
           className={cn(
@@ -38,13 +40,13 @@ export function SectionReviewSummary({ summary }: { summary: SectionGenerationSu
             CONFIDENCE_STYLE[summary.confidence],
           )}
         >
-          {summary.confidence} confidence
+          {t("{level} confidence", { values: { level: t(summary.confidence) } })}
         </span>
       </div>
 
       <div className="flex flex-col gap-1">
         <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-          Data source
+          {t("Data source")}
         </p>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E6E8EB] bg-white px-2.5 py-1 text-[12px] font-medium text-[#353638]">
@@ -59,14 +61,14 @@ export function SectionReviewSummary({ summary }: { summary: SectionGenerationSu
 
       <div className="flex flex-col gap-1">
         <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-          Calculation logic
+          {t("Calculation logic")}
         </p>
         <p className="text-[12px] leading-[1.5] text-[#353638]">{summary.calculationLogic}</p>
       </div>
 
       <div className="flex flex-col gap-1">
         <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-          Assumptions
+          {t("Assumptions")}
         </p>
         <ul className="flex flex-col gap-1.5">
           {summary.assumptions.map((item) => (
@@ -83,11 +85,11 @@ export function SectionReviewSummary({ summary }: { summary: SectionGenerationSu
 
       <div className="flex flex-col gap-1">
         <p className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#65686B]">
-          Missing data
+          {t("Missing data")}
         </p>
         {summary.missingData.length === 0 ? (
           <p className="text-[12px] leading-[1.5] text-[#1F7A45]">
-            No gaps detected for the selected data points.
+            {t("No gaps detected for the selected data points.")}
           </p>
         ) : (
           <ul className="flex flex-col gap-1.5">

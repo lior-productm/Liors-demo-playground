@@ -25,6 +25,7 @@ import { amiioCardHoverSurface, cn } from "@/lib/utils";
 import { COMMERCIAL_BAR_CHART_BAR_CLASS, lightenHexColor } from "@/src/lib/chartColors";
 import { OverviewTrendBarChartCard } from "@/src/components/commercial/charts/OverviewTrendBarChartCard";
 import { PORTFOLIO_OVERVIEW_BAR_CHARTS } from "@/src/lib/commercialMockData";
+import { useI18n } from "@/src/hooks/useI18n";
 
 function KpiCard({
   title,
@@ -514,6 +515,7 @@ function OverviewMetricCard({
   chatTopic,
   chatLabel,
 }: OverviewMetricItem) {
+  const { t, fmt } = useI18n();
   return (
     <div
       className={cn(
@@ -522,13 +524,13 @@ function OverviewMetricCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[16px] font-medium leading-[1.25] text-[#65686B]">{label}</p>
+        <p className="text-[16px] font-medium leading-[1.25] text-[#65686B]">{t(label, { context: "kpi" })}</p>
         <WidgetHeaderLamp chatTopic={chatTopic} chatLabel={chatLabel} />
       </div>
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-4">
         <div className="min-w-0">
           <p className="text-[24px] font-medium leading-[1.25] tracking-tight text-[#353638]">
-            {value}
+            {fmt.amount(value) !== value ? fmt.amount(value) : t(value)}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {delta ? (
@@ -537,7 +539,7 @@ function OverviewMetricCard({
                 pct={delta}
               />
             ) : null}
-            <span className="text-[12px] leading-[1.24] text-[#7E8185]">{helper}</span>
+            <span className="text-[12px] leading-[1.24] text-[#7E8185]">{t(helper)}</span>
           </div>
         </div>
         <div className="flex items-end self-stretch">
@@ -556,6 +558,7 @@ function OverviewMinorMetricsBar({
 }: {
   items: OverviewMinorMetricItem[];
 }) {
+  const { t, fmt } = useI18n();
   return (
     <div
       className={cn(
@@ -569,18 +572,18 @@ function OverviewMinorMetricsBar({
             key={item.label}
             className={cn(
               "min-w-0",
-              index > 0 && "xl:border-l xl:border-[#D1D5D9] xl:pl-4",
-              index < items.length - 1 && "xl:pr-4",
+              index > 0 && "xl:border-s xl:border-[#D1D5D9] xl:ps-4",
+              index < items.length - 1 && "xl:pe-4",
             )}
           >
-            <p className="text-[14px] font-medium leading-[1.24] text-[#65686B]">{item.label}</p>
-            <p className="mt-2 text-[18px] font-medium leading-[1.25] text-[#353638]">{item.value}</p>
+            <p className="text-[14px] font-medium leading-[1.24] text-[#65686B]">{t(item.label)}</p>
+            <p className="mt-2 text-[18px] font-medium leading-[1.25] text-[#353638]">{fmt.amount(item.value)}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <TrendPill
                 direction={item.deltaPositive ? "up" : "down"}
                 pct={item.delta}
               />
-              <span className="text-[12px] leading-[1.24] text-[#7E8185]">{item.helper}</span>
+              <span className="text-[12px] leading-[1.24] text-[#7E8185]">{t(item.helper)}</span>
             </div>
           </div>
         ))}
@@ -594,6 +597,7 @@ function OverviewSummaryCard({
 }: {
   scope: OverviewScope;
 }) {
+  const { t } = useI18n();
   const isEntity = scope === "entity";
 
   return (
@@ -608,20 +612,21 @@ function OverviewSummaryCard({
       summary={
         isEntity ? (
           <p>
-            Entity is portfolio outperformer with occupancy at 89%{" "}
-            <span className="font-medium text-[#1F9E8B]">(+3.5% QoQ)</span> exceeding portfolio
-            average of 87%. GRI growth of{" "}
-            <span className="font-medium text-[#1F9E8B]">6.2%</span> demonstrates strong
-            operational execution. Entity represents 32% of portfolio value and remains a
-            strategic focus area.
+            {t("Entity is portfolio outperformer with occupancy at 89%")}{" "}
+            <span className="font-medium text-[#1F9E8B]">(+3.5% QoQ)</span>{" "}
+            {t("exceeding portfolio average of 87%. GRI growth of")}{" "}
+            <span className="font-medium text-[#1F9E8B]">6.2%</span>{" "}
+            {t(
+              "demonstrates strong operational execution. Entity represents 32% of portfolio value and remains a strategic focus area.",
+            )}
           </p>
         ) : (
           <p>
-            Portfolio performing strongly with occupancy reaching 87%{" "}
-            <span className="font-medium text-[#1F9E8B]">(+3.2% QoQ)</span> and GRI exceeding
-            budget by EUR 1.2M. Strong pricing momentum is visible with rent/sqm up 2.1%,
-            driven by 8 new leases signed. WAULT continues to decline and needs close
-            monitoring.
+            {t("Portfolio performing strongly with occupancy reaching 87%")}{" "}
+            <span className="font-medium text-[#1F9E8B]">(+3.2% QoQ)</span>{" "}
+            {t(
+              "and GRI exceeding budget by EUR 1.2M. Strong pricing momentum is visible with rent/sqm up 2.1%, driven by 8 new leases signed. WAULT continues to decline and needs close monitoring.",
+            )}
           </p>
         )
       }
@@ -632,21 +637,22 @@ function OverviewSummaryCard({
                 tone: "positive",
                 content: (
                   <>
-                    Occupancy outperforming: 89% vs portfolio 87%{" "}
+                    {t("Occupancy outperforming: 89% vs portfolio 87%")}{" "}
                     <span className="font-medium text-[#1F9E8B]">(+2%)</span>
                   </>
                 ),
               },
               {
                 tone: "positive",
-                content: "GRI growth strong: +6.2% vs portfolio +5.8%",
+                content: t("GRI growth strong: +6.2% vs portfolio +5.8%"),
               },
               {
                 tone: "warning",
                 content: (
                   <>
-                    WAULT declining: <span className="font-medium text-[#9F2D3A]">-0.3 yrs</span>{" "}
-                    but still above portfolio average
+                    {t("WAULT declining:")}{" "}
+                    <span className="font-medium text-[#9F2D3A]">-0.3 yrs</span>{" "}
+                    {t("but still above portfolio average")}
                   </>
                 ),
               },
@@ -656,8 +662,9 @@ function OverviewSummaryCard({
                 tone: "positive",
                 content: (
                   <>
-                    Occupancy improving: <span className="font-medium text-[#1F9E8B]">+3.2%</span>{" "}
-                    to 87% with strong leasing momentum
+                    {t("Occupancy improving:")}{" "}
+                    <span className="font-medium text-[#1F9E8B]">+3.2%</span>{" "}
+                    {t("to 87% with strong leasing momentum")}
                   </>
                 ),
               },
@@ -665,7 +672,7 @@ function OverviewSummaryCard({
                 tone: "positive",
                 content: (
                   <>
-                    Pricing strength: rent/sqm up{" "}
+                    {t("Pricing strength: rent/sqm up")}{" "}
                     <span className="font-medium text-[#1F9E8B]">2.1%</span>
                   </>
                 ),
@@ -674,8 +681,9 @@ function OverviewSummaryCard({
                 tone: "warning",
                 content: (
                   <>
-                    WAULT declining: <span className="font-medium text-[#9F2D3A]">-0.4 yrs</span> to
-                    3.2 years, monitor expirations
+                    {t("WAULT declining:")}{" "}
+                    <span className="font-medium text-[#9F2D3A]">-0.4 yrs</span>{" "}
+                    {t("to 3.2 years, monitor expirations")}
                   </>
                 ),
               },

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Library, Sparkles, X } from "lucide-react";
 import { SectionCollection } from "@/src/components/reporting/SectionCollection";
 import type { LibrarySection } from "@/src/lib/reportSectionLibrary";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /**
  * Replace flow entry point. Lets the user either swap the object for an
@@ -19,6 +20,7 @@ export function ReplaceObjectModal({
   onCreateNew: () => void;
   onUseSection: (section: LibrarySection) => void;
 }) {
+  const { t } = useI18n();
   const [view, setView] = useState<"choose" | "existing">("choose");
 
   return (
@@ -39,20 +41,20 @@ export function ReplaceObjectModal({
                 type="button"
                 onClick={() => setView("choose")}
                 className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-                aria-label="Back"
+                aria-label={t("Back")}
               >
                 <ArrowLeft className="size-5" strokeWidth={1.75} />
               </button>
             ) : null}
             <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-              {view === "existing" ? "Choose a section" : "Replace object"}
+              {view === "existing" ? t("Choose a section") : t("Replace object")}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="size-5" strokeWidth={1.75} />
           </button>
@@ -70,10 +72,10 @@ export function ReplaceObjectModal({
                   <Library className="size-5" strokeWidth={1.75} />
                 </span>
                 <span className="text-[14px] font-semibold leading-[1.3] text-[#05091F]">
-                  Choose from existing sections
+                  {t("Choose from existing sections")}
                 </span>
                 <span className="text-[12px] leading-[1.4] text-[#65686B]">
-                  Swap in a standard or saved section from your library.
+                  {t("Swap in a standard or saved section from your library.")}
                 </span>
               </button>
 
@@ -86,10 +88,10 @@ export function ReplaceObjectModal({
                   <Sparkles className="size-5" strokeWidth={1.75} />
                 </span>
                 <span className="text-[14px] font-semibold leading-[1.3] text-[#05091F]">
-                  Create a new one
+                  {t("Create a new one")}
                 </span>
                 <span className="text-[12px] leading-[1.4] text-[#65686B]">
-                  Generate a fresh object with the Deep Agent section builder.
+                  {t("Generate a fresh object with the Deep Agent section builder.")}
                 </span>
               </button>
             </div>
@@ -99,7 +101,7 @@ export function ReplaceObjectModal({
                 onUseSection(section);
                 onClose();
               }}
-              insertLabel="Replace with this"
+              insertLabel={t("Replace with this")}
             />
           )}
         </div>

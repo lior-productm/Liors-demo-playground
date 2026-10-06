@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { clampInsightCardTop } from "@/src/hooks/useReportInsightSync";
 import { REPORT_SECTIONS } from "@/src/lib/reportingMockData";
 
@@ -80,6 +81,7 @@ function InsightNumberRail({
   showExpandButton?: boolean;
   onExpandPanel?: () => void;
 }) {
+  const { t } = useI18n();
   const sorted = sortInsightsByDocumentOrder(insights, positions);
 
   return (
@@ -96,7 +98,7 @@ function InsightNumberRail({
             type="button"
             onClick={onExpandPanel}
             className="flex size-7 items-center justify-center rounded-lg bg-white text-[#65686B] shadow-sm hover:bg-[#F0F2F5]"
-            aria-label="Open insights panel"
+            aria-label={t("Open insights panel")}
           >
             <PanelRightOpen className="size-4" strokeWidth={1.5} />
           </button>
@@ -144,7 +146,7 @@ function InsightNumberRail({
               width: NUMBER_SIZE,
               height: NUMBER_SIZE,
             }}
-            aria-label={`Insight ${order}`}
+            aria-label={t("Insight {order}", { values: { order } })}
           >
             {order}
           </button>
@@ -163,6 +165,7 @@ function InsightCard({
   expanded: boolean;
   onToggleExpanded: () => void;
 }) {
+  const { t } = useI18n();
   if (!expanded) {
     return (
       <div className="relative w-full overflow-hidden rounded-xl border border-[#D1D5D9] bg-[#FBFBFB]/95 shadow-[0_4px_8px_rgba(0,0,0,0.08)] backdrop-blur-[10px]">
@@ -172,7 +175,7 @@ function InsightCard({
           className="flex w-full items-start gap-2 p-3 text-left"
         >
           <p className="flex-1 text-[12px] font-medium leading-[1.4] text-[#353638]">
-            {insight.title}
+            {t(insight.title)}
           </p>
           <ChevronDown className="mt-0.5 size-3.5 shrink-0 text-[#65686B]" />
         </button>
@@ -188,13 +191,13 @@ function InsightCard({
     >
       <div className="flex shrink-0 items-start gap-1">
         <p className="flex-1 text-[12px] font-medium leading-[1.4] text-[#353638]">
-          {insight.title}
+          {t(insight.title)}
         </p>
         <button
           type="button"
           onClick={onToggleExpanded}
           className="flex size-5 shrink-0 items-center justify-center rounded text-[#6B7280] hover:bg-[#F0F2F5]"
-          aria-label="Collapse insight"
+          aria-label={t("Collapse insight")}
         >
           <X className="size-3.5" />
         </button>
@@ -204,7 +207,7 @@ function InsightCard({
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
           {insight.body.map((paragraph, index) => (
             <p key={index} className="text-[12px] leading-[1.4] text-[#353638]">
-              {paragraph}
+              {t(paragraph)}
             </p>
           ))}
         </div>
@@ -216,7 +219,7 @@ function InsightCard({
           <button
             type="button"
             className="flex size-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5]"
-            aria-label="Copy insight"
+            aria-label={t("Copy insight")}
           >
             <Copy className="size-3.5" />
           </button>
@@ -225,14 +228,14 @@ function InsightCard({
               type="button"
               className="flex h-8 max-w-full items-center justify-center rounded-lg border border-[#B3B8BD] px-2 text-[11px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
             >
-              Analyze Further
+              {t("Analyze Further")}
             </button>
             <button
               type="button"
               className="flex h-8 shrink-0 items-center gap-1 rounded-lg bg-[#111] pl-2 pr-2.5 text-[11px] font-medium leading-[1.24] text-[#F0F2F5] hover:bg-[#333]"
             >
               <Check className="size-3.5" />
-              OK
+              {t("OK")}
             </button>
           </div>
         </div>
@@ -251,6 +254,7 @@ export function ReportInsightsPanel({
   positions,
   viewportHeight,
 }: ReportInsightsPanelProps) {
+  const { t } = useI18n();
   const [insightCardExpanded, setInsightCardExpanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardHeight, setCardHeight] = useState(56);
@@ -327,13 +331,13 @@ export function ReportInsightsPanel({
       >
         <div className="flex h-[54px] shrink-0 items-center justify-between border-b border-[#D1D5D9] px-3 pr-2">
           <h3 className="text-[13px] font-medium leading-[1.4] text-[#05091F]">
-            Insights
+            {t("Insights")}
           </h3>
           <button
             type="button"
             onClick={onToggleCollapse}
             className="flex size-7 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close insights panel"
+            aria-label={t("Close insights panel")}
           >
             <PanelRightClose className="size-4" strokeWidth={1.5} />
           </button>
@@ -379,7 +383,7 @@ export function ReportInsightsPanel({
                 >
                   <div className="flex items-start gap-1">
                     <p className="flex-1 text-[12px] font-medium leading-[1.4] text-[#353638]">
-                      {insight.title}
+                      {t(insight.title)}
                     </p>
                     <Check className="size-3.5 shrink-0 text-[#2E7D32]" />
                   </div>

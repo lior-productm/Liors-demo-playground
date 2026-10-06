@@ -16,6 +16,7 @@ import { amiioCardHoverSurface, cn } from "@/lib/utils";
 import { dsChartCard, dsFinTypo } from "@/src/lib/designSystem";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { useCommercialChatInject } from "@/src/components/commercial/CommercialChatContext";
+import { useI18n } from "@/src/hooks/useI18n";
 
 const DS_CARD = `${dsChartCard} ds-card-gradient shadow-[0px_2px_12px_rgba(0,0,0,0.04)]`;
 
@@ -24,6 +25,7 @@ function fmtEuroAmount(n: number) {
 }
 
 function AnalyseWithAmiioButton({ topic }: { topic: string }) {
+  const { t } = useI18n();
   const inject = useCommercialChatInject();
   const onClick = useCallback(() => {
     const prompt = `Debt Compliance — Analyse with Amiio:\n\n${topic}`;
@@ -49,7 +51,7 @@ function AnalyseWithAmiioButton({ topic }: { topic: string }) {
       )}
     >
       <Lightbulb className="size-4 shrink-0 text-[#7E8185]" strokeWidth={1.8} />
-      Analyse with Amiio
+      {t("Analyse with Amiio")}
     </button>
   );
 }
@@ -154,6 +156,7 @@ const INPUT_SOURCES: {
 ];
 
 export function FinancialDebtCompliancePanel() {
+  const { t } = useI18n();
   const [expandedCovenantId, setExpandedCovenantId] = useState<string | null>(null);
   const [expandedSourceId, setExpandedSourceId] = useState<string | null>(null);
 
@@ -170,7 +173,7 @@ export function FinancialDebtCompliancePanel() {
             <CheckCircle2 className="size-5 text-[#1F9E8B]" strokeWidth={2} aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className={dsFinTypo.alertTitle}>All Covenants Compliant</p>
+            <p className={dsFinTypo.alertTitle}>{t("All Covenants Compliant")}</p>
             <p className={cn("mt-0.5", dsFinTypo.meta)}>Last reviewed: March 1, 2026</p>
           </div>
         </div>
@@ -186,7 +189,7 @@ export function FinancialDebtCompliancePanel() {
             )
           }
         >
-          Actions
+          {t("Actions")}
           <MoreVertical className="size-4 opacity-90" strokeWidth={2} />
         </button>
       </div>
@@ -194,7 +197,7 @@ export function FinancialDebtCompliancePanel() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <div className={cn(DS_CARD, "flex flex-col p-6")}>
           <div className="mb-4 flex items-start justify-between gap-2">
-            <h3 className={dsFinTypo.sectionTitle}>Covenant Summary</h3>
+            <h3 className={dsFinTypo.sectionTitle}>{t("Covenant Summary")}</h3>
             <WidgetHeaderLamp
               chatLabel="Covenant Summary"
               chatTopic="Summarise DSCR, LTV, ICR, and occupancy covenants versus facility requirements and headroom."
@@ -220,13 +223,13 @@ export function FinancialDebtCompliancePanel() {
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span className={dsFinTypo.rowValue}>{c.value}</span>
                       <span className={cn("rounded-full bg-[#E6F6F3] px-2 py-0.5 text-[#1F9E8B]", dsFinTypo.badge)}>
-                        Compliant
+                        {t("Compliant")}
                       </span>
                     </div>
                   </button>
                   {open ? (
                     <div className="border-t border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] px-3 py-3 sm:px-4">
-                      <p className={dsFinTypo.bodySm}>{c.detail}</p>
+                      <p className={dsFinTypo.bodySm}>{t(c.detail)}</p>
                       <div className="mt-3 flex justify-end">
                         <AnalyseWithAmiioButton
                           topic={`${c.name}\n${c.requirement}\nCurrent: ${c.value}\n\n${c.detail}`}
@@ -242,7 +245,7 @@ export function FinancialDebtCompliancePanel() {
 
         <div className={cn(DS_CARD, "flex flex-col p-6")}>
           <div className="mb-4 flex items-start justify-between gap-2">
-            <h3 className={dsFinTypo.sectionTitle}>Loan Details</h3>
+            <h3 className={dsFinTypo.sectionTitle}>{t("Loan Details")}</h3>
             <WidgetHeaderLamp
               chatLabel="Loan Details"
               chatTopic="Explain facility size, margin, amortisation profile, and next payment for the primary loan."
@@ -251,7 +254,7 @@ export function FinancialDebtCompliancePanel() {
           <div className="flex flex-col divide-y divide-[rgba(230,231,232,0.9)] rounded-xl border border-[rgba(230,231,232,0.7)] bg-[#FAFBFC]">
             {LOAN_ROWS.map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-4 px-4 py-3">
-                <span className={dsFinTypo.meta}>{row.label}</span>
+                <span className={dsFinTypo.meta}>{t(row.label)}</span>
                 <span className={cn("text-right", dsFinTypo.tableCellMedium, "text-[#010309]")}>
                   {row.value}
                 </span>
@@ -261,8 +264,9 @@ export function FinancialDebtCompliancePanel() {
           <p className={cn("mt-3 inline-flex items-start gap-1.5", dsFinTypo.meta)}>
             <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-[#7E8185]" strokeWidth={1.8} />
             <span>
-              Facility is senior secured on the portfolio with quarterly covenant testing. Stress DSCR
-              under downside rent and rate scenarios in chat.
+              {t(
+                "Facility is senior secured on the portfolio with quarterly covenant testing. Stress DSCR under downside rent and rate scenarios in chat.",
+              )}
             </span>
           </p>
         </div>
@@ -270,7 +274,7 @@ export function FinancialDebtCompliancePanel() {
 
       <div className={cn(DS_CARD, "overflow-hidden p-6")}>
         <div className="mb-4 flex items-start justify-between gap-2">
-          <h3 className={dsFinTypo.sectionTitle}>Upcoming Debt Service Payments</h3>
+          <h3 className={dsFinTypo.sectionTitle}>{t("Upcoming Debt Service Payments")}</h3>
           <WidgetHeaderLamp
             chatLabel="Debt service schedule"
             chatTopic="Interpret upcoming principal, interest, and balance trajectory for the facility payment schedule."
@@ -285,7 +289,7 @@ export function FinancialDebtCompliancePanel() {
                     key={h}
                     className={cn("pb-3 pr-4", dsFinTypo.tableHeader)}
                   >
-                    {h}
+                    {t(h)}
                   </th>
                 ))}
               </tr>
@@ -318,7 +322,7 @@ export function FinancialDebtCompliancePanel() {
 
       <div className={cn(DS_CARD, "p-6")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h3 className={dsFinTypo.sectionTitle}>Input Sources</h3>
+          <h3 className={dsFinTypo.sectionTitle}>{t("Input Sources")}</h3>
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -329,7 +333,7 @@ export function FinancialDebtCompliancePanel() {
                 )
               }
             >
-              View all
+              {t("View all")}
             </button>
             <WidgetHeaderLamp
               chatLabel="Input sources"
@@ -373,13 +377,13 @@ export function FinancialDebtCompliancePanel() {
                     <Icon className="size-5" strokeWidth={1.5} />
                   </div>
                   <div className="min-w-0">
-                    <p className={cn(dsFinTypo.rowTitle, "text-[#010309]")}>{s.title}</p>
+                    <p className={cn(dsFinTypo.rowTitle, "text-[#010309]")}>{t(s.title)}</p>
                     <p className={cn("mt-0.5", dsFinTypo.meta)}>{s.date}</p>
                   </div>
                 </button>
                 {open ? (
                   <div className="mt-2 rounded-xl border border-[rgba(230,231,232,0.85)] bg-[#F3F4F6] p-3">
-                    <p className={dsFinTypo.bodySm}>{s.detail}</p>
+                    <p className={dsFinTypo.bodySm}>{t(s.detail)}</p>
                     <div className="mt-3 flex justify-end">
                       <AnalyseWithAmiioButton topic={`Input source: ${s.title}\n\n${s.detail}`} />
                     </div>

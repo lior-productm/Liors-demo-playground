@@ -6,6 +6,7 @@ import { DashboardLoading } from "@/src/components/layout/DashboardLoading";
 import { WorkflowCreationChat } from "@/src/components/workflows/WorkflowCreationChat";
 import { ServiceChargeSettlementFlow } from "@/src/components/workflows/ServiceChargeSettlementFlow";
 import { WorkflowsOverviewPageClient } from "@/src/components/workflows/WorkflowsOverviewPageClient";
+import { useI18n } from "@/src/hooks/useI18n";
 import { getWorkflowSession } from "@/src/lib/workflowSessions";
 
 function resolveWorkflowSessionId(id: string) {
@@ -14,6 +15,7 @@ function resolveWorkflowSessionId(id: string) {
 }
 
 export function WorkflowSessionPageClient() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const id = typeof params.id === "string" ? params.id : "";
@@ -49,7 +51,7 @@ export function WorkflowSessionPageClient() {
   }
 
   if (!ready || !sessionId) {
-    return <DashboardLoading label="Starting workflow…" />;
+    return <DashboardLoading label={t("Starting workflow…")} />;
   }
 
   const session = getWorkflowSession(sessionId);

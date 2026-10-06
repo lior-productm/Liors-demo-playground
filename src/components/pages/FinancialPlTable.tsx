@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { dsFinTypo, dsWidgetFilter } from "@/src/lib/designSystem";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /** Figma P&L Table (740:41904) — collapsed dashboard, five month columns at 734px content. */
 const PL_MONTHS = [
@@ -188,6 +189,8 @@ function PlLabelCell({
   expanded?: boolean;
   onToggle?: () => void;
 }) {
+  const { t, account } = useI18n();
+  const label = t(row.label) !== row.label ? t(row.label) : account(row.label);
   const rowBorder =
     row.kind !== "result" && row.kind !== "section"
       ? "border-b border-[rgba(230,231,232,0.7)]"
@@ -195,7 +198,7 @@ function PlLabelCell({
   if (row.kind === "section") {
     return (
       <div className={cn("flex h-10 items-center bg-[#F0F2F5] px-2", rowBorder)}>
-        <span className="typo-l3-r text-[#353638]">{row.label}</span>
+        <span className="typo-l3-r text-[#353638]">{label}</span>
       </div>
     );
   }
@@ -211,22 +214,22 @@ function PlLabelCell({
         <>
           <PlExpandToggle
             expanded={Boolean(expanded)}
-            label={row.label}
+            label={label}
             onToggle={onToggle!}
           />
-          <span className="typo-p3-b truncate text-[#353638]">{row.label}</span>
+          <span className="typo-p3-b truncate text-[#353638]">{label}</span>
         </>
       ) : (
         <span
           className={cn(
             "truncate text-[#353638]",
-            row.kind === "indent" && "pl-8 typo-l3-r",
+            row.kind === "indent" && "ps-8 typo-l3-r",
             isSubtotal && "typo-n-sectiontotal-s",
             isResult && "typo-n-sectiontotal-s text-[#121212]",
             row.kind !== "indent" && !isSubtotal && !isResult && "typo-p3-b",
           )}
         >
-          {row.label}
+          {label}
         </span>
       )}
     </div>
@@ -234,6 +237,7 @@ function PlLabelCell({
 }
 
 function PlValueCell({ row, value }: { row: PlRow; value?: string }) {
+  const { fmt } = useI18n();
   const isSubtotal = row.kind === "subtotal";
   const isResult = row.kind === "result";
   const bg = isSubtotal ? "bg-[#F7F9FB]" : "bg-[#F0F2F5]";
@@ -258,7 +262,7 @@ function PlValueCell({ row, value }: { row: PlRow; value?: string }) {
             isResult && "text-[#121212]",
           )}
         >
-          {value}
+          {fmt.amount(value)}
         </span>
       ) : null}
     </div>
@@ -266,6 +270,7 @@ function PlValueCell({ row, value }: { row: PlRow; value?: string }) {
 }
 
 export function FinancialPlTable() {
+  const { t, fmt } = useI18n();
   const expandableIds = useMemo(
     () => PL_ROWS.filter((r) => r.kind === "expandable").map((r) => r.id),
     [],
@@ -300,7 +305,7 @@ export function FinancialPlTable() {
     <div className="flex min-w-0 flex-col gap-4 rounded-[35px] border border-[rgba(230,231,232,0.7)] bg-[rgba(240,242,245,0.8)] p-6">
       {/* Title + filters — Figma 740:41904 */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h2 className={cn(dsFinTypo.sectionTitle)}>P&amp;L</h2>
+        <h2 className={cn(dsFinTypo.sectionTitle)}>{t("P&L")}</h2>
         <div className="flex flex-wrap items-center gap-2">
           <PlFilterPill className="w-[111px]">
             <Select defaultValue="compare">
@@ -308,15 +313,15 @@ export function FinancialPlTable() {
                 <SelectValue placeholder="Compare" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="compare">Compare</SelectItem>
-                <SelectItem value="budget">Budget</SelectItem>
+                <SelectItem value="compare">{t("Compare")}</SelectItem>
+                <SelectItem value="budget">{t("Budget")}</SelectItem>
               </SelectContent>
             </Select>
           </PlFilterPill>
 
           <PlFilterPill className="w-[180px] gap-3 px-3">
             <Calendar className="size-[17px] shrink-0 text-[#676A6E]" strokeWidth={1.5} />
-            <span className="typo-l3-b flex-1 truncate text-[#65686B]">Dec - May 2025</span>
+            <span className="typo-l3-b flex-1 truncate text-[#65686B]">{t("Dec - May 2025")}</span>
             <ChevronDown className="size-[17px] shrink-0 text-[#969A9E]" strokeWidth={1.5} />
           </PlFilterPill>
 
@@ -326,8 +331,8 @@ export function FinancialPlTable() {
                 <SelectValue placeholder="Quarterly" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
+                <SelectItem value="monthly">{t("Monthly")}</SelectItem>
+                <SelectItem value="quarterly">{t("Quarterly")}</SelectItem>
               </SelectContent>
             </Select>
           </PlFilterPill>
@@ -335,7 +340,7 @@ export function FinancialPlTable() {
           <button
             type="button"
             className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#B3B8BD] text-[#676A6E]"
-            aria-label="More options"
+            aria-label={t("More options")}
           >
             <MoreVertical className="size-5" strokeWidth={1.5} />
           </button>
@@ -358,7 +363,7 @@ export function FinancialPlTable() {
           )}
         >
           <CirclePlus className="size-4" strokeWidth={1.75} />
-          Expand all
+          {t("Expand all")}
         </button>
         <span className="h-4 w-px bg-[#E6E8EB]" aria-hidden />
         <button
@@ -370,7 +375,7 @@ export function FinancialPlTable() {
           )}
         >
           <CircleMinus className="size-4" strokeWidth={1.75} />
-          Collapse all
+          {t("Collapse all")}
         </button>
       </div>
 
@@ -380,14 +385,14 @@ export function FinancialPlTable() {
           <div className={PL_GRID}>
             {/* Header */}
             <div className="flex h-12 items-center border-b border-[#F2F4F7] bg-[#FBFBFB] px-2 py-2.5">
-              <span className="typo-l3-b truncate text-[#65686B]">P&amp;L Account</span>
+              <span className="typo-l3-b truncate text-[#65686B]">{t("P&L Account")}</span>
             </div>
             {PL_MONTHS.map((month) => (
               <div
                 key={month}
                 className="flex h-12 items-center justify-end border-b border-[#F2F4F7] bg-[#FBFBFB] px-2 py-2.5"
               >
-                <span className="typo-l3-b truncate text-right text-[#65686B]">{month}</span>
+                <span className="typo-l3-b truncate text-end text-[#65686B]">{fmt.monthLabel(month)}</span>
               </div>
             ))}
 

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { ReportPlRow } from "@/src/lib/reportingMockData";
 import { ReportEditApprovalMark } from "@/src/components/reporting/ReportEditApprovalMark";
 
@@ -13,7 +14,7 @@ function Cell({
   highlight,
   align = "left",
 }: {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   highlight?: boolean;
   align?: "left" | "right";
@@ -53,10 +54,11 @@ function EditableCell({
   onApprove?: () => void;
   onReject?: () => void;
 }) {
+  const { t } = useI18n();
   if (!editable) {
     return (
       <Cell highlight={highlight} align={align} className={className}>
-        {value}
+        {t(value)}
       </Cell>
     );
   }
@@ -126,6 +128,7 @@ function PlRow({
   cellEdit: CellEditHandlers;
   isCellEditable?: (rowIndex: number, field: EditableField, row: ReportPlRow) => boolean;
 }) {
+  const { t } = useI18n();
   const cell = (field: EditableField, fallback = "") => ({
     value: cellEdit.getValue(field, (row[field] as string | undefined) ?? fallback),
     pending: cellEdit.isPending(field),
@@ -141,7 +144,7 @@ function PlRow({
     case "bank-end":
       return (
         <RowShell className="border-b border-[#B3B8BD] bg-white">
-          <Cell className="font-medium">{row.category}</Cell>
+          <Cell className="font-medium">{t(row.category ?? "")}</Cell>
           <EditableCell editable={canEdit("account")} {...cell("account", row.account)} />
           <Cell />
           <Cell />
@@ -163,17 +166,17 @@ function PlRow({
     case "column-header":
       return (
         <RowShell className="border-b border-[#F2F2F2] bg-[#F2F2F2]">
-          <Cell className="font-medium text-[#4E4F52]">{row.category}</Cell>
-          <Cell className="font-medium text-[#4E4F52]">{row.account}</Cell>
+          <Cell className="font-medium text-[#4E4F52]">{t(row.category ?? "")}</Cell>
+          <Cell className="font-medium text-[#4E4F52]">{t(row.account)}</Cell>
           <Cell align="right" className="font-medium text-[#4E4F52]">
-            {row.budget}
+            {t(row.budget ?? "")}
           </Cell>
           <Cell />
           <Cell align="right" className="font-medium text-[#4E4F52]">
-            {row.q1Actual}
+            {t(row.q1Actual ?? "")}
           </Cell>
           <Cell align="right" className="font-medium text-[#4E4F52]">
-            {row.vsBudget}
+            {t(row.vsBudget ?? "")}
           </Cell>
         </RowShell>
       );
@@ -181,7 +184,7 @@ function PlRow({
     case "section":
       return (
         <RowShell className="bg-white">
-          <Cell className="font-medium">{row.category}</Cell>
+          <Cell className="font-medium">{t(row.category ?? "")}</Cell>
           <EditableCell editable={canEdit("account")} {...cell("account", row.account)} />
           <EditableCell
             editable={canEdit("budget")}
@@ -207,7 +210,7 @@ function PlRow({
       return (
         <RowShell className="border-t-2 border-[#B3B8BD] bg-[#F2F2F2] shadow-[0_4px_4px_rgba(0,0,0,0.08)]">
           <Cell />
-          <Cell className="font-semibold">{row.account}</Cell>
+          <Cell className="font-semibold">{t(row.account)}</Cell>
           <Cell align="right" highlight className="font-bold">
             {row.budget}
           </Cell>
@@ -225,7 +228,7 @@ function PlRow({
       return (
         <RowShell>
           <Cell />
-          <Cell className="font-medium">{row.account}</Cell>
+          <Cell className="font-medium">{t(row.account)}</Cell>
           <Cell align="right" highlight className="font-medium">
             {row.budget}
           </Cell>
@@ -242,7 +245,7 @@ function PlRow({
     case "profit":
       return (
         <RowShell className="border-t-2 border-[#B3B8BD] bg-[#F2F2F2]">
-          <Cell className="font-medium">{row.category}</Cell>
+          <Cell className="font-medium">{t(row.category ?? "")}</Cell>
           <Cell />
           <Cell align="right" highlight className="font-medium">
             {row.budget}

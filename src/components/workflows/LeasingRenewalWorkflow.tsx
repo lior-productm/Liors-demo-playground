@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardLoading } from "@/src/components/layout/DashboardLoading";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   createWorkflowSession,
   readWorkflowSessions,
@@ -12,6 +13,7 @@ import { intentToTopic } from "@/src/lib/workflowTopics";
 
 /** Legacy route — opens the lease renewal flow inside the workflow chat session. */
 export function LeasingRenewalWorkflow() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -50,5 +52,5 @@ export function LeasingRenewalWorkflow() {
     router.replace(`/workflows/${session.id}`);
   }, [router, searchParams]);
 
-  return <DashboardLoading label="Opening renewal workflow…" />;
+  return <DashboardLoading label={t("Opening renewal workflow…")} />;
 }

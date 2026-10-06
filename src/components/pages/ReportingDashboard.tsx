@@ -15,12 +15,15 @@ import {
 import { ReportActiveView } from "@/src/components/reporting/ReportActiveView";
 import { ReportsAllList } from "@/src/components/reporting/ReportsAllList";
 import { TemplateStudio } from "@/src/components/reporting/TemplateStudio";
+import { GenerateReportModal } from "@/src/components/reporting/GenerateReportModal";
 import {
   AppShell,
   DashboardPageBody,
   DashboardPageHeader,
 } from "@/src/components/layout/AppShell";
 import { DashboardPageTabs } from "@/src/components/layout/DashboardPageTabs";
+import { Plus } from "lucide-react";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export function ReportingDashboard({
   activeTab,
@@ -28,10 +31,13 @@ export function ReportingDashboard({
   activeTab: TopNavTabId;
   onTabChange: (tab: TopNavTabId) => void;
 }) {
+  const { t } = useI18n();
   const chat = useAmiioChat(activeTab, "reporting");
   const [reportTab, setReportTab] = useState<ReportingTabId>("studio");
   const [studioKey, setStudioKey] = useState(0);
   const [chatExpanded, setChatExpanded] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [openReportTitle, setOpenReportTitle] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setReportTab("studio");
@@ -77,10 +83,20 @@ export function ReportingDashboard({
       }
     >
       <DashboardPageHeader
-        title="Reports"
+        title={t("Reports")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setGenerateOpen(true)}
+            className="flex h-10 items-center gap-1.5 rounded-lg bg-[#111] px-4 text-[14px] font-medium leading-[1.24] text-white hover:bg-[#333]"
+          >
+            <Plus className="size-4" strokeWidth={2} />
+            {t("New report")}
+          </button>
+        }
         tabs={
           <DashboardPageTabs
-            tabs={REPORTING_TABS}
+            tabs={REPORTING_TABS.map((tab) => ({ id: tab.id, label: t(tab.label) }))}
             activeId={reportTab}
             onChange={handleTabChange}
           />
@@ -91,6 +107,7 @@ export function ReportingDashboard({
         {reportTab === "active" ? (
           <ReportActiveView
             variant="preview"
+            openTitle={openReportTitle}
             onEditInStudio={() => setReportTab("studio")}
           />
         ) : reportTab === "studio" ? (
@@ -99,6 +116,17 @@ export function ReportingDashboard({
           <ReportsAllList />
         )}
       </DashboardPageBody>
+
+      {generateOpen ? (
+        <GenerateReportModal
+          onClose={() => setGenerateOpen(false)}
+          onGenerated={(report) => {
+            setGenerateOpen(false);
+            setOpenReportTitle(report.title);
+            setReportTab("active");
+          }}
+        />
+      ) : null}
     </AppShell>
   );
 }

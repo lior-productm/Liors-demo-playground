@@ -1,7 +1,10 @@
 "use client";
 
-import { ChevronDown, Download, FilePlus2, Library, Pencil, Plus } from "lucide-react";
+import { ChevronDown, Download, FilePlus2, Library, Lock, Pencil, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
+import { LanguageOptionLabel } from "@/src/components/i18n/LanguageSelect";
+import type { LanguageCode } from "@/src/lib/i18n";
 
 type ReportToolbarProps = {
   reportTitle: string;
@@ -29,6 +32,10 @@ type ReportToolbarProps = {
   roleSlot?: React.ReactNode;
   /** Distribution status + approval/distribute actions. */
   distributionSlot?: React.ReactNode;
+  /** Language the report was generated in (locked after creation). */
+  reportLanguage?: LanguageCode;
+  /** Enables the "Download PDF file" action. */
+  onDownloadPdf?: () => void;
 };
 
 export function ReportToolbar({
@@ -47,8 +54,39 @@ export function ReportToolbar({
   onCreateTemplate,
   roleSlot,
   distributionSlot,
+  reportLanguage,
+  onDownloadPdf,
 }: ReportToolbarProps) {
+  const { t } = useI18n();
   const hasPendingEdits = pendingEditCount > 0;
+
+  const languagePill = reportLanguage ? (
+    <span
+      className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E8EAED] bg-[#FAFBFC] px-3 text-[13px] font-medium leading-[1.24] text-[#353638]"
+      title={t("The report language cannot be changed after the report is created.")}
+    >
+      <span className="text-[#65686B]">{t("Report language")}</span>
+      <LanguageOptionLabel code={reportLanguage} />
+      <Lock className="size-3.5 text-[#969A9E]" strokeWidth={1.9} aria-hidden />
+    </span>
+  ) : null;
+
+  const pdfButton = (
+    <button
+      type="button"
+      disabled={!onDownloadPdf}
+      onClick={onDownloadPdf}
+      className={cn(
+        "flex h-10 items-center gap-2 rounded-lg border border-[#E8EAED] px-4 text-[14px] font-medium leading-[1.24]",
+        onDownloadPdf
+          ? "text-[#111] hover:bg-[#F7F8FA]"
+          : "text-[#B3B8BD] disabled:cursor-not-allowed",
+      )}
+    >
+      <Download className="size-4" />
+      {t("Download PDF file")}
+    </button>
+  );
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
@@ -57,7 +95,7 @@ export function ReportToolbar({
           <select
             value={reportTitle}
             onChange={(event) => onReportChange?.(event.target.value)}
-            className="h-10 appearance-none rounded-lg border border-[#E8EAED] bg-white py-2 pl-3 pr-9 text-[14px] font-medium leading-[1.24] text-[#111]"
+            className="h-10 appearance-none rounded-lg border border-[#E8EAED] bg-white py-2 ps-3 pe-9 text-[14px] font-medium leading-[1.24] text-[#111]"
           >
             {reports.map((report) => (
               <option key={report} value={report}>
@@ -65,12 +103,13 @@ export function ReportToolbar({
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[#6B7280]" />
+          <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 size-4 -translate-y-1/2 text-[#6B7280]" />
         </div>
+        {languagePill}
 
         {readOnly && !dataEditOnly ? (
           <span className="inline-flex items-center rounded-full bg-[#F0F2F5] px-3 py-1.5 text-[12px] font-medium leading-4 text-[#65686B]">
-            Read-only preview
+            {t("Read-only preview")}
           </span>
         ) : (
           <div className="flex h-10 items-center rounded-full border border-[#E8EAED] bg-white p-1">
@@ -84,7 +123,7 @@ export function ReportToolbar({
                   : "text-[#111] hover:bg-[#F7F8FA]",
               )}
             >
-              Edit
+              {t("Edit")}
             </button>
             <button
               type="button"
@@ -96,14 +135,16 @@ export function ReportToolbar({
                   : "text-[#111] hover:bg-[#F7F8FA]",
               )}
             >
-              Preview
+              {t("Preview")}
             </button>
           </div>
         )}
 
         {(!readOnly || dataEditOnly) && hasPendingEdits && mode === "edit" ? (
           <span className="inline-flex items-center rounded-full bg-[#F0F2F5] px-2.5 py-1 text-[12px] font-medium leading-4 text-[#65686B]">
-            {pendingEditCount} change{pendingEditCount === 1 ? "" : "s"} awaiting approval
+            {pendingEditCount === 1
+              ? t("1 change awaiting approval")
+              : t("{count} changes awaiting approval", { values: { count: pendingEditCount } })}
           </span>
         ) : null}
 
@@ -121,17 +162,10 @@ export function ReportToolbar({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#A7B2F2] bg-[#F7F8FF] px-4 text-[14px] font-medium leading-[1.24] text-[#4C61DB] hover:bg-[#EEF0FF]"
               >
                 <Pencil className="size-4" strokeWidth={1.9} />
-                Edit in Template Studio
+                {t("Edit in Template Studio")}
               </button>
             ) : null}
-            <button
-              type="button"
-              disabled
-              className="flex h-10 items-center gap-2 rounded-lg border border-[#E8EAED] px-4 text-[14px] font-medium leading-[1.24] text-[#B3B8BD] disabled:cursor-not-allowed"
-            >
-              <Download className="size-4" />
-              Download PDF file
-            </button>
+            {pdfButton}
           </>
         ) : readOnly ? (
           <>
@@ -143,17 +177,10 @@ export function ReportToolbar({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#A7B2F2] bg-[#F7F8FF] px-4 text-[14px] font-medium leading-[1.24] text-[#4C61DB] hover:bg-[#EEF0FF]"
               >
                 <Pencil className="size-4" strokeWidth={1.9} />
-                Edit in Template Studio
+                {t("Edit in Template Studio")}
               </button>
             ) : null}
-            <button
-              type="button"
-              disabled
-              className="flex h-10 items-center gap-2 rounded-lg border border-[#E8EAED] px-4 text-[14px] font-medium leading-[1.24] text-[#B3B8BD] disabled:cursor-not-allowed"
-            >
-              <Download className="size-4" />
-              Download PDF file
-            </button>
+            {pdfButton}
           </>
         ) : (
           <>
@@ -164,7 +191,7 @@ export function ReportToolbar({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
               >
                 <FilePlus2 className="size-4" strokeWidth={1.9} />
-                New template
+                {t("New template")}
               </button>
             ) : null}
             {canCreateSection && onAddFromLibrary ? (
@@ -174,7 +201,7 @@ export function ReportToolbar({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
               >
                 <Library className="size-4" strokeWidth={1.9} />
-                Add from library
+                {t("Add from library")}
               </button>
             ) : null}
             {canCreateSection ? (
@@ -184,7 +211,7 @@ export function ReportToolbar({
                 className="flex h-10 items-center gap-1.5 rounded-lg border border-[#A7B2F2] bg-[#F7F8FF] px-4 text-[14px] font-medium leading-[1.24] text-[#4C61DB] hover:bg-[#EEF0FF]"
               >
                 <Plus className="size-4" strokeWidth={2} />
-                Create new section
+                {t("Create new section")}
               </button>
             ) : null}
             {distributionSlot}

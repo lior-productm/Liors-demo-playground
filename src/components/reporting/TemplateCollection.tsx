@@ -7,6 +7,7 @@ import { readCustomSections } from "@/src/lib/reportSectionBuilder";
 import { readDistributionStatus } from "@/src/lib/reportDistribution";
 import { DistributionPill } from "@/src/components/reporting/ReportDistributionControls";
 import { CreatorChip, OwnershipBadge } from "@/src/components/reporting/CreatorChip";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { DistributionStatus } from "@/src/lib/reportDistribution";
 import type { ItemOwnership } from "@/src/lib/reportUser";
 
@@ -36,6 +37,7 @@ export function TemplateCollection({
   onOpen: (title: string) => void;
   onNewTemplate: () => void;
 }) {
+  const { t } = useI18n();
   const [cards, setCards] = useState<TemplateCardData[]>(() =>
     listTemplates().map((template) => ({
       ...template,
@@ -58,10 +60,10 @@ export function TemplateCollection({
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-0.5">
         <h2 className="text-[18px] font-semibold leading-[1.25] text-[#05091F]">
-          Templates
+          {t("Templates")}
         </h2>
         <p className="text-[13px] leading-[1.5] text-[#65686B]">
-          Open a template to edit its sections and objects, or create a new one.
+          {t("Open a template to edit its sections and objects, or create a new one.")}
         </p>
       </div>
 
@@ -75,10 +77,10 @@ export function TemplateCollection({
             <Plus className="size-5" strokeWidth={2} />
           </span>
           <span className="text-[14px] font-medium leading-[1.25] text-[#05091F]">
-            Create new template
+            {t("Create new template")}
           </span>
           <span className="text-[12px] leading-[1.4] text-[#65686B]">
-            Start blank, from a preset, or duplicate an existing one.
+            {t("Start blank, from a preset, or duplicate an existing one.")}
           </span>
         </button>
 
@@ -103,7 +105,7 @@ export function TemplateCollection({
                 {card.title}
               </h3>
               <p className="line-clamp-2 text-[12px] leading-[1.5] text-[#65686B]">
-                {card.description}
+                {t(card.description)}
               </p>
               <CreatorChip name={card.createdBy} className="mt-1" />
             </div>
@@ -113,19 +115,20 @@ export function TemplateCollection({
                 {card.basedOn ? (
                   <span className="inline-flex items-center gap-1">
                     <Copy className="size-3.5" strokeWidth={1.75} />
-                    From {card.basedOn}
+                    {t("From {name}", { values: { name: card.basedOn } })}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1">
                     <Layers className="size-3.5" strokeWidth={1.75} />
-                    {card.customSectionCount} custom section
-                    {card.customSectionCount === 1 ? "" : "s"}
+                    {card.customSectionCount === 1
+                      ? t("{count} custom section", { values: { count: card.customSectionCount } })
+                      : t("{count} custom sections", { values: { count: card.customSectionCount } })}
                   </span>
                 )}
               </span>
               <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#4C61DB] opacity-0 transition-opacity group-hover:opacity-100">
-                Open
-                <ArrowRight className="size-3.5" strokeWidth={2} />
+                {t("Open")}
+                <ArrowRight className="size-3.5 rtl:rotate-180" strokeWidth={2} />
               </span>
             </div>
           </button>

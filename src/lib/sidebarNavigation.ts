@@ -33,11 +33,11 @@ export function navigateSidebar(nav: SidebarNavId, router: RouterWithPush) {
     case "insights":
       router.push("/workspace");
       break;
-    case "ai-assistants":
-      router.push("/ai-assistants/lease-analyst");
+    case "ai-analysts":
+      router.push("/ai-analysts");
       break;
-    case "lease-analyst":
-      router.push("/ai-assistants/lease-analyst");
+    case "tasks":
+      router.push("/tasks");
       break;
     case "financial":
       router.push("/financial");
@@ -60,9 +60,7 @@ export function navigateSidebar(nav: SidebarNavId, router: RouterWithPush) {
       );
       break;
     case "settings":
-      window.dispatchEvent(
-        new CustomEvent("amiio:toast", { detail: { message: "Settings (coming soon)" } }),
-      );
+      router.push("/settings");
       break;
   }
 }

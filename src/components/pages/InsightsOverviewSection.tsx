@@ -24,6 +24,7 @@ import { Download, Pencil, Share2, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { TopNavTabId } from "@/src/types/commercial";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   AmiioAiDisclaimerTrigger,
 } from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
@@ -235,6 +236,7 @@ export function InsightsOverviewSection({
   onGoToManageWithBucket: (bucket: InsightOverviewBucket) => void;
   onNavigateTab: (tab: TopNavTabId) => void;
 }) {
+  const { t } = useI18n();
   const pieData = useMemo(() => {
     const buckets = BUCKET_ORDER.map((key) => ({
       key,
@@ -631,9 +633,9 @@ export function InsightsOverviewSection({
                   className="flex w-full cursor-pointer flex-col gap-2 p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[15px] font-semibold text-[#010309]">{card.title}</p>
+                    <p className="text-[15px] font-semibold text-[#010309]">{t(card.title)}</p>
                     <p className="mt-1 text-[13px] leading-snug text-[#65686B]">
-                      {card.subtitle}
+                      {t(card.subtitle)}
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">

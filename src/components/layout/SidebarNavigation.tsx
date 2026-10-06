@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronUp,
+  ListChecks,
   LogOut,
   Settings,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import {
   SIDEBAR_TOPIC_TEXT,
 } from "@/src/lib/sidebarNavigation";
 import { featureFlags } from "@/src/lib/featureFlags";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   SHELL_SIDEBAR_COLLAPSED_PX,
   SHELL_SIDEBAR_EXPANDED_PX,
@@ -39,8 +41,6 @@ import {
 import {
   SidebarCountBadge,
 } from "@/src/components/layout/SidebarChatSessionItem";
-import { requestAnalystHome } from "@/src/lib/aiAssistantNavState";
-import { AI_ASSISTANT_CARDS, type AiAssistantId } from "@/src/lib/aiAssistantsData";
 import { TruncatedText } from "@/src/components/ui/TruncatedText";
 
 const SIDEBAR_EXPANDED_W = SHELL_SIDEBAR_EXPANDED_PX;
@@ -282,6 +282,7 @@ function AskAiNavDropdown({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const isAskAiActive =
     activeNav === "ask-ai" ||
@@ -293,7 +294,7 @@ function AskAiNavDropdown({
       <NavItemBase
         collapsed
         active={isAskAiActive}
-        title="Ask Amiio"
+        title={t("Ask Amiio")}
         onClick={() => onExpand?.()}
       >
         <SidebarNavIcon name="lightbulb" width={16.5} height={21} />
@@ -304,7 +305,7 @@ function AskAiNavDropdown({
   return (
     <NavItemBase active={isAskAiActive} onClick={() => router.push("/ask-ai")}>
       <SidebarNavIcon name="lightbulb" width={16.5} height={21} />
-      <NavLabel focused={isAskAiActive}>Ask Amiio</NavLabel>
+      <NavLabel focused={isAskAiActive}>{t("Ask Amiio")}</NavLabel>
     </NavItemBase>
   );
 }
@@ -323,6 +324,7 @@ function WorkspaceNavItem({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const isWorkspaceActive =
     activeNav === "insights" ||
@@ -336,7 +338,7 @@ function WorkspaceNavItem({
       <NavItemBase
         collapsed
         active={isWorkspaceActive}
-        title="Workspace"
+        title={t("Workspace")}
         onClick={() => onExpand?.()}
       >
         <SidebarNavIcon name="workspace" size={20} />
@@ -348,71 +350,35 @@ function WorkspaceNavItem({
     <NavItemBase active={isWorkspaceActive} onClick={() => router.push("/workspace")}>
       <SidebarNavIcon name="workspace" size={20} />
       <NavLabel focused={isWorkspaceActive} className="min-w-0 flex-1">
-        Workspace
+        {t("Workspace")}
       </NavLabel>
       <SidebarCountBadge count={WORKSPACE_NAV_BADGE} />
     </NavItemBase>
   );
 }
 
-function AiAssistantsNavDropdown({
-  activeNav,
-  collapsed,
-  onExpand,
-}: {
-  activeNav: SidebarNavId;
-  collapsed: boolean;
-  onExpand?: () => void;
-}) {
+function NavNewBadge() {
+  const { t } = useI18n();
+  return (
+    <span className="ml-auto inline-flex h-[18px] shrink-0 items-center rounded-full bg-[#5B3DF5] px-2 text-[10px] font-semibold uppercase leading-none tracking-wide text-white">
+      {t("New")}
+    </span>
+  );
+}
+
+function AiAnalystsNavItem({ collapsed }: { collapsed: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [assistantsOpen, setAssistantsOpen] = useState(() =>
-    pathname.startsWith("/ai-assistants"),
-  );
-
-  const isLeaseAnalyst =
-    activeNav === "lease-analyst" || pathname.startsWith("/ai-assistants/lease-analyst");
-  const isAiAssistantsActive = pathname.startsWith("/ai-assistants");
-
-  useEffect(() => {
-    if (isAiAssistantsActive) setAssistantsOpen(true);
-  }, [isAiAssistantsActive]);
-
-  const navigateAssistant = (id: AiAssistantId) => {
-    const card = AI_ASSISTANT_CARDS.find((c) => c.id === id);
-    if (!card) return;
-
-    // Analysts with a live workspace page navigate; others toast "coming soon".
-    const LIVE_ANALYSTS: AiAssistantId[] = ["lease-analyst", "reporting", "esg"];
-    if (LIVE_ANALYSTS.includes(id)) {
-      if (pathname.startsWith(card.chatHref)) {
-        requestAnalystHome(card.chatHref);
-        return;
-      }
-      router.push(card.chatHref);
-      return;
-    }
-
-    window.dispatchEvent(
-      new CustomEvent("amiio:toast", {
-        detail: { message: `${card.title} (coming soon)` },
-      }),
-    );
-  };
+  const { t, dir } = useI18n();
+  const active = pathname.startsWith("/ai-analysts");
 
   if (collapsed) {
     return (
       <NavItemBase
         collapsed
-        active={isAiAssistantsActive}
-        title="AI Assistants"
-        onClick={() => {
-          if (isLeaseAnalyst) {
-            navigateAssistant("lease-analyst");
-            return;
-          }
-          onExpand?.();
-        }}
+        active={active}
+        title={t("AI Analysts")}
+        onClick={() => router.push("/ai-analysts")}
       >
         <SidebarNavIcon name="ai" size={20} />
       </NavItemBase>
@@ -420,56 +386,35 @@ function AiAssistantsNavDropdown({
   }
 
   return (
-    <div className={cn("flex w-full min-w-0 flex-col", NAV_SECTION_BODY_GAP)}>
-      <NavSectionHeaderRow
-        onClick={() => setAssistantsOpen(true)}
-        trailing={
-          <button
-            type="button"
-            className={NAV_SECTION_CHEVRON}
-            aria-label={assistantsOpen ? "Collapse AI Assistants" : "Expand AI Assistants"}
-            aria-expanded={assistantsOpen}
-            onClick={() => setAssistantsOpen((open) => !open)}
-          >
-            <ChevronUp
-              className={cn(
-                "size-5 transition-transform duration-200 ease-out",
-                !assistantsOpen && "rotate-180",
-              )}
-              strokeWidth={1.75}
-            />
-          </button>
-        }
-      >
-        <SidebarNavIcon name="ai" size={20} />
-        <NavLabel focused={isAiAssistantsActive}>AI Assistants</NavLabel>
-      </NavSectionHeaderRow>
-      <SidebarExpandableSection open={assistantsOpen}>
-        <div className="flex flex-col gap-1">
-          {AI_ASSISTANT_CARDS.map((card) => {
-            const selected =
-              card.id === "lease-analyst"
-                ? isLeaseAnalyst
-                : pathname === card.chatHref;
-            return (
-              <NavItemBase
-                key={card.id}
-                active={selected}
-                className={cn(NAV_SUB_ITEM_INDENT, "pr-3")}
-                onClick={() => {
-                  setAssistantsOpen(true);
-                  navigateAssistant(card.id);
-                }}
-              >
-                <NavLabel topic selected={selected} className="min-w-0 flex-1 truncate">
-                  {card.title}
-                </NavLabel>
-              </NavItemBase>
-            );
-          })}
-        </div>
-      </SidebarExpandableSection>
-    </div>
+    <NavItemBase active={active} onClick={() => router.push("/ai-analysts")}>
+      <SidebarNavIcon name="ai" size={20} />
+      <NavLabel focused={active} className={cn("min-w-0 flex-1", dir === "rtl" && "text-right")}>
+        {t("AI Analysts")}
+      </NavLabel>
+      <NavNewBadge />
+    </NavItemBase>
+  );
+}
+
+function TasksNavItem({ collapsed }: { collapsed: boolean }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { t } = useI18n();
+  const active = pathname === "/tasks" || pathname.startsWith("/tasks/");
+
+  if (collapsed) {
+    return (
+      <NavItemBase collapsed active={active} title={t("Tasks")} onClick={() => router.push("/tasks")}>
+        <ListChecks className="size-5 text-[#353638]" strokeWidth={1.5} />
+      </NavItemBase>
+    );
+  }
+
+  return (
+    <NavItemBase active={active} onClick={() => router.push("/tasks")}>
+      <ListChecks className="size-5 shrink-0 text-[#353638]" strokeWidth={1.5} />
+      <NavLabel focused={active}>{t("Tasks")}</NavLabel>
+    </NavItemBase>
   );
 }
 
@@ -484,6 +429,7 @@ function WorkflowsNavDropdown({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
   const { sessions, removeSession, renameSession } = useWorkflowSessions();
   const [workflowsOpen, setWorkflowsOpen] = useState(() =>
     pathname.startsWith("/workflows"),
@@ -574,7 +520,7 @@ function WorkflowsNavDropdown({
       <NavItemBase
         collapsed
         active={isWorkflowActive}
-        title="Workflows"
+        title={t("Workflows")}
         onClick={() => onExpand?.()}
       >
         <SidebarNavIcon name="workflows" size={18} />
@@ -595,7 +541,7 @@ function WorkflowsNavDropdown({
             <button
               type="button"
               className={NAV_SECTION_CHEVRON}
-              aria-label={workflowsOpen ? "Collapse workflows" : "Expand workflows"}
+              aria-label={workflowsOpen ? t("Collapse workflows") : t("Expand workflows")}
               aria-expanded={workflowsOpen}
               onClick={() => setWorkflowsOpen((value) => !value)}
             >
@@ -611,7 +557,7 @@ function WorkflowsNavDropdown({
         }
       >
         <SidebarNavIcon name="workflows" size={18} />
-        <NavLabel>Workflows</NavLabel>
+        <NavLabel>{t("Workflows")}</NavLabel>
       </NavSectionHeaderRow>
       <SidebarExpandableSection open={workflowsOpen}>
         <div className="flex flex-col gap-1">
@@ -626,7 +572,7 @@ function WorkflowsNavDropdown({
             return (
               <WorkflowTopicRow
                 key={topic.id}
-                label={topic.label}
+                label={t(topic.label)}
                 count={count}
                 open={expandedTopics[topic.id]}
                 pathname={pathname}
@@ -669,6 +615,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
   className?: string;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [collapsed, setCollapsed] = useState(false);
   const [dashboardsOpen, setDashboardsOpen] = useState(
     () => activeNav === "financial" || activeNav === "commercial",
@@ -714,7 +661,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
               <button
                 type="button"
                 onClick={() => setCollapsed(false)}
-                aria-label="Expand sidebar"
+                aria-label={t("Expand sidebar")}
                 className="group relative flex size-6 shrink-0 items-center justify-center rounded-[4px] transition-colors hover:bg-[#F0F2F5]"
               >
                 <AmiioCollapsedMark className="absolute transition-opacity group-hover:opacity-0" />
@@ -731,7 +678,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                   type="button"
                   onClick={() => setCollapsed(true)}
                   className="flex size-6 shrink-0 items-center justify-center rounded-[4px] transition-colors hover:bg-[#F0F2F5]"
-                  aria-label="Collapse sidebar"
+                  aria-label={t("Collapse sidebar")}
                 >
                   <SidebarNavIcon name="collapse" size={20} />
                 </button>
@@ -760,18 +707,14 @@ export const SidebarNavigation = memo(function SidebarNavigation({
               />
             ) : null}
 
-            <AiAssistantsNavDropdown
-              activeNav={activeNav}
-              collapsed={collapsed}
-              onExpand={() => setCollapsed(false)}
-            />
+            <AiAnalystsNavItem collapsed={collapsed} />
 
             {collapsed ? (
               <>
                 <NavItemBase
                   collapsed
                   active={activeNav === "financial" || activeNav === "commercial"}
-                  title="Dashboards"
+                  title={t("Dashboards")}
                   onClick={() => go(activeNav === "financial" ? "financial" : "commercial")}
                 >
                   <SidebarNavIcon name="dashboards" size={20} />
@@ -786,7 +729,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                 <NavItemBase
                   collapsed
                   active={activeNav === "reporting"}
-                  title="Reports"
+                  title={t("Reports")}
                   onClick={() => go("reporting")}
                 >
                   <SidebarNavIcon name="reports" size={20} />
@@ -800,7 +743,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                     trailing={
                       <button
                         type="button"
-                        aria-label={dashboardsOpen ? "Collapse dashboards" : "Expand dashboards"}
+                        aria-label={dashboardsOpen ? t("Collapse dashboards") : t("Expand dashboards")}
                         aria-expanded={dashboardsOpen}
                         onClick={() => setDashboardsOpen((open) => !open)}
                         className={NAV_SECTION_CHEVRON}
@@ -816,7 +759,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                     }
                   >
                     <SidebarNavIcon name="dashboards" size={20} />
-                    <NavLabel>Dashboards</NavLabel>
+                    <NavLabel>{t("Dashboards")}</NavLabel>
                   </NavSectionHeaderRow>
                   {dashboardsOpen ? (
                     <div className="flex flex-col gap-1">
@@ -829,7 +772,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                         }}
                       >
                         <NavLabel topic selected={activeNav === "financial"}>
-                          Financial
+                          {t("Financial")}
                         </NavLabel>
                       </NavItemBase>
                       <NavItemBase
@@ -841,7 +784,7 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                         }}
                       >
                         <NavLabel topic selected={activeNav === "commercial"}>
-                          Commercial
+                          {t("Commercial")}
                         </NavLabel>
                       </NavItemBase>
                     </div>
@@ -857,10 +800,12 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                   onClick={() => go("reporting")}
                 >
                   <SidebarNavIcon name="reports" size={20} />
-                  <NavLabel focused={activeNav === "reporting"}>Reports</NavLabel>
+                  <NavLabel focused={activeNav === "reporting"}>{t("Reports")}</NavLabel>
                 </NavItemBase>
               </>
             )}
+
+            <TasksNavItem collapsed={collapsed} />
           </nav>
         </div>
 
@@ -887,18 +832,18 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                 <NavItemBase
                   collapsed
                   active={activeNav === "settings"}
-                  title="Settings"
+                  title={t("Settings")}
                   onClick={() => go("settings")}
                 >
                   <Settings className="size-5 text-[#353638]" strokeWidth={1.5} />
                 </NavItemBase>
                 <NavItemBase
                   collapsed
-                  title="Log out"
+                  title={t("Log out")}
                   onClick={() =>
                     window.dispatchEvent(
                       new CustomEvent("amiio:toast", {
-                        detail: { message: "Logged out (demo)" },
+                        detail: { message: t("Logged out (demo)") },
                       }),
                     )
                   }
@@ -936,20 +881,20 @@ export const SidebarNavigation = memo(function SidebarNavigation({
                   onClick={() => go("settings")}
                 >
                   <Settings className="size-5 shrink-0 text-[#353638]" strokeWidth={1.5} />
-                  <NavLabel focused={activeNav === "settings"}>Settings</NavLabel>
+                  <NavLabel focused={activeNav === "settings"}>{t("Settings")}</NavLabel>
                 </NavItemBase>
 
                 <NavItemBase
                   onClick={() =>
                     window.dispatchEvent(
                       new CustomEvent("amiio:toast", {
-                        detail: { message: "Logged out (demo)" },
+                        detail: { message: t("Logged out (demo)") },
                       }),
                     )
                   }
                 >
                   <LogOut className="size-5 shrink-0 text-[#353638]" strokeWidth={1.5} />
-                  <NavLabel>Log out</NavLabel>
+                  <NavLabel>{t("Log out")}</NavLabel>
                 </NavItemBase>
               </div>
             </div>

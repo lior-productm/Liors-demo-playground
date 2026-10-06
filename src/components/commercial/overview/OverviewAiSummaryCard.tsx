@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowUpRight, Lightbulb } from "lucide-react";
 import { AmiioAiDisclaimerTrigger } from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
 import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export type OverviewKeyTrend = {
   tone: "positive" | "warning";
@@ -12,9 +13,10 @@ export type OverviewKeyTrend = {
 };
 
 function OverviewKeyTrendsList({ trends }: { trends: OverviewKeyTrend[] }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-[5px]">
-      <p className="text-[12px] leading-[1.24] text-[#65686B]">Key trends</p>
+      <p className="text-[12px] leading-[1.24] text-[#65686B]">{t("Key trends")}</p>
       {trends.map((trend, index) => (
         <div
           key={index}
@@ -47,6 +49,7 @@ export function OverviewAiSummaryCard({
   trends: OverviewKeyTrend[];
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -63,7 +66,7 @@ export function OverviewAiSummaryCard({
                 <Lightbulb className="h-3.5 w-3.5" />
               </div>
             </AmiioAiDisclaimerTrigger>
-            <h3 className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">{title}</h3>
+            <h3 className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">{t(title)}</h3>
           </div>
           <WidgetHeaderLamp chatTopic={chatTopic} chatLabel={chatLabel} />
         </div>
@@ -75,7 +78,7 @@ export function OverviewAiSummaryCard({
               <OverviewKeyTrendsList trends={trends} />
             </div>
             <button type="button" className="mt-3 text-[14px] font-medium text-[#070D2F]">
-              Read more
+              {t("Read more")}
             </button>
           </div>
 

@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export const LEASE_RENEWAL_STEPS = [
   {
@@ -50,6 +51,7 @@ export function LeaseRenewalProcessFlow({
   /** `embedded` fits inside dialogs and narrow panels. */
   variant?: "default" | "embedded";
 }) {
+  const { t } = useI18n();
   const embedded = variant === "embedded";
 
   const stepMeta = LEASE_RENEWAL_STEPS.map((step, i) => {
@@ -86,7 +88,16 @@ export function LeaseRenewalProcessFlow({
                       "rounded-xl border border-transparent transition-colors hover:border-[#E6E8EB] hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#233FDE] focus-visible:ring-offset-2",
                   )}
                   aria-current={step.active ? "step" : undefined}
-                  aria-label={`${step.title}. ${step.active ? "Current step" : step.done ? "Completed — go to this step" : "Go to this step"}`}
+                  aria-label={t("{title}. {state}", {
+                    values: {
+                      title: t(step.title),
+                      state: step.active
+                        ? t("Current step")
+                        : step.done
+                          ? t("Completed — go to this step")
+                          : t("Go to this step"),
+                    },
+                  })}
                 >
                   <div className="flex h-10 shrink-0 items-center justify-center">
                     <StepNode active={step.active} done={step.done} />
@@ -99,7 +110,7 @@ export function LeaseRenewalProcessFlow({
                         step.active || step.done ? "text-[#010309]" : "text-[#65686B]",
                       )}
                     >
-                      {step.title}
+                      {t(step.title)}
                     </p>
                     <p
                       className={cn(
@@ -108,7 +119,7 @@ export function LeaseRenewalProcessFlow({
                         step.active || step.done ? "text-[#65686B]" : "text-[#7E8185]",
                       )}
                     >
-                      {step.description}
+                      {t(step.description)}
                     </p>
                   </div>
                 </ContainerTag>

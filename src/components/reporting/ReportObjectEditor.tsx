@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReportDocumentBlock } from "@/src/lib/reportingMockData";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /**
  * Inline editor for a single report object (block). Adapts its fields to the
@@ -35,12 +36,13 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 function RowRemoveButton({ onClick }: { onClick: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#FBE9E7] hover:text-[#B23A2F]"
-      aria-label="Remove row"
+      aria-label={t("Remove row")}
     >
       <Trash2 className="size-4" strokeWidth={1.75} />
     </button>
@@ -69,6 +71,7 @@ export function ReportObjectEditor({
   onCancel: () => void;
   onSave: (next: ReportDocumentBlock) => void;
 }) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState<ReportDocumentBlock>(() =>
     structuredClone(block),
   );
@@ -89,17 +92,17 @@ export function ReportObjectEditor({
         <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EB] px-5 py-4">
           <div className="flex flex-col gap-0.5">
             <h3 className="text-[15px] font-semibold leading-[1.25] text-[#05091F]">
-              Edit object
+              {t("Edit object")}
             </h3>
             <p className="text-[12px] leading-[1.4] text-[#65686B]">
-              {OBJECT_TYPE_LABEL[draft.type]} · changes apply to this object only
+              {t(OBJECT_TYPE_LABEL[draft.type])} · {t("changes apply to this object only")}
             </p>
           </div>
           <button
             type="button"
             onClick={onCancel}
             className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close editor"
+            aria-label={t("Close editor")}
           >
             <X className="size-5" strokeWidth={1.75} />
           </button>
@@ -109,7 +112,7 @@ export function ReportObjectEditor({
           {draft.type === "heading" ? (
             <>
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Title</FieldLabel>
+                <FieldLabel>{t("Title")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.title}
@@ -119,7 +122,7 @@ export function ReportObjectEditor({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Subtitle</FieldLabel>
+                <FieldLabel>{t("Subtitle")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.subtitle ?? ""}
@@ -156,7 +159,7 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <AddRowButton
-                label="Add paragraph"
+                label={t("Add paragraph")}
                 onClick={() =>
                   setDraft({ ...draft, paragraphs: [...draft.paragraphs, ""] })
                 }
@@ -167,7 +170,7 @@ export function ReportObjectEditor({
           {draft.type === "ai-summary" ? (
             <>
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Headline</FieldLabel>
+                <FieldLabel>{t("Headline")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.headline}
@@ -177,7 +180,7 @@ export function ReportObjectEditor({
                 />
               </div>
               <div className="flex flex-col gap-3">
-                <FieldLabel>Summary paragraphs</FieldLabel>
+                <FieldLabel>{t("Summary paragraphs")}</FieldLabel>
                 {draft.paragraphs.map((paragraph, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <textarea
@@ -201,14 +204,14 @@ export function ReportObjectEditor({
                   </div>
                 ))}
                 <AddRowButton
-                  label="Add paragraph"
+                  label={t("Add paragraph")}
                   onClick={() =>
                     setDraft({ ...draft, paragraphs: [...draft.paragraphs, ""] })
                   }
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Entities (comma separated)</FieldLabel>
+                <FieldLabel>{t("Entities (comma separated)")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.entities.join(", ")}
@@ -224,7 +227,7 @@ export function ReportObjectEditor({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>KPIs (comma separated)</FieldLabel>
+                <FieldLabel>{t("KPIs (comma separated)")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.kpis.join(", ")}
@@ -248,7 +251,7 @@ export function ReportObjectEditor({
                 <div key={index} className="flex items-center gap-2">
                   <input
                     className={cn(inputClass, "flex-1")}
-                    placeholder="Label"
+                    placeholder={t("Label")}
                     value={item.label}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -258,7 +261,7 @@ export function ReportObjectEditor({
                   />
                   <input
                     className={cn(inputClass, "w-[130px]")}
-                    placeholder="Value"
+                    placeholder={t("Value")}
                     value={item.value}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -277,7 +280,7 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <AddRowButton
-                label="Add KPI"
+                label={t("Add KPI")}
                 onClick={() =>
                   setDraft({
                     ...draft,
@@ -312,7 +315,7 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <AddRowButton
-                label="Add item"
+                label={t("Add item")}
                 onClick={() => setDraft({ ...draft, items: [...draft.items, ""] })}
               />
             </div>
@@ -324,7 +327,7 @@ export function ReportObjectEditor({
                 <div key={index} className="flex items-center gap-2">
                   <input
                     className={cn(inputClass, "flex-1")}
-                    placeholder="Label"
+                    placeholder={t("Label")}
                     value={item.label}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -334,7 +337,7 @@ export function ReportObjectEditor({
                   />
                   <input
                     className={cn(inputClass, "w-[120px]")}
-                    placeholder="Value"
+                    placeholder={t("Value")}
                     value={item.value}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -348,7 +351,7 @@ export function ReportObjectEditor({
                     max={1}
                     step={0.05}
                     className={cn(inputClass, "w-[84px]")}
-                    title="Bar ratio (0–1)"
+                    title={t("Bar ratio (0–1)")}
                     value={item.ratio}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -370,7 +373,7 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <AddRowButton
-                label="Add bar"
+                label={t("Add bar")}
                 onClick={() =>
                   setDraft({
                     ...draft,
@@ -387,7 +390,7 @@ export function ReportObjectEditor({
                 <div key={index} className="flex items-center gap-2">
                   <input
                     className={cn(inputClass, "flex-1")}
-                    placeholder="Caption"
+                    placeholder={t("Caption")}
                     value={item.label}
                     onChange={(event) => {
                       const items = [...draft.items];
@@ -406,7 +409,7 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <AddRowButton
-                label="Add photo"
+                label={t("Add photo")}
                 onClick={() =>
                   setDraft({
                     ...draft,
@@ -420,7 +423,7 @@ export function ReportObjectEditor({
           {draft.type === "table" ? (
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <FieldLabel>Columns (comma separated)</FieldLabel>
+                <FieldLabel>{t("Columns (comma separated)")}</FieldLabel>
                 <input
                   className={inputClass}
                   value={draft.columns.join(", ")}
@@ -432,7 +435,7 @@ export function ReportObjectEditor({
                   }
                 />
               </div>
-              <FieldLabel>Rows</FieldLabel>
+              <FieldLabel>{t("Rows")}</FieldLabel>
               {draft.rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="flex items-center gap-2">
                   <input
@@ -457,10 +460,10 @@ export function ReportObjectEditor({
                 </div>
               ))}
               <p className="text-[11px] leading-[1.4] text-[#65686B]">
-                Separate cells with “ | ”.
+                {t("Separate cells with “ | ”.")}
               </p>
               <AddRowButton
-                label="Add row"
+                label={t("Add row")}
                 onClick={() =>
                   setDraft({
                     ...draft,
@@ -473,7 +476,7 @@ export function ReportObjectEditor({
 
           {draft.type === "pl-table" ? (
             <div className="flex flex-col gap-1.5">
-              <FieldLabel>Table title</FieldLabel>
+              <FieldLabel>{t("Table title")}</FieldLabel>
               <input
                 className={inputClass}
                 value={draft.title}
@@ -482,7 +485,7 @@ export function ReportObjectEditor({
                 }
               />
               <p className="text-[11px] leading-[1.4] text-[#65686B]">
-                Edit individual figures directly in the table cells.
+                {t("Edit individual figures directly in the table cells.")}
               </p>
             </div>
           ) : null}
@@ -494,14 +497,14 @@ export function ReportObjectEditor({
             onClick={onCancel}
             className="flex h-10 items-center rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
             onClick={commit}
             className="flex h-10 items-center rounded-lg bg-[#111] px-4 text-[14px] font-medium leading-[1.24] text-white hover:bg-[#333]"
           >
-            Save changes
+            {t("Save changes")}
           </button>
         </div>
       </div>

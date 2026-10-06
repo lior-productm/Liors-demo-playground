@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, FileText, LayoutTemplate, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   TEMPLATE_PRESETS,
   listTemplates,
@@ -19,6 +20,7 @@ export function NewTemplateModal({
   onClose: () => void;
   onCreate: (input: CreateTemplateInput) => void;
 }) {
+  const { t } = useI18n();
   const templates = useMemo(() => listTemplates(), []);
   const [startMode, setStartMode] = useState<"preset" | "duplicate">("preset");
   const [presetId, setPresetId] = useState<string>(TEMPLATE_PRESETS[0].id);
@@ -68,14 +70,14 @@ export function NewTemplateModal({
           <div className="flex items-center gap-2">
             <LayoutTemplate className="size-5 text-[#4C61DB]" strokeWidth={1.75} />
             <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-              Create new template
+              {t("Create new template")}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="size-5" strokeWidth={1.75} />
           </button>
@@ -85,7 +87,7 @@ export function NewTemplateModal({
           {/* Start from */}
           <div className="flex flex-col gap-2.5">
             <p className="text-[13px] font-semibold leading-[1.25] text-[#05091F]">
-              Start from
+              {t("Start from")}
             </p>
             <div className="inline-flex w-fit rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] p-1">
               <button
@@ -99,7 +101,7 @@ export function NewTemplateModal({
                 )}
               >
                 <LayoutTemplate className="size-4" strokeWidth={1.75} />
-                Preset
+                {t("Preset")}
               </button>
               <button
                 type="button"
@@ -112,7 +114,7 @@ export function NewTemplateModal({
                 )}
               >
                 <Copy className="size-4" strokeWidth={1.75} />
-                Duplicate existing
+                {t("Duplicate existing")}
               </button>
             </div>
 
@@ -140,10 +142,10 @@ export function NewTemplateModal({
                         ) : null}
                       </div>
                       <span className="text-[13px] font-medium leading-[1.3] text-[#05091F]">
-                        {preset.name}
+                        {t(preset.name)}
                       </span>
                       <span className="text-[11px] leading-[1.4] text-[#65686B]">
-                        {preset.description}
+                        {t(preset.description)}
                       </span>
                       <div className="mt-0.5 flex flex-wrap gap-1">
                         {preset.includes.map((section) => (
@@ -151,7 +153,7 @@ export function NewTemplateModal({
                             key={section}
                             className="inline-flex items-center rounded-full bg-[#F0F2F5] px-2 py-0.5 text-[10px] font-medium text-[#65686B]"
                           >
-                            {section}
+                            {t(section)}
                           </span>
                         ))}
                       </div>
@@ -162,7 +164,7 @@ export function NewTemplateModal({
             ) : (
               <div className="flex flex-col gap-1.5">
                 <label className="text-[12px] font-medium leading-[1.5] text-[#353638]">
-                  Duplicate from
+                  {t("Duplicate from")}
                 </label>
                 <select
                   value={sourceTitle}
@@ -176,7 +178,7 @@ export function NewTemplateModal({
                   ))}
                 </select>
                 <p className="text-[11px] leading-[1.4] text-[#65686B]">
-                  Copies the source template’s sections, layout and object edits.
+                  {t("Copies the source template’s sections, layout and object edits.")}
                 </p>
               </div>
             )}
@@ -185,7 +187,7 @@ export function NewTemplateModal({
           {/* Details */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium leading-[1.5] text-[#353638]">
-              Template name
+              {t("Template name")}
             </label>
             <input
               value={effectiveTitle}
@@ -193,7 +195,7 @@ export function NewTemplateModal({
                 setTitleTouched(true);
                 setTitle(event.target.value);
               }}
-              placeholder="e.g. Q4 2025 Investor Report"
+              placeholder={t("e.g. Q4 2025 Investor Report")}
               className={cn(
                 "h-11 w-full rounded-lg border bg-white px-3 text-[14px] leading-[1.5] text-[#353638] outline-none",
                 duplicateName
@@ -203,20 +205,20 @@ export function NewTemplateModal({
             />
             {duplicateName ? (
               <p className="text-[11px] leading-[1.4] text-[#B23A2F]">
-                A template with this name already exists.
+                {t("A template with this name already exists.")}
               </p>
             ) : null}
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium leading-[1.5] text-[#353638]">
-              Description <span className="font-normal text-[#65686B]">(optional)</span>
+              {t("Description")} <span className="font-normal text-[#65686B]">{t("(optional)")}</span>
             </label>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={2}
-              placeholder="What is this template for?"
+              placeholder={t("What is this template for?")}
               className="w-full resize-y rounded-lg border border-[#E6E8EB] bg-white px-3 py-2 text-[13px] leading-[1.5] text-[#353638] outline-none focus:border-[#A7B2F2]"
             />
           </div>
@@ -228,7 +230,7 @@ export function NewTemplateModal({
             onClick={onClose}
             className="flex h-10 items-center rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
@@ -240,7 +242,7 @@ export function NewTemplateModal({
             )}
           >
             <Check className="size-4" strokeWidth={2} />
-            Create template
+            {t("Create template")}
           </button>
         </div>
       </div>

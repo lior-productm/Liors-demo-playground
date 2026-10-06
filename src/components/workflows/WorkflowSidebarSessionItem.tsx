@@ -1,6 +1,7 @@
 "use client";
 
 import type { WorkflowSession } from "@/src/types/workflows";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   EditableSessionTitle,
   SidebarChatSessionItem,
@@ -20,10 +21,11 @@ export function WorkflowSidebarSessionItem({
   onRename: (id: string, title: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <SidebarChatSessionItem
       sessionId={session.id}
-      title={session.title}
+      title={t(session.title)}
       isActive={isActive}
       hrefBase="/workflows"
       indent={indent}

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { TopNavTabId } from "@/src/types/commercial";
 import { InsightActionButtons } from "@/src/components/pages/InsightActionButtons";
 import { InsightRuleEditorDialog } from "@/src/components/pages/InsightRuleEditorDialog";
@@ -114,6 +115,7 @@ function InsightKanbanCard({
   dragHandleProps: ComponentPropsWithoutRef<"button">;
   dragHandleRef: (el: HTMLButtonElement | null) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -160,25 +162,25 @@ function InsightKanbanCard({
         onClick={onToggleExpand}
         className="mt-2 w-full rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-[#233FDE]/40"
       >
-        <p className="text-[14px] font-medium leading-snug text-[#353638]">{card.title}</p>
+        <p className="text-[14px] font-medium leading-snug text-[#353638]">{t(card.title)}</p>
         <p
           className={cn(
             "mt-1 line-clamp-2 text-[12px] leading-[1.4] text-[#676A6E]",
             card.subtitleClassName,
           )}
         >
-          {card.subtitle}
+          {t(card.subtitle)}
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
-          {card.tags.map((t) => (
+          {card.tags.map((tag) => (
             <span
-              key={`${card.id}-kb-${t.label}`}
+              key={`${card.id}-kb-${tag.label}`}
               className={cn(
                 "inline-flex h-5 items-center rounded-full px-2 text-[11px] font-medium leading-none",
-                tagClasses(t.variant),
+                tagClasses(tag.variant),
               )}
             >
-              {t.label}
+              {t(tag.label)}
             </span>
           ))}
           {(() => {
@@ -334,6 +336,7 @@ function InsightKanbanBoardDnd({
   onActiveChange: (cardId: string, next: boolean) => void;
   onPatchInsight: (id: string, patch: Partial<InsightCardModel>) => void;
 }) {
+  const { t } = useI18n();
   const [activeCard, setActiveCard] = useState<InsightCardModel | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -402,9 +405,9 @@ function InsightKanbanBoardDnd({
       <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.25,1,0.5,1)" }}>
         {activeCard ? (
           <div className="pointer-events-none w-[min(100%,248px)] rounded-xl border border-[#E6E8EB] bg-white/98 p-3 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] ring-2 ring-[#233FDE]/20">
-            <p className="text-[14px] font-medium leading-snug text-[#353638]">{activeCard.title}</p>
+            <p className="text-[14px] font-medium leading-snug text-[#353638]">{t(activeCard.title)}</p>
             <p className="mt-1 line-clamp-2 text-[12px] leading-[1.4] text-[#676A6E]">
-              {activeCard.subtitle}
+              {t(activeCard.subtitle)}
             </p>
           </div>
         ) : null}

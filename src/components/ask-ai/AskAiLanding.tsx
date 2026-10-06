@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import {
   BarChart3,
   Building2,
+  ChevronRight,
   FileText,
   Loader2,
   Mic,
@@ -13,29 +14,37 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 
-/** Figma 1864:61222 — quick-start chips on Ask Amiio blank state. */
+/** Figma 1864:61222 — quick-start suggestions on Ask Amiio blank state. */
 export const ASK_AI_CHIP_SUGGESTIONS: {
   label: string;
   icon: LucideIcon;
   action?: "lease-renewal" | "create-insight";
+  /** Tinted icon-tile classes for the Ask Amiio starter list. */
+  tint: string;
 }[] = [
-  { label: "Analyze asset performance", icon: BarChart3 },
-  { label: "Initiate a Lease renewal", icon: Building2, action: "lease-renewal" },
-  { label: "Draft an Investor report", icon: FileText },
-  { label: "Create new insight", icon: Sparkles, action: "create-insight" },
+  { label: "Analyze asset performance", icon: BarChart3, tint: "bg-[#EEF1FF] text-[#2F49D1]" },
+  { label: "Initiate a Lease renewal", icon: Building2, action: "lease-renewal", tint: "bg-[#EAF4F3] text-[#3C8C84]" },
+  { label: "Draft an Investor report", icon: FileText, tint: "bg-[#F2EFFB] text-[#6B4FCB]" },
+  { label: "Create new insight", icon: Sparkles, action: "create-insight", tint: "bg-[#FFF2E8] text-[#C2690E]" },
 ];
 
-function AskAiSuggestionChip({
+/** Ask Amiio starter prompt — editorial list row (clickable). */
+function AskAiSuggestionRow({
   label,
   icon: Icon,
+  tint,
   disabled,
   onClick,
+  isFirst,
 }: {
   label: string;
   icon: LucideIcon;
+  tint: string;
   disabled?: boolean;
   onClick: () => void;
+  isFirst?: boolean;
 }) {
   return (
     <button
@@ -43,12 +52,73 @@ function AskAiSuggestionChip({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex h-10 shrink-0 items-center gap-1 rounded-[32px] border-[1.5px] border-[#E6E8EB] bg-white px-3 py-2 transition-colors hover:bg-[#FAFBFC] disabled:opacity-50",
+        "group flex w-full items-center gap-3 border-b border-[#ECEEF1] px-1.5 py-3.5 text-left transition-colors hover:bg-[#FAFBFC] disabled:opacity-50",
+        isFirst && "border-t",
       )}
     >
-      <Icon className="size-4 shrink-0 text-[#65686B]" strokeWidth={1.75} aria-hidden />
-      <span className="typo-p2-b whitespace-nowrap text-[#65686B]">{label}</span>
+      <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg", tint)}>
+        <Icon className="size-[15px]" strokeWidth={1.75} aria-hidden />
+      </span>
+      <span className="flex-1 text-[14px] font-medium leading-5 text-[#2B2E31]">{label}</span>
+      <ChevronRight
+        className="size-[18px] shrink-0 text-[#C2C6CA] opacity-0 transition-opacity group-hover:opacity-100"
+        strokeWidth={2}
+        aria-hidden
+      />
     </button>
+  );
+}
+
+/** Figma 1217:44464 — Ask Amiio greeting (upper area). */
+export function AskAiGreeting() {
+  const { t } = useI18n();
+  return (
+    <div className="flex w-full flex-col items-center gap-3 text-center">
+      <h1 className="typo-h3 text-[#040617]">{t("Good afternoon, Tomer!")}</h1>
+      <p className="typo-p2-r text-[#65686B]">{t("How can we help you today?")}</p>
+    </div>
+  );
+}
+
+/** Figma 1217:44470 — Ask Amiio starter prompts (editorial list). */
+export function AskAiSuggestionList({
+  isTyping,
+  onChipSelect,
+  onLeaseRenewalStart,
+  onCreateInsightStart,
+  className,
+}: {
+  isTyping?: boolean;
+  onChipSelect: (label: string) => void;
+  onLeaseRenewalStart?: () => void;
+  onCreateInsightStart?: () => void;
+  className?: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className={cn("flex w-full flex-col", className)}>
+      {ASK_AI_CHIP_SUGGESTIONS.map(({ label, icon, action, tint }, index) => (
+        <AskAiSuggestionRow
+          key={label}
+          label={t(label)}
+          icon={icon}
+          tint={tint}
+          isFirst={index === 0}
+          disabled={isTyping}
+          onClick={() => {
+            if (action === "lease-renewal") {
+              onLeaseRenewalStart?.();
+              return;
+            }
+            if (action === "create-insight") {
+              onCreateInsightStart?.();
+              return;
+            }
+            onChipSelect(label);
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -66,36 +136,14 @@ export function AskAiLandingHero({
 }) {
   return (
     <div className="flex w-full flex-col items-center gap-10 text-center">
-      <div className="flex w-full flex-col items-center gap-3">
-        <h1 className="typo-h3 text-[#040617]">
-          Good afternoon, Tomer!
-        </h1>
-        <p className="typo-p2-r text-[#65686B]">
-          How can we help you today?
-        </p>
-      </div>
-
-      <div className="flex w-full flex-wrap items-center justify-center gap-3">
-        {ASK_AI_CHIP_SUGGESTIONS.map(({ label, icon, action }) => (
-          <AskAiSuggestionChip
-            key={label}
-            label={label}
-            icon={icon}
-            disabled={isTyping}
-            onClick={() => {
-              if (action === "lease-renewal") {
-                onLeaseRenewalStart?.();
-                return;
-              }
-              if (action === "create-insight") {
-                onCreateInsightStart?.();
-                return;
-              }
-              onChipSelect(label);
-            }}
-          />
-        ))}
-      </div>
+      <AskAiGreeting />
+      <AskAiSuggestionList
+        className="mx-auto max-w-[560px]"
+        isTyping={isTyping}
+        onChipSelect={onChipSelect}
+        onLeaseRenewalStart={onLeaseRenewalStart}
+        onCreateInsightStart={onCreateInsightStart}
+      />
     </div>
   );
 }

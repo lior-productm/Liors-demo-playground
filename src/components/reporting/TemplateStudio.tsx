@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { ReportActiveView } from "@/src/components/reporting/ReportActiveView";
 import { TemplateCollection } from "@/src/components/reporting/TemplateCollection";
 import { SectionCollection } from "@/src/components/reporting/SectionCollection";
@@ -18,6 +19,7 @@ type LandingTab = "templates" | "sections";
  * new-template creation flow) that opens into the full section/object editor.
  */
 export function TemplateStudio() {
+  const { t } = useI18n();
   const [openTitle, setOpenTitle] = useState<string | null>(null);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [landingTab, setLandingTab] = useState<LandingTab>("templates");
@@ -30,7 +32,9 @@ export function TemplateStudio() {
     setOpenTitle(meta.title);
     window.dispatchEvent(
       new CustomEvent("amiio:toast", {
-        detail: { message: `“${meta.title}” template created.` },
+        detail: {
+          message: t("“{title}” template created.", { values: { title: meta.title } }),
+        },
       }),
     );
   };
@@ -45,7 +49,11 @@ export function TemplateStudio() {
     setSectionRefreshKey((value) => value + 1);
     window.dispatchEvent(
       new CustomEvent("amiio:toast", {
-        detail: { message: `“${section.title}” saved to the section library.` },
+        detail: {
+          message: t("“{title}” saved to the section library.", {
+            values: { title: section.title },
+          }),
+        },
       }),
     );
   };
@@ -75,7 +83,7 @@ export function TemplateStudio() {
                     : "text-[#65686B] hover:text-[#353638]",
                 )}
               >
-                {tab}
+                {tab === "templates" ? t("Templates") : t("Sections")}
               </button>
             ))}
           </div>
@@ -89,18 +97,18 @@ export function TemplateStudio() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-0.5">
                 <h2 className="text-[18px] font-semibold leading-[1.25] text-[#05091F]">
-                  Sections
+                  {t("Sections")}
                 </h2>
                 <p className="text-[13px] leading-[1.5] text-[#65686B]">
-                  Reusable sections you can add to any template. Create a new
-                  section here to grow this library, then open a template to
-                  insert them.
+                  {t(
+                    "Reusable sections you can add to any template. Create a new section here to grow this library, then open a template to insert them.",
+                  )}
                 </p>
               </div>
               <SectionCollection
                 onNewSection={() => setCreatingSection(true)}
                 refreshKey={sectionRefreshKey}
-                emptyHint="No sections yet."
+                emptyHint={t("No sections yet.")}
               />
             </div>
           )}

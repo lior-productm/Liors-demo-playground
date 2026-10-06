@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   getAllLeaseTenantsForScope,
   getLeaseEntityOptions,
@@ -181,6 +182,7 @@ function LeaseRenewalScopePill({
   onClear?: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   const hasValue = Boolean(value);
   const showClear = hasValue && Boolean(onClear);
 
@@ -194,7 +196,10 @@ function LeaseRenewalScopePill({
         hideIcon={showClear}
         icon={
           showClear ? (
-            <FilterClearButton ariaLabel={`Clear ${placeholder}`} onClear={onClear!} />
+            <FilterClearButton
+              ariaLabel={t("Clear {placeholder}", { values: { placeholder: t(placeholder) } })}
+              onClear={onClear!}
+            />
           ) : undefined
         }
         className={cn(
@@ -207,7 +212,7 @@ function LeaseRenewalScopePill({
         <div className="flex min-w-0 flex-1 items-center gap-1.5 pr-1">
           <Icon className="size-4 shrink-0 text-[#353638]" strokeWidth={1.75} />
           <SelectValue
-            placeholder={placeholder}
+            placeholder={t(placeholder)}
             className={cn(
               "min-w-0 flex-1 truncate text-left text-[16px] leading-[1.5]",
               hasValue ? "font-medium text-[#353638]" : "font-normal text-[#7E8185]",
@@ -229,7 +234,7 @@ function LeaseRenewalScopePill({
             value={opt}
             className="h-[41px] cursor-pointer rounded-[4px] px-1.5 text-[16px] font-normal leading-[1.25] text-[#353638] data-[highlighted]:bg-[#F7F8FA]"
           >
-            {opt}
+            {t(opt)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -246,6 +251,7 @@ function LeaseRenewalTenantCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useI18n();
   const details = tenantCardDetails(tenant.name);
 
   return (
@@ -271,14 +277,19 @@ function LeaseRenewalTenantCard({
             {tenant.name}
           </p>
           <p className="mt-0.5 truncate text-[12px] leading-4 text-[#65686B]">
-            Energy: {details.energy} | Asset use: {details.assetUse} | Tenant type:{" "}
-            {details.tenantType}
+            {t("Energy: {energy} | Asset use: {assetUse} | Tenant type: {tenantType}", {
+              values: {
+                energy: details.energy,
+                assetUse: t(details.assetUse),
+                tenantType: t(details.tenantType),
+              },
+            })}
           </p>
         </div>
       </div>
       <div className="hidden shrink-0 flex-col items-start sm:flex">
         <span className="text-[12px] font-medium leading-[1.25] text-[#65686B]">
-          GRI: {details.gri}
+          {t("GRI: {gri}", { values: { gri: details.gri } })}
         </span>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5">
@@ -290,7 +301,7 @@ function LeaseRenewalTenantCard({
             <ArrowDownRight className="size-4 rotate-180" strokeWidth={1.75} />
             {details.trendPct}
           </span>
-          <span className="text-[12px] text-[#65686B]">vs subject</span>
+          <span className="text-[12px] text-[#65686B]">{t("vs subject")}</span>
         </div>
       </div>
     </button>
@@ -306,6 +317,7 @@ function DialogFooter({
   onCancel: () => void;
   onStart: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex w-full justify-end gap-4">
       <button
@@ -313,7 +325,7 @@ function DialogFooter({
         onClick={onCancel}
         className="inline-flex h-12 min-w-[92px] items-center justify-center rounded-full border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#010309] hover:bg-[#F3F6FA]"
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         type="button"
@@ -326,7 +338,7 @@ function DialogFooter({
             : "cursor-not-allowed bg-[#B3B8BD] text-[#7E8185]",
         )}
       >
-        Start process
+        {t("Start process")}
       </button>
     </div>
   );
@@ -341,6 +353,7 @@ export function StartLeaseRenewalDialog({
   onOpenChange: (open: boolean) => void;
   onStart: (context: LeaseRenewalContext) => void;
 }) {
+  const { t } = useI18n();
   const [step, setStep] = useState<DialogStep>("asset");
   const [portfolio, setPortfolio] = useState("All portfolio");
   const [entity, setEntity] = useState("");
@@ -428,7 +441,7 @@ export function StartLeaseRenewalDialog({
             : "w-fit max-w-[calc(100vw-2rem)] max-h-[min(90vh,480px)]",
         )}
       >
-        <DialogTitle className="sr-only">Start Lease Renewal</DialogTitle>
+        <DialogTitle className="sr-only">{t("Start Lease Renewal")}</DialogTitle>
         <div
           className={cn(
             "relative flex flex-col gap-5 px-8 pb-8 pt-8",
@@ -439,19 +452,19 @@ export function StartLeaseRenewalDialog({
             type="button"
             onClick={closeDialog}
             className="absolute right-5 top-2 flex size-6 items-center justify-center rounded-full p-1.5 text-[#65686B] hover:bg-[#F3F6FA]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="size-4" strokeWidth={1.75} />
           </button>
 
           <p className="text-[14px] font-medium leading-[1.5] text-[#7E8185]">
-            LEASING RENEWAL PROCESS
+            {t("LEASING RENEWAL PROCESS")}
           </p>
 
           <div className={cn("flex flex-col", step === "tenant" && "gap-8")}>
             <div className="flex flex-col gap-5">
               <h2 className="text-[20px] font-medium leading-[1.25] text-[#121212]">
-                Select an asset
+                {t("Select an asset")}
               </h2>
               <div
                 className="flex w-max max-w-full flex-nowrap items-start gap-x-4 gap-y-2"
@@ -521,10 +534,10 @@ export function StartLeaseRenewalDialog({
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">
                   <h2 className="text-[20px] font-medium leading-[1.25] text-[#121212]">
-                    Select a tenant
+                    {t("Select a tenant")}
                   </h2>
                   <p className="text-[16px] font-normal leading-[1.5] text-[#2C2C2C]">
-                    View detailed portfolio details per tenant.
+                    {t("View detailed portfolio details per tenant.")}
                   </p>
                   <label className="relative block w-full">
                     <Search
@@ -535,7 +548,7 @@ export function StartLeaseRenewalDialog({
                       type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by name, ID or GRI value..."
+                      placeholder={t("Search by name, ID or GRI value...")}
                       className="h-12 w-full rounded-[50px] border-0 bg-[#E6E8EB] py-3.5 pl-12 pr-4 text-[16px] text-[#353638] placeholder:text-[#838697] outline-none focus-visible:ring-2 focus-visible:ring-[#233FDE]/20"
                     />
                   </label>
@@ -544,7 +557,7 @@ export function StartLeaseRenewalDialog({
                 <div className="flex max-h-[min(52vh,420px)] flex-col gap-4 overflow-y-auto pr-1">
                   {filteredTenants.length === 0 ? (
                     <p className="rounded-2xl border border-dashed border-[#E6E8EB] px-4 py-8 text-center text-[14px] text-[#65686B]">
-                      No tenants match your search for this property.
+                      {t("No tenants match your search for this property.")}
                     </p>
                   ) : (
                     filteredTenants.map((tenant) => (

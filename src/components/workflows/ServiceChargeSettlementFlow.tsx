@@ -14,6 +14,7 @@ import { EditableWorkflowTitle } from "@/src/components/workflows/WorkflowSideba
 import { ServiceChargeProcessFlow } from "@/src/components/workflows/ServiceChargeProcessFlow";
 import { ServiceChargeSettlementPreview } from "@/src/components/workflows/ServiceChargeSettlementPreview";
 import { CommercialChatInjectContext } from "@/src/components/commercial/CommercialChatContext";
+import { useI18n } from "@/src/hooks/useI18n";
 import { useWorkflowSessions } from "@/src/hooks/useWorkflowSessions";
 import { notifyWorkflowSessionsChanged } from "@/src/lib/workflowSessions";
 import { __assistantReplyFor } from "@/src/components/commercial/ChatPanel";
@@ -59,6 +60,7 @@ function anomalyTone(severity: SettlementAnomaly["severity"]) {
 }
 
 function AnomalyList() {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-2">
       {SERVICE_CHARGE_ANOMALIES.map((anomaly) => {
@@ -75,13 +77,13 @@ function AnomalyList() {
             />
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-medium leading-[1.4] text-[#353638]">
-                {anomaly.title}
+                {t(anomaly.title)}
               </p>
               <p className="mt-0.5 text-[13px] font-normal leading-[1.5] text-[#65686B]">
-                {anomaly.detail}
+                {t(anomaly.detail)}
               </p>
               <p className="mt-1 text-[11px] font-normal leading-[1.4] text-[#969A9E]">
-                {anomaly.reference}
+                {t(anomaly.reference)}
               </p>
             </div>
           </div>
@@ -124,6 +126,7 @@ function AssumptionChips({
   disabled?: boolean;
   onAnswer: (answer: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-2">
       {assumption.options.map((option) => (
@@ -137,7 +140,7 @@ function AssumptionChips({
             "disabled:pointer-events-none disabled:opacity-50",
           )}
         >
-          {option}
+          {t(option)}
         </button>
       ))}
     </div>
@@ -151,6 +154,7 @@ export function ServiceChargeSettlementFlow({
   sessionId: string;
   initialSession?: WorkflowSession;
 }) {
+  const { t } = useI18n();
   const { saveSession } = useWorkflowSessions();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -272,13 +276,16 @@ export function ServiceChargeSettlementFlow({
     [followUpTyping, isTyping, overrides],
   );
 
-  const handleExport = useCallback((kind: "xlsx" | "pdf") => {
-    const message =
-      kind === "xlsx"
-        ? "Excel settlement exported — values, assumptions & formulas written to the template."
-        : "Customer-facing PDF generated from the finalized settlement.";
-    window.dispatchEvent(new CustomEvent("amiio:toast", { detail: { message } }));
-  }, []);
+  const handleExport = useCallback(
+    (kind: "xlsx" | "pdf") => {
+      const message =
+        kind === "xlsx"
+          ? t("Excel settlement exported — values, assumptions & formulas written to the template.")
+          : t("Customer-facing PDF generated from the finalized settlement.");
+      window.dispatchEvent(new CustomEvent("amiio:toast", { detail: { message } }));
+    },
+    [t],
+  );
 
   const handleAnalyseFurther = useCallback(
     (topic: string) => {
@@ -301,10 +308,13 @@ export function ServiceChargeSettlementFlow({
 
   const chatBarPlaceholder =
     stage === "settlement-preview"
-      ? "Request an adjustment, or click an amount to analyse…"
-      : "Ask anything about this settlement…";
+      ? t("Request an adjustment, or click an amount to analyse…")
+      : t("Ask anything about this settlement…");
 
-  const kickoffLine = `I want to start the ${year} service charge settlement for ${property}.`;
+  const kickoffLine = t(
+    "I want to start the {year} service charge settlement for {property}.",
+    { values: { year, property } },
+  );
 
   return (
     <CommercialChatInjectContext.Provider value={stage === "settlement-preview" ? handleAnalyseFurther : null}>
@@ -316,12 +326,12 @@ export function ServiceChargeSettlementFlow({
           >
             <div className="mb-6 flex shrink-0 items-center gap-2">
               <EditableWorkflowTitle
-                title={session.title}
+                title={t(session.title)}
                 className="typo-page-title text-[#010309]"
                 onRename={(title) => persist({ ...session, title })}
               />
               <span className="rounded-full bg-[#EBEDF9] px-2 py-0.5 text-[11px] font-medium text-[#233FDE]">
-                Workflows
+                {t("Workflows")}
               </span>
             </div>
 
@@ -339,16 +349,19 @@ export function ServiceChargeSettlementFlow({
 
               {/* Stage 1 — anomaly detection */}
               <WorkflowAiBlock
-                question={`Before I generate the settlement, I'll run a quality-control check on the ${year} service charge postings recorded in ${SERVICE_CHARGE_SOURCE_SYSTEM}. Here's what I found — please review before we proceed.`}
+                question={t(
+                  "Before I generate the settlement, I'll run a quality-control check on the {year} service charge postings recorded in {system}. Here's what I found — please review before we proceed.",
+                  { values: { year, system: SERVICE_CHARGE_SOURCE_SYSTEM } },
+                )}
               >
                 <AnomalyList />
               </WorkflowAiBlock>
 
               {stage === "anomaly-detection" ? (
-                <WorkflowAiBlock question="Have you reviewed these findings? Confirm when the data is ready and I'll continue.">
+                <WorkflowAiBlock question={t("Have you reviewed these findings? Confirm when the data is ready and I'll continue.")}>
                   <div className="flex flex-wrap gap-2">
                     <GateButton
-                      label="Data reviewed — continue"
+                      label={t("Data reviewed — continue")}
                       onClick={confirmDataReviewed}
                       disabled={locked || isTyping}
                     />
@@ -359,14 +372,14 @@ export function ServiceChargeSettlementFlow({
               {/* User confirmed data review */}
               {stageIndex >= getStageIndex("assumptions") ? (
                 <WorkflowUserBubble>
-                  Yes, I&apos;ve reviewed the findings — the data is ready.
+                  {t("Yes, I've reviewed the findings — the data is ready.")}
                 </WorkflowUserBubble>
               ) : null}
 
               {/* Stage transition thinking */}
               {optimisticUser && stage === "anomaly-detection" ? (
                 <>
-                  <WorkflowUserBubble>{optimisticUser}</WorkflowUserBubble>
+                  <WorkflowUserBubble>{t(optimisticUser)}</WorkflowUserBubble>
                   {isTyping ? <WorkflowThinkingIndicator /> : null}
                 </>
               ) : null}
@@ -374,13 +387,13 @@ export function ServiceChargeSettlementFlow({
               {/* Stage 3 — assumptions Q&A */}
               {stageIndex >= getStageIndex("assumptions") ? (
                 <>
-                  <WorkflowAiBlock question="Great. Now I'll walk through the assumptions from the settlement notes so we agree on them before generating anything." />
+                  <WorkflowAiBlock question={t("Great. Now I'll walk through the assumptions from the settlement notes so we agree on them before generating anything.")} />
 
                   {SERVICE_CHARGE_ASSUMPTIONS.slice(0, assumptionIndex).map((assumption) => (
                     <div key={assumption.id} className="flex flex-col gap-2">
-                      <WorkflowAiBlock question={assumption.question} />
+                      <WorkflowAiBlock question={t(assumption.question)} />
                       <WorkflowUserBubble size="sm">
-                        {answers[assumption.id] ?? assumption.defaultAnswer}
+                        {t(answers[assumption.id] ?? assumption.defaultAnswer)}
                       </WorkflowUserBubble>
                     </div>
                   ))}
@@ -389,12 +402,12 @@ export function ServiceChargeSettlementFlow({
                     <>
                       {optimisticUser ? (
                         <>
-                          <WorkflowAiBlock question={currentAssumption.question} />
-                          <WorkflowUserBubble size="sm">{optimisticUser}</WorkflowUserBubble>
+                          <WorkflowAiBlock question={t(currentAssumption.question)} />
+                          <WorkflowUserBubble size="sm">{t(optimisticUser)}</WorkflowUserBubble>
                           {isTyping ? <WorkflowThinkingIndicator /> : null}
                         </>
                       ) : (
-                        <WorkflowAiBlock question={currentAssumption.question}>
+                        <WorkflowAiBlock question={t(currentAssumption.question)}>
                           <AssumptionChips
                             assumption={currentAssumption}
                             disabled={locked || isTyping}
@@ -406,10 +419,10 @@ export function ServiceChargeSettlementFlow({
                   ) : null}
 
                   {stage === "assumptions" && allAssumptionsAnswered ? (
-                    <WorkflowAiBlock question="I've incorporated your answers. Is there any additional input before I generate the settlement?">
+                    <WorkflowAiBlock question={t("I've incorporated your answers. Is there any additional input before I generate the settlement?")}>
                       <div className="flex flex-wrap gap-2">
                         <GateButton
-                          label="No — generate the settlement"
+                          label={t("No — generate the settlement")}
                           onClick={generatePreview}
                           disabled={locked || isTyping}
                         />
@@ -419,7 +432,7 @@ export function ServiceChargeSettlementFlow({
 
                   {optimisticUser && stage === "assumptions" && allAssumptionsAnswered ? (
                     <>
-                      <WorkflowUserBubble>{optimisticUser}</WorkflowUserBubble>
+                      <WorkflowUserBubble>{t(optimisticUser)}</WorkflowUserBubble>
                       {isTyping ? <WorkflowThinkingIndicator /> : null}
                     </>
                   ) : null}
@@ -430,10 +443,13 @@ export function ServiceChargeSettlementFlow({
               {stage === "settlement-preview" ? (
                 <>
                   <WorkflowUserBubble>
-                    No further input — please generate the settlement preview.
+                    {t("No further input — please generate the settlement preview.")}
                   </WorkflowUserBubble>
                   <WorkflowAiBlock
-                    question={`Here's the initial ${year} settlement for ${property}. Every assumption you confirmed is applied and noted below. Click any amount to analyse it further, or ask for an adjustment in the chat — the preview updates after each change.`}
+                    question={t(
+                      "Here's the initial {year} settlement for {property}. Every assumption you confirmed is applied and noted below. Click any amount to analyse it further, or ask for an adjustment in the chat — the preview updates after each change.",
+                      { values: { year, property } },
+                    )}
                   >
                     <ServiceChargeSettlementPreview
                       answers={answers}

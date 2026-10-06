@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { SERVICE_CHARGE_STAGES } from "@/src/lib/serviceChargeSettlementData";
 
 function StepNode({ active, done }: { active: boolean; done: boolean }) {
@@ -36,6 +37,7 @@ export function ServiceChargeProcessFlow({
   furthestStep?: 0 | 1 | 2 | 3;
   variant?: "default" | "embedded";
 }) {
+  const { t } = useI18n();
   const embedded = variant === "embedded";
   const reached = Math.max(furthestStep ?? currentStep, currentStep);
 
@@ -73,7 +75,7 @@ export function ServiceChargeProcessFlow({
                       "rounded-xl border border-transparent transition-colors hover:border-[#E6E8EB] hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#233FDE] focus-visible:ring-offset-2",
                   )}
                   aria-current={step.active ? "step" : undefined}
-                  aria-label={`${step.title}. ${step.active ? "Current step" : step.done ? "Completed — go to this step" : "Upcoming step"}`}
+                  aria-label={`${t(step.title)}. ${step.active ? t("Current step") : step.done ? t("Completed — go to this step") : t("Upcoming step")}`}
                 >
                   <div className="flex h-10 shrink-0 items-center justify-center">
                     <StepNode active={step.active} done={step.done} />
@@ -86,7 +88,7 @@ export function ServiceChargeProcessFlow({
                         step.active || step.done ? "text-[#010309]" : "text-[#65686B]",
                       )}
                     >
-                      {step.title}
+                      {t(step.title)}
                     </p>
                     <p
                       className={cn(
@@ -95,7 +97,7 @@ export function ServiceChargeProcessFlow({
                         step.active || step.done ? "text-[#65686B]" : "text-[#7E8185]",
                       )}
                     >
-                      {step.description}
+                      {t(step.description)}
                     </p>
                   </div>
                 </ContainerTag>

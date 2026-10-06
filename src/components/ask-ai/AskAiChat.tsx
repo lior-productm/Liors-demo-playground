@@ -7,8 +7,7 @@ import { ChatHistoryTrigger } from "@/src/components/commercial/ChatHistoryTrigg
 import { AppShell } from "@/src/components/layout/AppShell";
 import { CommercialChatInjectContext } from "@/src/components/commercial/CommercialChatContext";
 import { __assistantReplyFor, SidebarChatInputDock } from "@/src/components/commercial/ChatPanel";
-import { AskAiLandingHero } from "@/src/components/ask-ai/AskAiLanding";
-import { AskAiAnalystsSection } from "@/src/components/ai-assistants/AskAiAnalystsSection";
+import { AskAiGreeting, AskAiSuggestionList } from "@/src/components/ask-ai/AskAiLanding";
 import {
   AskAiLeaseScopeBlock,
   AskAiLeaseTenantStep,
@@ -670,19 +669,21 @@ export function AskAiChat({ sessionId, initialSession }: Props) {
           </div>
 
           {!hasConversation ? (
-            <div className="mx-auto flex min-h-full w-full flex-col items-center px-6 pb-16 pt-[120px]">
+            <div className="absolute inset-0 flex flex-col items-center overflow-y-auto px-6 pb-10 pt-[120px]">
               <div
-                className="flex w-full flex-col items-center"
+                className="flex w-full flex-1 flex-col items-center"
                 style={{ maxWidth: SHELL_WORKFLOW_CHAT_BAR_MAX_PX }}
               >
-                <AskAiLandingHero
-                  isTyping={isTyping}
-                  onChipSelect={onSend}
-                  onLeaseRenewalStart={startLeaseRenewalFlow}
-                  onCreateInsightStart={startInsightFlow}
-                />
+                <AskAiGreeting />
 
-                <div className="mt-10 flex w-full max-w-[720px] justify-center">
+                <div className="mt-auto flex w-full flex-col items-center gap-5 pt-16">
+                  <AskAiSuggestionList
+                    className="mx-auto max-w-[560px]"
+                    isTyping={isTyping}
+                    onChipSelect={onSend}
+                    onLeaseRenewalStart={startLeaseRenewalFlow}
+                    onCreateInsightStart={startInsightFlow}
+                  />
                   <SidebarChatInputDock
                     layout="full"
                     className="w-full"
@@ -694,10 +695,6 @@ export function AskAiChat({ sessionId, initialSession }: Props) {
                     onSubmit={handleFormSubmit}
                   />
                 </div>
-              </div>
-
-              <div className="mt-12 w-full max-w-[760px]">
-                <AskAiAnalystsSection onStartChat={(card) => onSend(card.starterPrompt)} />
               </div>
             </div>
           ) : (

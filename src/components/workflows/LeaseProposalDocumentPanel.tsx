@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
+import type { I18n } from "@/src/lib/i18n";
 import { AmiioAiDisclaimerTrigger } from "@/src/components/commercial/AmiioAiDisclaimerTooltip";
 import { AmiioSummaryTypewriterParts } from "@/src/components/commercial/AmiioSummaryTypewriter";
 import { ChatAside } from "@/src/components/commercial/ChatPanel";
@@ -51,14 +53,17 @@ function ProposalTerm({
   );
 }
 
-function buildProposalDocumentParts(ctx: LeaseRenewalContext) {
-  const property = ctx.property ?? "the selected property";
+function buildProposalDocumentParts(ctx: LeaseRenewalContext, t: I18n["t"]) {
+  const property = ctx.property ?? t("the selected property");
   const tenant = ctx.tenantName;
   const ref = leaseRenewalProposalRef(tenant);
 
   return [
     {
-      text: `Lease Renewal Proposal\nDate: 29 March 2026\nReference: ${ref}\n\nTo: ${tenant}\nFrom: ${property}\n\n1. SUBJECT PROPERTY\nThis Lease Renewal Proposal concerns the premises located at ${property}, comprising 3,905 square metres of lettable floor area, together with 40 parking spaces.\n\n2. PROPOSED TERMS\n2.1 Lease Term: 5 (Five) years, commencing on Jul 2026.\n2.2 Lease term extension — 60 months (5 years).\n2.3 Base Rent: €225 per square meter per annum, totalling €878,625 annually.\n2.4 Rent-Free Period: 3 (Three) months rent-free at the commencement of the lease term.\n2.5 ${tenant} may terminate after year 3 with 6 months' written notice.\n2.6 Rent Review: Annual Indexation based on CPI, capped at 3% per annum.\n\n3. ADDITIONAL TERMS\n• Break option at 3 years with 6 months notice\n• CPI indexation capped at 3% annually\n• Expansion for unit 4B at €209/sqm`,
+      text: t(
+        "Lease Renewal Proposal\nDate: 29 March 2026\nReference: {ref}\n\nTo: {tenant}\nFrom: {property}\n\n1. SUBJECT PROPERTY\nThis Lease Renewal Proposal concerns the premises located at {property}, comprising 3,905 square metres of lettable floor area, together with 40 parking spaces.\n\n2. PROPOSED TERMS\n2.1 Lease Term: 5 (Five) years, commencing on Jul 2026.\n2.2 Lease term extension — 60 months (5 years).\n2.3 Base Rent: €225 per square meter per annum, totalling €878,625 annually.\n2.4 Rent-Free Period: 3 (Three) months rent-free at the commencement of the lease term.\n2.5 {tenant} may terminate after year 3 with 6 months' written notice.\n2.6 Rent Review: Annual Indexation based on CPI, capped at 3% per annum.\n\n3. ADDITIONAL TERMS\n• Break option at 3 years with 6 months notice\n• CPI indexation capped at 3% annually\n• Expansion for unit 4B at €209/sqm",
+        { values: { ref, tenant, property } },
+      ),
     },
   ];
 }
@@ -76,6 +81,7 @@ export function LeaseProposalDocumentPanel({
   /** `floating` — fills a fixed-position wrapper; `shell` — docked in AppShell side column. */
   layout?: "shell" | "floating";
 }) {
+  const { t } = useI18n();
   const [writingDone, setWritingDone] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState(documentVersions[0]?.label ?? "Current");
 
@@ -87,9 +93,9 @@ export function LeaseProposalDocumentPanel({
     setSelectedVersion(documentVersions[0]?.label ?? "Current");
   }, [context.tenantName, context.property]);
 
-  const documentParts = useMemo(() => buildProposalDocumentParts(context), [context]);
+  const documentParts = useMemo(() => buildProposalDocumentParts(context, t), [context, t]);
   const ref = leaseRenewalProposalRef(context.tenantName);
-  const property = context.property ?? "the selected property";
+  const property = context.property ?? t("the selected property");
 
   return (
     <ChatAside
@@ -119,7 +125,7 @@ export function LeaseProposalDocumentPanel({
                 <Sparkles className="size-4 text-[#010309]" aria-hidden />
               </AmiioAiDisclaimerTrigger>
               <h2 className="truncate text-[16px] font-semibold leading-[1.35] text-[#010309]">
-                Lease Renewal Proposal
+                {t("Lease Renewal Proposal")}
               </h2>
             </div>
             <p className="mt-0.5 truncate text-[12px] font-medium text-[#676A6E]">
@@ -129,14 +135,14 @@ export function LeaseProposalDocumentPanel({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Badge className="border-0 bg-[#FEF3CD] text-[11px] font-medium text-[#856404]">
-              Draft
+              {t("Draft")}
             </Badge>
             {onClose ? (
               <button
                 type="button"
                 onClick={onClose}
                 className="flex size-8 shrink-0 items-center justify-center rounded-full text-[#353638] transition-colors hover:bg-[#F0F2F5]"
-                aria-label="Close proposal panel"
+                aria-label={t("Close proposal panel")}
               >
                 <X className="size-4" />
               </button>
@@ -150,17 +156,21 @@ export function LeaseProposalDocumentPanel({
               {!writingDone ? (
                 <span className="flex items-center gap-1.5 text-[11px] font-medium text-[#233FDE]">
                   <Sparkles className="size-3 animate-pulse" />
-                  Writing draft…
+                  {t("Writing draft…")}
                 </span>
               ) : (
                 <span className="flex min-w-0 flex-wrap items-center gap-2 text-[11px] text-[#6B7280]">
-                  <span className="truncate">Viewing {activeVersion?.label ?? "Current"}</span>
+                  <span className="truncate">
+                    {t("Viewing {label}", {
+                      values: { label: t(activeVersion?.label ?? "Current") },
+                    })}
+                  </span>
                   {activeVersion && !activeVersion.active ? (
                     <button
                       type="button"
                       className="flex shrink-0 items-center gap-1 font-medium text-[#353638] hover:underline"
                     >
-                      Go to latest
+                      {t("Go to latest")}
                       <ExternalLink className="h-3 w-3" />
                     </button>
                   ) : null}
@@ -172,9 +182,9 @@ export function LeaseProposalDocumentPanel({
                   <button
                     type="button"
                     className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#E6E8EB] bg-white px-2.5 text-[11px] font-medium text-[#353638] transition-colors hover:bg-[#F9FAFB]"
-                    aria-label="Select document version"
+                    aria-label={t("Select document version")}
                   >
-                    Version: {selectedVersion}
+                    {t("Version: {version}", { values: { version: selectedVersion } })}
                     <ChevronDown className="size-3.5 text-[#969A9E]" />
                   </button>
                 </DropdownMenuTrigger>
@@ -191,7 +201,7 @@ export function LeaseProposalDocumentPanel({
                       )}
                       onSelect={() => setSelectedVersion(v.label)}
                     >
-                      {v.label}
+                      {t(v.label)}
                       {v.date ? (
                         <span className="ml-1.5 text-[#A0A4AB]">{v.date}</span>
                       ) : null}
@@ -205,7 +215,7 @@ export function LeaseProposalDocumentPanel({
                 className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#E6E8EB] bg-white px-2.5 text-[11px] font-medium text-[#6B7280] transition-colors hover:bg-[#F9FAFB] hover:text-[#111827]"
               >
                 <Copy className="h-3.5 w-3.5" />
-                Copy
+                {t("Copy")}
               </button>
             </div>
 
@@ -215,13 +225,15 @@ export function LeaseProposalDocumentPanel({
                 size="sm"
               >
                 <Download className="mr-1.5 h-3.5 w-3.5" />
-                Finalize
+                {t("Finalize")}
               </Button>
             </div>
           </div>
 
           <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-[#F9FAFB] p-4 pb-8">
-            <p className="mb-3 text-center text-[10px] text-[#969A9E]">Updated on 23 Nov 2025</p>
+            <p className="mb-3 text-center text-[10px] text-[#969A9E]">
+              {t("Updated on {date}", { values: { date: "23 Nov 2025" } })}
+            </p>
             <div className="mx-auto w-full max-w-none rounded-lg bg-white p-5 pb-8 shadow-sm">
                 <div className="space-y-4 text-center">
                   <h3 className="text-[15px] font-bold text-[#111827]">Lease Renewal Proposal</h3>

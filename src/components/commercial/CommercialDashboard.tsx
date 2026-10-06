@@ -25,6 +25,7 @@ import {
   DashboardPageHeader,
 } from "@/src/components/layout/AppShell";
 import { DashboardPageTabs } from "@/src/components/layout/DashboardPageTabs";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { ChatMessage } from "@/src/types/commercial";
 import {
   readCommercialDashboardState,
@@ -78,6 +79,7 @@ export function CommercialDashboard({
   onTabChange: (tab: TopNavTabId) => void;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [view, setView] = useState<CommercialView>("overview");
   const [selectedPortfolio, setSelectedPortfolio] = useState(DEFAULT_PORTFOLIO);
   const [selectedEntity, setSelectedEntity] = useState(DEFAULT_ENTITY);
@@ -284,10 +286,10 @@ export function CommercialDashboard({
         }
       >
         <DashboardPageHeader
-          title="Commercial Dashboard"
+          title={t("Commercial Dashboard")}
           tabs={
             <DashboardPageTabs
-              tabs={COMMERCIAL_TABS}
+              tabs={COMMERCIAL_TABS.map((tab) => ({ id: tab.id, label: t(tab.label) }))}
               activeId={view}
               onChange={(id) => setView(id as CommercialView)}
             />

@@ -100,8 +100,8 @@ export function getAnalystMeta(id: WorkspaceAnalystId): WorkspaceAnalystMeta {
 
 /** Maps a workspace analyst to its AI Analyst page. Unshipped analysts land on the catalog. */
 export function getAnalystPageHref(id: WorkspaceAnalystId): string {
-  if (id === "leasing") return "/ai-assistants/lease-analyst";
-  return "/ai-assistants";
+  if (id === "reporting") return "/ai-analysts/financial";
+  return "/ai-analysts";
 }
 
 export const WORKSPACE_TYPE_META: Record<

@@ -1,8 +1,8 @@
 export type SidebarNavId =
   | "ask-ai"
   | "insights"
-  | "ai-assistants"
-  | "lease-analyst"
+  | "ai-analysts"
+  | "tasks"
   | "financial"
   | "commercial"
   | "workflow-new"

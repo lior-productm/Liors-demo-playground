@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { SidebarNavId } from "@/src/types/navigation";
 import { SidebarNavigation } from "@/src/components/layout/SidebarNavigation";
 import { ToastStack } from "@/src/components/commercial/ToastStack";
+import { AiAnalystsBanner } from "@/src/components/ai-analysts/AiAnalystsBanner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   SHELL_CHAT_TOP_PX,
@@ -80,6 +81,7 @@ export function AppShell({
   sidePanelAlign?: "default" | "workflow-stage";
 }) {
   const showSidePanel = !chatMinimized && Boolean(chatPanel);
+  const showAnalystsBanner = activeNav === "commercial" || activeNav === "financial";
 
   return (
     <TooltipProvider delayDuration={250}>
@@ -107,11 +109,13 @@ export function AppShell({
               }}
             >
               <div
+                data-app-scroll
                 className={cn(
                   "min-h-0 w-full min-w-0 flex-1 overflow-y-auto",
                   hideMainScrollbar && "scrollbar-hide",
                 )}
               >
+                {showAnalystsBanner ? <AiAnalystsBanner /> : null}
                 {children}
               </div>
 

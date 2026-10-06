@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { BuildingThumb } from "@/src/components/commercial/BuildingThumb";
 import { InvestmentSummaryPhoto } from "@/src/components/commercial/overview/InvestmentSummaryPhoto";
 import { TrendPill } from "@/src/components/commercial/TrendPill";
@@ -1514,6 +1515,7 @@ function HistoricalPerformanceCard() {
 }
 
 function FinancialPerformance() {
+  const { t } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:items-stretch">
       <HistoricalPerformanceCard />
@@ -1527,7 +1529,7 @@ function FinancialPerformance() {
       >
         <div className="flex items-center justify-between gap-2">
           <div className="text-[17px] font-medium text-[#2C2C2C]">
-            Performance vs budget
+            {t("Performance vs budget")}
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <WidgetHeaderLamp
@@ -1541,7 +1543,7 @@ function FinancialPerformance() {
           {budgetRows.map((r, idx) => (
             <div key={idx}>
               <div className="flex items-center justify-between text-[12px]">
-                <span className="font-medium text-[#353638]">{r.label}</span>
+                <span className="font-medium text-[#353638]">{t(r.label)}</span>
                 <span className="font-medium text-[#1F9E8B]">{r.delta}</span>
               </div>
               <div className="mt-1.5 space-y-1">

@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   SIDEBAR_ITEM_ACTIVE,
   SIDEBAR_ITEM_IDLE,
@@ -66,6 +67,7 @@ function SectionRow({
   onMoveSection?: (id: string, direction: "up" | "down") => void;
   onRemoveSection?: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const {
     attributes,
     listeners,
@@ -103,7 +105,7 @@ function SectionRow({
           {...listeners}
           {...attributes}
           className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-[#B3B8BD] opacity-0 transition-opacity hover:text-[#65686B] group-hover:opacity-100 active:cursor-grabbing"
-          aria-label={`Drag ${section.label} to reorder`}
+          aria-label={t("Drag {label} to reorder", { values: { label: section.label } })}
         >
           <GripVertical className="size-4" strokeWidth={1.75} />
         </button>
@@ -117,7 +119,7 @@ function SectionRow({
           SIDEBAR_LABEL_CLASS,
         )}
       >
-        <span className="truncate">{section.label}</span>
+        <span className="truncate">{t(section.label)}</span>
       </button>
 
       {editable ? (
@@ -127,7 +129,7 @@ function SectionRow({
             disabled={isFirst}
             onClick={() => onMoveSection?.(section.id, "up")}
             className="flex size-6 items-center justify-center rounded text-[#65686B] hover:bg-[#E6E8EB] disabled:opacity-30 disabled:hover:bg-transparent"
-            aria-label={`Move ${section.label} up`}
+            aria-label={t("Move {label} up", { values: { label: section.label } })}
           >
             <ChevronUp className="size-4" strokeWidth={1.75} />
           </button>
@@ -136,7 +138,7 @@ function SectionRow({
             disabled={isLast}
             onClick={() => onMoveSection?.(section.id, "down")}
             className="flex size-6 items-center justify-center rounded text-[#65686B] hover:bg-[#E6E8EB] disabled:opacity-30 disabled:hover:bg-transparent"
-            aria-label={`Move ${section.label} down`}
+            aria-label={t("Move {label} down", { values: { label: section.label } })}
           >
             <ChevronDown className="size-4" strokeWidth={1.75} />
           </button>
@@ -144,7 +146,7 @@ function SectionRow({
             type="button"
             onClick={() => onRemoveSection?.(section.id)}
             className="flex size-6 items-center justify-center rounded text-[#65686B] hover:bg-[#FBE9E7] hover:text-[#B23A2F]"
-            aria-label={`Remove ${section.label}`}
+            aria-label={t("Remove {label}", { values: { label: section.label } })}
           >
             <Trash2 className="size-3.5" strokeWidth={1.75} />
           </button>
@@ -168,6 +170,7 @@ export function ReportSectionsNav({
   onRestoreSection,
   onReorderSection,
 }: ReportSectionsNavProps) {
+  const { t } = useI18n();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
@@ -186,7 +189,7 @@ export function ReportSectionsNav({
         type="button"
         onClick={onToggleCollapse}
         className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-        aria-label="Expand sections"
+        aria-label={t("Expand sections")}
       >
         <PanelLeftOpen className="size-6" strokeWidth={1.5} />
       </button>
@@ -218,14 +221,14 @@ export function ReportSectionsNav({
               "font-medium text-[#856404]",
             )}
           >
-            In Review
+            {t("In Review")}
           </span>
           {onToggleCollapse ? (
             <button
               type="button"
               onClick={onToggleCollapse}
               className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-              aria-label="Collapse sections"
+              aria-label={t("Collapse sections")}
             >
               <PanelLeftClose className="size-6" strokeWidth={1.5} />
             </button>
@@ -233,13 +236,13 @@ export function ReportSectionsNav({
         </div>
         <p className={cn("mt-0 h-6", SIDEBAR_META_CLASS)}>{updatedLabel}</p>
         <button type="button" className={cn("h-6 w-fit text-left hover:underline", SIDEBAR_LINK_CLASS)}>
-          View version history
+          {t("View version history")}
         </button>
       </div>
 
       <nav className="flex flex-col gap-0.5">
         <p className={cn("flex h-9 items-center", SIDEBAR_LABEL_CLASS, SIDEBAR_TOPIC_TEXT)}>
-          Sections
+          {t("Sections")}
         </p>
         {editable && onReorderSection ? (
           <DndContext
@@ -257,7 +260,7 @@ export function ReportSectionsNav({
       {editable && removedSections.length > 0 ? (
         <div className="flex flex-col gap-0.5 border-t border-[#E6E8EB] pt-3">
           <p className={cn("flex h-9 items-center", SIDEBAR_LABEL_CLASS, SIDEBAR_TOPIC_TEXT)}>
-            Removed
+            {t("Removed")}
           </p>
           {removedSections.map((section) => (
             <div
@@ -270,16 +273,16 @@ export function ReportSectionsNav({
                   SIDEBAR_LABEL_CLASS,
                 )}
               >
-                {section.label}
+                {t(section.label)}
               </span>
               <button
                 type="button"
                 onClick={() => onRestoreSection?.(section.id)}
                 className="flex shrink-0 items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-[#4C61DB] hover:bg-[#F7F8FF]"
-                aria-label={`Restore ${section.label}`}
+                aria-label={t("Restore {label}", { values: { label: section.label } })}
               >
                 <RotateCcw className="size-3.5" strokeWidth={1.75} />
-                Restore
+                {t("Restore")}
               </button>
             </div>
           ))}

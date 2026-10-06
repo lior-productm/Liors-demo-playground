@@ -4,6 +4,7 @@ import { useMemo, useState, type ComponentPropsWithoutRef } from "react";
 import { ChevronRight, Lightbulb, MoreVertical, ToggleLeft, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { insightInlineFullDescription } from "@/src/components/pages/insightCardExpandedHelpers";
 import {
   InsightsColumnFilter,
@@ -68,6 +69,7 @@ function listTagClasses(label: string, kind: "topic" | "data") {
 }
 
 function ListTag({ tag, kind }: { tag: InsightTag; kind: "topic" | "data" }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -75,7 +77,7 @@ function ListTag({ tag, kind }: { tag: InsightTag; kind: "topic" | "data" }) {
         listTagClasses(tag.label, kind),
       )}
     >
-      {tag.label}
+      {t(tag.label)}
     </span>
   );
 }
@@ -121,9 +123,13 @@ function CreatedByCell({ createdBy }: { createdBy?: string }) {
   );
 }
 
-function triggeredText(card: InsightCardModel): string {
-  if (card.triggeredLabel) return card.triggeredLabel;
-  return card.updatedLabel.replace(/^Updated\s+/i, "");
+function triggeredText(
+  card: InsightCardModel,
+  t: (key: string) => string,
+): string {
+  if (card.triggeredLabel) return t(card.triggeredLabel);
+  // Strip the leading "Updated"/translated equivalent so only the time remains.
+  return t(card.updatedLabel).replace(/^(Updated|עודכן|Bijgewerkt)\s+/i, "");
 }
 
 function HeaderCell({
@@ -277,6 +283,7 @@ function InsightTableRow({
   onRequestActivate: () => void;
   onRequestDelete: () => void;
 }) {
+  const { t } = useI18n();
   const isInactive = !card.active;
   const userCreated = isUserCreated(card);
   // Active insights only show lifecycle actions when authored by a user;
@@ -328,7 +335,7 @@ function InsightTableRow({
               card.isNew ? "font-medium" : "font-normal",
             )}
           >
-            {card.title}
+            {t(card.title)}
           </p>
         </div>
 
@@ -350,7 +357,7 @@ function InsightTableRow({
         {/* Triggered */}
         <div className="flex h-full min-w-0 items-center px-2 py-2">
           <span className="truncate text-[13px] leading-[1.4] text-[#65686B]">
-            {triggeredText(card)}
+            {triggeredText(card, t)}
           </span>
         </div>
 

@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { Lightbulb, CalendarDays, ChevronDown, ChevronRight, Plus, Pencil, Check, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { amiioCardHoverSurface, cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import { WidgetExportMenu } from "@/src/components/commercial/WidgetExportMenu";
 import {
   AmiioAiDisclaimerTrigger,
@@ -142,6 +143,7 @@ function rentRollGroupsToSheet(
 }
 
 function InvoiceBadge({ period }: { period: "Quarterly" | "Monthly" }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -149,20 +151,21 @@ function InvoiceBadge({ period }: { period: "Quarterly" | "Monthly" }) {
         period === "Quarterly" ? "bg-[#233FDE]" : "bg-[#353638]",
       )}
     >
-      {period}
+      {t(period)}
     </span>
   );
 }
 
 function TableHeaderRow() {
+  const { t } = useI18n();
   return (
     <tr className="bg-[#F2F4F7]">
       {colHeaders.map((h) => (
         <th
           key={h}
-          className="whitespace-nowrap px-3 py-2 text-left text-[12px] font-medium text-[#65686B]"
+          className="whitespace-nowrap px-3 py-2 text-start text-[12px] font-medium text-[#65686B]"
         >
-          {h}
+          {t(h)}
         </th>
       ))}
     </tr>
@@ -396,6 +399,10 @@ export function RentRollView({
   onOpenTenantHub?: () => void;
   onAnalyseWithAmiio?: (topic: string) => void;
 } = {}) {
+  const { t, fmt } = useI18n();
+  // "149 Spaces" / "4.4 Years" → keep the figure, translate the unit word.
+  const unit = (value: string) =>
+    value.replace(/Spaces$/, t("Spaces")).replace(/Years$/, t("Years"));
   const [signedLeaseOpen, setSignedLeaseOpen] = useState(true);
   const [isEditingSigned, setIsEditingSigned] = useState(false);
   const [signedLeases, setSignedLeases] = useState(signedLeaseData);
@@ -493,7 +500,7 @@ export function RentRollView({
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <h2 className="text-[18px] font-medium text-[#2C2C2C]">Rent Roll</h2>
+          <h2 className="text-[18px] font-medium text-[#2C2C2C]">{t("Rent Roll")}</h2>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -502,7 +509,7 @@ export function RentRollView({
             className="inline-flex items-center gap-1.5 rounded-lg border border-[#E6E8EB] bg-white px-3 py-1.5 text-[12px] font-medium text-[#353638] hover:bg-[#F8F9FA] transition-colors"
           >
             <CalendarDays className="h-3.5 w-3.5 text-[#969A9E]" />
-            Select date
+            {t("Select date")}
             <ChevronDown className="h-3 w-3 text-[#969A9E]" />
           </button>
 
@@ -552,7 +559,7 @@ export function RentRollView({
                 colSpan={colHeaders.length}
                 className="px-3 py-2.5 text-[14px] font-semibold text-[#353638]"
               >
-                Total Rent Roll
+                {t("Total Rent Roll")}
               </td>
             </tr>
           </tbody>
@@ -573,7 +580,7 @@ export function RentRollView({
               <ChevronRight className="h-4 w-4" />
             )}
             <Plus className="h-3.5 w-3.5" />
-            Signed Leased
+            {t("Signed Leased")}
           </button>
 
           {signedLeaseOpen && (
@@ -591,12 +598,12 @@ export function RentRollView({
                 {isEditingSigned ? (
                   <>
                     <Check className="h-3.5 w-3.5" />
-                    Done Editing
+                    {t("Done Editing")}
                   </>
                 ) : (
                   <>
                     <Pencil className="h-3.5 w-3.5" />
-                    Edit
+                    {t("Edit")}
                   </>
                 )}
               </button>
@@ -607,7 +614,7 @@ export function RentRollView({
                   className="flex items-center gap-1 rounded-lg bg-[#1F9E8B] px-3 py-1 text-[12px] font-medium text-white hover:bg-[#1a8a79] transition-colors"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  Add Row
+                  {t("Add Row")}
                 </button>
               )}
             </div>
@@ -625,7 +632,7 @@ export function RentRollView({
                 {isEditingSigned && (
                   <tr className="bg-[#EEF0FF]">
                     <th colSpan={colHeaders.length} className="px-3 py-1 text-left text-[12px] font-medium text-[#233FDE]">
-                      Editing mode — click a row to edit, or use the action buttons
+                      {t("Editing mode — click a row to edit, or use the action buttons")}
                     </th>
                   </tr>
                 )}
@@ -652,7 +659,7 @@ export function RentRollView({
                     colSpan={colHeaders.length + (isEditingSigned ? 1 : 0)}
                     className="px-3 py-2.5 text-[14px] font-semibold text-[#353638]"
                   >
-                    Total Signed Lease
+                    {t("Total Signed Lease")}
                   </td>
                 </tr>
               </tbody>
@@ -664,7 +671,7 @@ export function RentRollView({
       {/* Sub Total Lease Section */}
       <div className="mt-6">
         <div className="mb-2 flex items-center gap-1.5 text-[14px] font-medium text-[#353638]">
-          <span className="text-[#969A9E]">→</span> Sub Total Lease
+          <span className="text-[#969A9E] rtl:inline-block rtl:rotate-180">→</span> {t("Sub Total Lease")}
         </div>
 
         <div className="overflow-x-auto scrollbar-hide">
@@ -672,22 +679,22 @@ export function RentRollView({
             <thead>
               <tr className="bg-[#F2F4F7]">
                 <th className="whitespace-nowrap px-3 py-2 text-left text-[12px] font-medium uppercase text-[#969A9E]">
-                  After Start Signed Leases
+                  {t("After Start Signed Leases")}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-[12px] font-medium uppercase text-[#969A9E]">
-                  Type
+                  {t("Type")}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-right text-[12px] font-medium uppercase text-[#969A9E]">
-                  Area (m²)/Unit
+                  {t("Area (m²)/Unit")}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-right text-[12px] font-medium uppercase text-[#969A9E]">
-                  WALT
+                  {t("WALT")}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-right text-[12px] font-medium uppercase text-[#969A9E]">
-                  Total GRI (excl. parking)
+                  {t("Total GRI (excl. parking)")}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-right text-[12px] font-medium uppercase text-[#969A9E]">
-                  Total GRI (incl. parking)
+                  {t("Total GRI (incl. parking)")}
                 </th>
               </tr>
             </thead>
@@ -706,7 +713,7 @@ export function RentRollView({
                       row.bold ? "font-bold" : "font-semibold",
                     )}
                   >
-                    {row.label}
+                    {t(row.label)}
                   </td>
                   <td
                     className={cn(
@@ -722,7 +729,7 @@ export function RentRollView({
                       row.bold ? "font-bold" : "font-semibold",
                     )}
                   >
-                    {row.area}
+                    {unit(row.area)}
                   </td>
                   <td
                     className={cn(
@@ -730,7 +737,7 @@ export function RentRollView({
                       row.bold ? "font-bold" : "font-semibold",
                     )}
                   >
-                    {row.walt}
+                    {unit(row.walt)}
                   </td>
                   <td
                     className={cn(
@@ -738,7 +745,7 @@ export function RentRollView({
                       row.bold ? "font-bold" : "font-semibold",
                     )}
                   >
-                    {row.griExcl}
+                    {fmt.amount(row.griExcl)}
                   </td>
                   <td
                     className={cn(
@@ -746,7 +753,7 @@ export function RentRollView({
                       row.bold ? "font-bold" : "font-semibold",
                     )}
                   >
-                    {row.griIncl}
+                    {fmt.amount(row.griIncl)}
                   </td>
                 </tr>
               ))}

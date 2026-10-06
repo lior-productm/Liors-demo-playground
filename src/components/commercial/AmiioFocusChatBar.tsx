@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Loader2, Mic, Plus, Send, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UpwardSuggestionCarousel } from "@/src/components/ai-assistants/UpwardSuggestionCarousel";
+import { useI18n } from "@/src/hooks/useI18n";
+import { UpwardSuggestionCarousel } from "@/src/components/commercial/UpwardSuggestionCarousel";
 import {
   SHELL_ASK_AI_CHAT_BAR_HEIGHT_PX,
   SHELL_ASK_AI_CHAT_BAR_MAX_PX,
@@ -43,6 +44,7 @@ export function AmiioFocusChatBar({
   onExpandPanel?: () => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   const [focused, setFocused] = useState(false);
   const isSidebar = layout === "sidebar";
   const isFull = layout === "full";
@@ -93,7 +95,7 @@ export function AmiioFocusChatBar({
               />
             </div>
             <p className="truncate text-[13px] font-normal leading-5 text-[#65686B]">
-              Analyzing data...
+              {t("Analyzing data...")}
             </p>
           </div>
         ) : (
@@ -134,7 +136,7 @@ export function AmiioFocusChatBar({
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 onKeyDown={handleKeyDown}
-                placeholder={showRotatingSuggestions ? undefined : placeholder}
+                placeholder={showRotatingSuggestions ? undefined : t(placeholder)}
                 disabled={Boolean(isTyping && !reasoning)}
                 aria-label={showRotatingSuggestions ? "Ask Lease Analyst" : undefined}
                 className={cn(

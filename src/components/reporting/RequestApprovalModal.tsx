@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle2, ChevronDown, ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   APPROVAL_PRIORITY_LABELS,
   REPORT_APPROVERS,
@@ -25,6 +26,7 @@ export function RequestApprovalModal({
   /** Called from the confirmation view's Continue button. Falls back to onClose. */
   onContinue?: () => void;
 }) {
+  const { t } = useI18n();
   const [approverId, setApproverId] = useState(REPORT_APPROVERS[0].id);
   const [priority, setPriority] = useState<ApprovalPriority>("normal");
   const [dueDate, setDueDate] = useState("");
@@ -60,14 +62,14 @@ export function RequestApprovalModal({
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-[#4C61DB]" strokeWidth={1.75} />
             <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-              {sent ? "Request sent" : "Save & Approve"}
+              {sent ? t("Request sent") : t("Save & Approve")}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="size-5" strokeWidth={1.75} />
           </button>
@@ -81,11 +83,12 @@ export function RequestApprovalModal({
               </span>
               <div className="flex flex-col gap-1.5">
                 <p className="text-[16px] font-semibold leading-[1.3] text-[#05091F]">
-                  Your approval request is sent!
+                  {t("Your approval request is sent!")}
                 </p>
                 <p className="mx-auto max-w-[380px] text-[13px] leading-[1.5] text-[#65686B]">
-                  This draft will be available for your organization as soon as
-                  it&apos;s approved.
+                  {t(
+                    "This draft will be available for your organization as soon as it's approved.",
+                  )}
                 </p>
               </div>
             </div>
@@ -95,7 +98,7 @@ export function RequestApprovalModal({
                 onClick={onContinue ?? onClose}
                 className="flex h-10 items-center gap-1.5 rounded-lg bg-[#111] px-4 text-[14px] font-medium leading-[1.24] text-white hover:bg-[#333]"
               >
-                Continue
+                {t("Continue")}
               </button>
             </div>
           </>
@@ -107,14 +110,21 @@ export function RequestApprovalModal({
               {reportTitle}
             </p>
             <p className="text-[12px] leading-[1.5] text-[#65686B]">
-              {customSectionCount} custom section{customSectionCount === 1 ? "" : "s"} ·
-              will be locked for review until a decision is made.
+              {customSectionCount === 1
+                ? t(
+                    "{count} custom section · will be locked for review until a decision is made.",
+                    { values: { count: customSectionCount } },
+                  )
+                : t(
+                    "{count} custom sections · will be locked for review until a decision is made.",
+                    { values: { count: customSectionCount } },
+                  )}
             </p>
           </div>
 
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium leading-[1.25] text-[#353638]">
-              Approver
+              {t("Approver")}
             </span>
             <div className="relative">
               <select
@@ -134,7 +144,7 @@ export function RequestApprovalModal({
 
           <div className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium leading-[1.25] text-[#353638]">
-              Priority
+              {t("Priority")}
             </span>
             <div className="flex gap-2">
               {(Object.keys(APPROVAL_PRIORITY_LABELS) as ApprovalPriority[]).map(
@@ -150,7 +160,7 @@ export function RequestApprovalModal({
                         : "border-[#E6E8EB] bg-white text-[#65686B] hover:bg-[#FAFBFC]",
                     )}
                   >
-                    {APPROVAL_PRIORITY_LABELS[value]}
+                    {t(APPROVAL_PRIORITY_LABELS[value])}
                   </button>
                 ),
               )}
@@ -159,7 +169,7 @@ export function RequestApprovalModal({
 
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium leading-[1.25] text-[#353638]">
-              Decision needed by <span className="text-[#969A9E]">(optional)</span>
+              {t("Decision needed by")} <span className="text-[#969A9E]">{t("(optional)")}</span>
             </span>
             <input
               type="date"
@@ -171,13 +181,13 @@ export function RequestApprovalModal({
 
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] font-medium leading-[1.25] text-[#353638]">
-              Message to approver <span className="text-[#969A9E]">(optional)</span>
+              {t("Message to approver")} <span className="text-[#969A9E]">{t("(optional)")}</span>
             </span>
             <textarea
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               rows={3}
-              placeholder="Add context — what changed and what you need signed off."
+              placeholder={t("Add context — what changed and what you need signed off.")}
               className="resize-y rounded-lg border border-[#E8EAED] bg-white px-3 py-2 text-[13px] leading-[1.5] text-[#353638] outline-none focus:border-[#A7B2F2]"
             />
           </label>
@@ -189,7 +199,7 @@ export function RequestApprovalModal({
             onClick={onClose}
             className="flex h-10 items-center rounded-lg border border-[#B3B8BD] px-4 text-[14px] font-medium leading-[1.24] text-[#111] hover:bg-[#F7F8FA]"
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
@@ -197,7 +207,7 @@ export function RequestApprovalModal({
             className="flex h-10 items-center gap-1.5 rounded-lg bg-[#111] px-4 text-[14px] font-medium leading-[1.24] text-white hover:bg-[#333]"
           >
             <ShieldCheck className="size-4" strokeWidth={1.9} />
-            Send request
+            {t("Send request")}
           </button>
         </div>
           </>

@@ -15,8 +15,10 @@ import {
   canApproveDistribution,
   type ReportUserRole,
 } from "@/src/lib/reportRole";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export function DistributionPill({ status }: { status: DistributionStatus }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -24,7 +26,7 @@ export function DistributionPill({ status }: { status: DistributionStatus }) {
         DISTRIBUTION_PILL_STYLES[status],
       )}
     >
-      {DISTRIBUTION_LABELS[status]}
+      {t(DISTRIBUTION_LABELS[status])}
     </span>
   );
 }
@@ -36,10 +38,11 @@ export function ReportRoleSelect({
   role: ReportUserRole;
   onRoleChange: (role: ReportUserRole) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2">
       <span className="text-[12px] font-medium leading-[1.24] text-[#65686B]">
-        Viewing as
+        {t("Viewing as")}
       </span>
       <div className="relative">
         <select
@@ -49,7 +52,7 @@ export function ReportRoleSelect({
         >
           {REPORT_ROLES.map((value) => (
             <option key={value} value={value}>
-              {REPORT_ROLE_LABELS[value]}
+              {t(REPORT_ROLE_LABELS[value])}
             </option>
           ))}
         </select>
@@ -75,6 +78,7 @@ function formatDueDate(value: string) {
 }
 
 function ApprovalRequestSummary({ request }: { request: ApprovalRequest }) {
+  const { t } = useI18n();
   return (
     <div
       title={request.message}
@@ -82,17 +86,17 @@ function ApprovalRequestSummary({ request }: { request: ApprovalRequest }) {
     >
       <ShieldCheck className="size-4 shrink-0" strokeWidth={1.9} />
       <span>
-        Sent to <span className="font-semibold">{request.approverName}</span>
+        {t("Sent to")} <span className="font-semibold">{request.approverName}</span>
         {request.priority === "high" ? (
           <span className="ml-1 inline-flex items-center rounded-full bg-[#F6E0DC] px-1.5 py-0.5 text-[10px] font-medium text-[#B23A2F]">
-            {APPROVAL_PRIORITY_LABELS.high}
+            {t(APPROVAL_PRIORITY_LABELS.high)}
           </span>
         ) : null}
       </span>
       {request.dueDate ? (
         <span className="inline-flex items-center gap-1 border-l border-[#EAD9AE] pl-2 text-[#8A6D1E]">
           <Clock className="size-3.5" strokeWidth={1.9} />
-          by {formatDueDate(request.dueDate)}
+          {t("by {date}", { values: { date: formatDueDate(request.dueDate) } })}
         </span>
       ) : null}
     </div>
@@ -117,6 +121,7 @@ export function ReportDistributionControls({
   onDistribute: () => void;
   onNewRevision: () => void;
 }) {
+  const { t } = useI18n();
   const isApprover = canApproveDistribution(role);
 
   return (
@@ -126,7 +131,7 @@ export function ReportDistributionControls({
       {status === "draft" ? (
         <button type="button" onClick={onRequestApproval} className={primaryBtn}>
           <ShieldCheck className="size-4" strokeWidth={1.9} />
-          Save &amp; Approve
+          {t("Save & Approve")}
         </button>
       ) : null}
 
@@ -135,7 +140,7 @@ export function ReportDistributionControls({
           {request ? <ApprovalRequestSummary request={request} /> : null}
           <button type="button" onClick={onReject} className={secondaryBtn}>
             <X className="size-4" strokeWidth={1.9} />
-            Cancel request
+            {t("Cancel request")}
           </button>
         </>
       ) : null}
@@ -145,16 +150,16 @@ export function ReportDistributionControls({
           <>
             <button type="button" onClick={onNewRevision} className={secondaryBtn}>
               <Undo2 className="size-4" strokeWidth={1.9} />
-              Back to draft
+              {t("Back to draft")}
             </button>
             <button type="button" onClick={onDistribute} className={primaryBtn}>
               <Send className="size-4" strokeWidth={1.9} />
-              Distribute to stakeholders
+              {t("Distribute to stakeholders")}
             </button>
           </>
         ) : (
           <span className="text-[12px] leading-[1.4] text-[#65686B]">
-            Approved — awaiting Asset Manager distribution
+            {t("Approved — awaiting Asset Manager distribution")}
           </span>
         )
       ) : null}
@@ -162,7 +167,7 @@ export function ReportDistributionControls({
       {status === "distributed" ? (
         <button type="button" onClick={onNewRevision} className={secondaryBtn}>
           <Undo2 className="size-4" strokeWidth={1.9} />
-          New revision
+          {t("New revision")}
         </button>
       ) : null}
     </div>

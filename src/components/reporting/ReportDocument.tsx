@@ -3,6 +3,7 @@
 import { useState, type MutableRefObject } from "react";
 import { Check, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import {
   REPORT_PL_FORECAST_ROWS,
   type ReportDocumentSection,
@@ -73,12 +74,13 @@ function SectionToolbarButton({
   onClick: () => void;
   variant?: "default" | "danger" | "success";
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
-      title={label}
-      aria-label={label}
+      title={t(label)}
+      aria-label={t(label)}
       className={cn(
         "flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium leading-none transition-colors",
         variant === "danger" && "text-[#B23A2F] hover:bg-[#FBE9E7]",
@@ -87,7 +89,7 @@ function SectionToolbarButton({
       )}
     >
       <Icon className="size-4" strokeWidth={1.9} />
-      {label}
+      {t(label)}
     </button>
   );
 }
@@ -113,6 +115,7 @@ function ProseBlock({
   onParagraphApprove?: (paragraphIndex: number) => void;
   onParagraphReject?: (paragraphIndex: number) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-4">
       {paragraphs.map((paragraph, index) => {
@@ -122,7 +125,7 @@ function ProseBlock({
         if (!editable) {
           return (
             <p key={index} className="text-[12px] leading-[1.5] text-[#353638]">
-              {paragraph}
+              {t(paragraph)}
             </p>
           );
         }
@@ -147,9 +150,13 @@ function ProseBlock({
             ) : null}
             {isPending ? (
               <p className="mt-1 text-[11px] leading-[1.4] text-[#65686B]">
-                Approve to keep this change, or discard to revert to: "
-                {committedParagraphs[index]?.slice(0, 48)}
-                {committedParagraphs[index]?.length > 48 ? "…" : ""}"
+                {t('Approve to keep this change, or discard to revert to: "{snippet}"', {
+                  values: {
+                    snippet: `${committedParagraphs[index]?.slice(0, 48) ?? ""}${
+                      (committedParagraphs[index]?.length ?? 0) > 48 ? "…" : ""
+                    }`,
+                  },
+                })}
               </p>
             ) : null}
           </div>
@@ -179,6 +186,7 @@ export function ReportDocument({
   onRemoveSection,
   onForecastRowsChange,
 }: ReportDocumentProps) {
+  const { t } = useI18n();
   const [approvedSections, setApprovedSections] = useState<Set<string>>(
     () => new Set(),
   );
@@ -242,7 +250,7 @@ export function ReportDocument({
               )}
             >
               <h2 className="min-w-0 text-[24px] font-medium leading-[1.25] text-[#05091F]">
-                {section.title}
+                {t(section.title)}
               </h2>
               {objectEditable ? (
                 <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-[#E6E8EB] bg-white p-1">
@@ -322,7 +330,7 @@ export function ReportDocument({
                   content = (
                     <div className="flex flex-col gap-8">
                       <h3 className="text-[24px] font-medium leading-[1.25] text-[#05091F]">
-                        {block.title}
+                        {t(block.title)}
                       </h3>
                       <ReportPlTable
                         rows={block.rows ?? plRows}
@@ -344,7 +352,7 @@ export function ReportDocument({
                         className="rounded-lg border border-[#E6E8EB] bg-[#FAFBFC] px-4 py-3"
                       >
                         <p className="text-[11px] leading-[1.5] text-[#65686B]">
-                          {item.label}
+                          {t(item.label)}
                         </p>
                         <p className="mt-1 text-[16px] font-medium leading-[1.25] text-[#05091F]">
                           {item.value}
@@ -362,7 +370,7 @@ export function ReportDocument({
                         className="flex gap-2 text-[12px] leading-[1.5] text-[#353638]"
                       >
                         <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#65686B]" />
-                        {item}
+                        {t(item)}
                       </li>
                     ))}
                   </ul>

@@ -26,6 +26,7 @@ import { WidgetHeaderLamp } from "@/src/components/commercial/WidgetHeaderLamp";
 import { WidgetExportMenu } from "@/src/components/commercial/WidgetExportMenu";
 import { AMIIO_CHART_MOTION } from "@/src/lib/chartMotion";
 import { FinancialPlTable } from "@/src/components/pages/FinancialPlTable";
+import { useI18n } from "@/src/hooks/useI18n";
 
 /** Operational expenses doughnut — same ring sizing as Property GRI chart. */
 const OPEX_DONUT_W = DS_DONUT_204.width;
@@ -120,6 +121,7 @@ function FinancialLineChartCard({
   profitLine = PROFIT_LINE,
 }: FinancialLineChartCardProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const toX = (i: number) => (i / 3) * PLOT_W;
   const toY = (t: number) => (1 - t) * PLOT_H;
@@ -283,8 +285,10 @@ function FinancialLineChartCard({
               >
                 <FinancialChartInsightLamp
                   className="size-full min-h-0 min-w-0"
-                  ariaLabel="Insight on latest income point"
-                  summary="Income dips in Q2 2025 while expenses stay elevated — Amiio reads this as tightening margin in the demo series; confirm against your live rent-roll before acting."
+                  ariaLabel={t("Insight on latest income point")}
+                  summary={t(
+                    "Income dips in Q2 2025 while expenses stay elevated — Amiio reads this as tightening margin in the demo series; confirm against your live rent-roll before acting.",
+                  )}
                   analyseTopic="Analyse the Rental Income/Expenses chart on Financial overview: interpret the latest quarter vs prior quarters, income vs expenses vs profit, and suggest follow-up checks."
                   popoverSide={insightPlacement.popoverSide}
                 />
@@ -308,21 +312,21 @@ function FinancialLineChartCard({
             className="financial-chart-scaled-legend-line h-0.5 shrink-0 rounded-full"
             style={{ backgroundColor: INCOME_COLOR }}
           />
-          Income
+          {t("Income")}
         </span>
         <span className="inline-flex items-center gap-2">
           <span
             className="financial-chart-scaled-legend-line h-0.5 shrink-0 rounded-full"
             style={{ backgroundColor: EXPENSE_COLOR }}
           />
-          Expense
+          {t("Expense")}
         </span>
         <span className="inline-flex items-center gap-2">
           <span
             className="financial-chart-scaled-legend-line h-0.5 shrink-0 rounded-full"
             style={{ backgroundColor: PROFIT_COLOR }}
           />
-          Profit
+          {t("Profit")}
         </span>
       </div>
     </div>
@@ -330,9 +334,10 @@ function FinancialLineChartCard({
 }
 
 function RevenueExpenseChartCard() {
+  const { t } = useI18n();
   return (
     <FinancialLineChartCard
-      title="Rental Income/Expenses"
+      title={t("Rental Income/Expenses")}
       fileName="revenue-expense"
       chatTopic="Analyse rental income vs expenses and profit trend for the quarters shown."
       chatLabel="Rental Income/Expenses chart"
@@ -350,6 +355,7 @@ type MinorMetricItem = {
 };
 
 function FinancialMinorMetricsBar({ items }: { items: MinorMetricItem[] }) {
+  const { t } = useI18n();
   return (
     <div className={cn("flex min-h-[128px] flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-4", dsMinorMetricsBar)}>
       {items.map((m, index) => (
@@ -358,7 +364,7 @@ function FinancialMinorMetricsBar({ items }: { items: MinorMetricItem[] }) {
             <div className="hidden w-px shrink-0 self-center bg-[#E6E8EB] sm:block sm:h-16" aria-hidden />
           ) : null}
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <span className="typo-l2-b text-[#65686B]">{m.label}</span>
+            <span className="typo-l2-b text-[#65686B]">{t(m.label)}</span>
             <div className="flex flex-wrap items-center gap-1">
               <span className={cn(dsFinTypo.kpiValueMd)}>{m.value}</span>
               {m.sub ? (
@@ -370,7 +376,7 @@ function FinancialMinorMetricsBar({ items }: { items: MinorMetricItem[] }) {
             </div>
             <div className="flex items-center gap-2">
               <TrendPill direction={m.trend.direction} pct={m.trend.pct} invert={m.invert} />
-              <span className="typo-l3-r truncate text-[#7E8185]">vs previous year</span>
+              <span className="typo-l3-r truncate text-[#7E8185]">{t("vs previous year")}</span>
             </div>
           </div>
         </Fragment>
@@ -381,6 +387,7 @@ function FinancialMinorMetricsBar({ items }: { items: MinorMetricItem[] }) {
 
 function OperatingExpensesDonutCard() {
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
   /** Figma 740:41858 — Operational Expenses doughnut segments & legend */
   const segments = useMemo(
     () => [
@@ -397,11 +404,11 @@ function OperatingExpensesDonutCard() {
   const pieData = useMemo(
     () =>
       segments.map((s) => ({
-        name: s.label,
+        name: t(s.label),
         value: s.pct,
         fill: s.color,
       })),
-    [segments],
+    [segments, t],
   );
 
   const legendColLeft = segments.slice(0, 3);
@@ -414,7 +421,7 @@ function OperatingExpensesDonutCard() {
           <div key={s.label} className="flex items-center gap-2">
             <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
             <span className={cn(dsFinTypo.chartLegend, "whitespace-nowrap")}>
-              {s.label}
+              {t(s.label)}
             </span>
           </div>
         ))}
@@ -443,7 +450,7 @@ function OperatingExpensesDonutCard() {
     >
       <div className="flex min-h-8 items-center justify-between gap-3">
         <h3 className={cn(dsFinTypo.widgetTitle, "min-w-0 flex-1 leading-snug")}>
-          Operational Expenses
+          {t("Operational Expenses")}
         </h3>
         <div className="flex shrink-0 items-center gap-2">
           <WidgetExportMenu variant="chart" fileName="operational-expenses" captureRef={ref} />
@@ -506,9 +513,9 @@ function OperatingExpensesDonutCard() {
             style={OPEX_CENTER_INSET}
           >
             <p className={cn(dsFinTypo.donutCenterLabel, "w-full text-center leading-[1.2]")}>
-              Total
+              {t("Total")}
               <br />
-              Properties
+              {t("Properties")}
             </p>
             <p className={cn(dsFinTypo.donutCenterValue, "w-full text-center leading-none")}>16</p>
           </div>
@@ -524,6 +531,7 @@ function OperatingExpensesDonutCard() {
 }
 
 export function FinancialOverviewPanel() {
+  const { t } = useI18n();
   const kpiSpark1 = [0.45, 0.52, 0.48, 0.44, 0.41, 0.38];
   const kpiSpark2 = [0.3, 0.38, 0.45, 0.52, 0.61, 0.72];
   const kpiSpark3 = [0.55, 0.58, 0.62, 0.65, 0.68, 0.74];
@@ -555,11 +563,11 @@ export function FinancialOverviewPanel() {
           <MajorMetricCard
             key={k.label}
             className="min-h-[124px]"
-            label={k.label}
+            label={t(k.label)}
             value={k.value}
             trend={k.trend}
             trendPct={k.trendPct}
-            vsLabel="vs last period"
+            vsLabel={t("vs last period")}
             sparkline={[kpiSpark1, kpiSpark2, kpiSpark3][i]}
           />
         ))}
@@ -606,12 +614,14 @@ export function FinancialOverviewPanel() {
 }
 
 export function FinancialServiceChargesPlaceholder() {
+  const { t } = useI18n();
   return (
     <div className={cn("p-8", cardBorder)}>
-      <h2 className={cn(dsFinTypo.sectionTitle, "text-[#010309]")}>Service Charges</h2>
+      <h2 className={cn(dsFinTypo.sectionTitle, "text-[#010309]")}>{t("Service Charges")}</h2>
       <p className={cn("mt-2 max-w-xl leading-relaxed", dsFinTypo.body, "text-[#65686B]")}>
-        Detailed service charge allocation, recovery rates, and tenant billing will appear here,
-        matching the Overview layout and export options.
+        {t(
+          "Detailed service charge allocation, recovery rates, and tenant billing will appear here, matching the Overview layout and export options.",
+        )}
       </p>
     </div>
   );

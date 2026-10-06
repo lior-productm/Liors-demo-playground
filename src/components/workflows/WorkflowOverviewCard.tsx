@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/src/hooks/useI18n";
 import type { WorkflowCatalogItem } from "@/src/lib/workflowCatalog";
 
 export function WorkflowOverviewCard({
@@ -11,6 +12,7 @@ export function WorkflowOverviewCard({
   item: WorkflowCatalogItem;
   onClick: () => void;
 }) {
+  const { t } = useI18n();
   const Icon = item.icon;
 
   return (
@@ -24,9 +26,9 @@ export function WorkflowOverviewCard({
     >
       <div className="flex min-w-0 flex-1 flex-col gap-2 overflow-hidden">
         <Icon className="size-6 shrink-0 text-[#353638]" strokeWidth={1.75} />
-        <p className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">{item.title}</p>
+        <p className="text-[18px] font-medium leading-[1.25] text-[#2C2C2C]">{t(item.title)}</p>
         <p className="break-words text-[14px] font-normal leading-[1.4] text-[#2C2C2C]">
-          {item.description}
+          {t(item.description)}
         </p>
       </div>
       <ArrowRight className="size-6 shrink-0 text-[#353638]" strokeWidth={1.75} />

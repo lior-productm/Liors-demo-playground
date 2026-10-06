@@ -1,6 +1,7 @@
 "use client";
 
 import { Library, X } from "lucide-react";
+import { useI18n } from "@/src/hooks/useI18n";
 import { SectionCollection } from "@/src/components/reporting/SectionCollection";
 import type { LibrarySection } from "@/src/lib/reportSectionLibrary";
 
@@ -12,6 +13,7 @@ export function SectionLibraryPicker({
   onClose: () => void;
   onInsert: (section: LibrarySection) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className="fixed inset-0 z-[130] flex items-center justify-center bg-black/30 p-4"
@@ -28,18 +30,18 @@ export function SectionLibraryPicker({
             <div className="flex items-center gap-2">
               <Library className="size-5 text-[#4C61DB]" strokeWidth={1.75} />
               <h3 className="text-[16px] font-semibold leading-[1.25] text-[#05091F]">
-                Add section from library
+                {t("Add section from library")}
               </h3>
             </div>
             <p className="text-[12px] leading-[1.4] text-[#65686B]">
-              Insert a standard or saved section into this template.
+              {t("Insert a standard or saved section into this template.")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex size-8 items-center justify-center rounded-lg text-[#65686B] hover:bg-[#F0F2F5]"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <X className="size-5" strokeWidth={1.75} />
           </button>

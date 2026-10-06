@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useMemo } from "react";
 import { getFilterPortfolioOptions } from "@/src/lib/leaseBackendData";
+import { useI18n } from "@/src/hooks/useI18n";
 
 export type EntityPropertyFilterBarProps = {
   className?: string;
@@ -84,6 +85,7 @@ function FilterPill({
   disabled?: boolean;
   ariaLabel: string;
 }) {
+  const { t } = useI18n();
   const isPlaceholder = value === placeholder;
   const isSelected = forceSelected || (filled && !isPlaceholder);
   const isActive = isSelected && accent === "active";
@@ -96,12 +98,12 @@ function FilterPill({
       disabled={disabled}
     >
       <SelectTrigger
-        aria-label={ariaLabel}
+        aria-label={t(ariaLabel)}
         disabled={disabled}
         icon={
           showClear ? (
             <FilterClearButton
-              ariaLabel={`Clear ${ariaLabel}`}
+              ariaLabel={t("Clear {label}", { values: { label: t(ariaLabel) } })}
               onClear={onClear!}
             />
           ) : undefined
@@ -126,7 +128,7 @@ function FilterPill({
             strokeWidth={1.75}
           />
           <SelectValue
-            placeholder={placeholder}
+            placeholder={t(placeholder)}
             className={cn(
               "min-w-0 flex-1 truncate text-left text-[13px] leading-[1.4]",
               isActive
@@ -169,6 +171,7 @@ export function EntityPropertyFilterBar({
   onEntityChange,
   onPropertyChange,
 }: EntityPropertyFilterBarProps) {
+  const { t } = useI18n();
   const resolvedPortfolioOptions = useMemo(
     () => portfolioOptions ?? getFilterPortfolioOptions(),
     [portfolioOptions],
@@ -248,7 +251,7 @@ export function EntityPropertyFilterBar({
         <button
           type="button"
           className="flex size-5 shrink-0 items-center justify-center text-[#39393A] transition-colors hover:text-[#65686B]"
-          aria-label="Filter settings"
+          aria-label={t("Filter settings")}
         >
           <Settings2 className="size-4" strokeWidth={1.75} />
         </button>

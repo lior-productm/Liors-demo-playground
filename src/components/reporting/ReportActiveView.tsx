@@ -73,6 +73,19 @@ import {
 } from "@/src/components/reporting/ReportDistributionControls";
 import { listTemplateTitles, setTemplateOwnership } from "@/src/lib/reportTemplates";
 import { buildForecastInsights } from "@/src/lib/plForecastModel";
+import { useI18n } from "@/src/hooks/useI18n";
+import { getI18n } from "@/src/lib/i18n";
+import { resolveReportLanguage, useGeneratedReports } from "@/src/lib/reportGenerated";
+import {
+  buildGeneratedReportInsights,
+  buildGeneratedReportSections,
+} from "@/src/lib/reportGeneratedDocument";
+import {
+  localizeInsights,
+  localizePlRows,
+  localizeSections,
+} from "@/src/lib/reportLocalize";
+import { printReportDocument } from "@/src/lib/reportPrint";
 
 type ReportActiveViewProps = {
   /** "studio" enables full editing; "preview" renders read-only. */
@@ -116,9 +129,19 @@ export function ReportActiveView({
 }: ReportActiveViewProps = {}) {
   const isStudio = variant === "studio";
   const dataEditOnly = variant === "preview";
+  const ui = useI18n();
+  const generatedReports = useGeneratedReports();
   const [reportTitle, setReportTitle] = useState<string>(
     openTitle ?? ACTIVE_REPORTS[0],
   );
+  // Reports render in the language chosen at creation — never the viewer's.
+  const generatedReport = generatedReports.find((report) => report.title === reportTitle);
+  const reportLang = resolveReportLanguage(reportTitle, generatedReports);
+  const reportI18n = useMemo(() => getI18n(reportLang), [reportLang]);
+
+  useEffect(() => {
+    if (openTitle) setReportTitle(openTitle);
+  }, [openTitle]);
   const [templateTitles, setTemplateTitles] = useState<string[]>(() => [
     ...ACTIVE_REPORTS,
   ]);
@@ -128,7 +151,7 @@ export function ReportActiveView({
   const [activeSectionId, setActiveSectionId] = useState<string>("introduction");
   const [sectionsCollapsed, setSectionsCollapsed] = useState(false);
   const [insightsCollapsed, setInsightsCollapsed] = useState(false);
-  const [activeInsightId, setActiveInsightId] = useState(REPORT_INSIGHTS[0].id);
+  const [activeInsightId, setActiveInsightId] = useState<string>(REPORT_INSIGHTS[0].id);
   const [plRows, setPlRows] = useState<ReportPlRow[]>(() => [...REPORT_PL_ROWS]);
   const [proseOverrides, setProseOverrides] = useState<Record<string, string[][]>>(
     {},
@@ -152,23 +175,30 @@ export function ReportActiveView({
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [role, setRole] = useState<ReportUserRole>("asset-manager");
 
-  const reports = templateTitles;
+  // Generated reports appear in the Active reports picker, not in the Template Studio.
+  const reports = useMemo(() => {
+    if (isStudio) return templateTitles;
+    const generatedTitles = generatedReports.map((report) => report.title);
+    return [...generatedTitles, ...templateTitles.filter((title) => !generatedTitles.includes(title))];
+  }, [generatedReports, isStudio, templateTitles]);
 
-  const allSections = useMemo<ReportDocumentSection[]>(
-    () => [...REPORT_DOCUMENT_SECTIONS, ...customSections],
-    [customSections],
-  );
+  const allSections = useMemo<ReportDocumentSection[]>(() => {
+    const base = generatedReport
+      ? buildGeneratedReportSections(generatedReport, reportI18n)
+      : localizeSections(reportI18n, REPORT_DOCUMENT_SECTIONS);
+    return [...base, ...localizeSections(reportI18n, customSections)];
+  }, [customSections, generatedReport, reportI18n]);
 
   const sectionLabelById = useMemo(() => {
     const map: Record<string, string> = {};
     REPORT_SECTIONS.forEach((section) => {
-      map[section.id] = section.label;
+      map[section.id] = reportI18n.t(section.label);
     });
-    customSections.forEach((section) => {
+    allSections.forEach((section) => {
       map[section.id] = section.title;
     });
     return map;
-  }, [customSections]);
+  }, [allSections, reportI18n]);
 
   const naturalIds = useMemo(
     () => allSections.map((section) => section.id),
@@ -212,12 +242,19 @@ export function ReportActiveView({
     [documentSections],
   );
 
-  const documentInsights = useMemo(
-    () =>
-      forecastInsights.length > 0
-        ? [...forecastInsights, ...(dataEditOnly ? REPORT_INSIGHTS : [])]
-        : REPORT_INSIGHTS,
-    [dataEditOnly, forecastInsights],
+  const documentInsights = useMemo(() => {
+    const localizedForecast = localizeInsights(reportI18n, forecastInsights);
+    const baseInsights = generatedReport
+      ? buildGeneratedReportInsights(generatedReport, reportI18n)
+      : localizeInsights(reportI18n, REPORT_INSIGHTS);
+    return localizedForecast.length > 0
+      ? [...localizedForecast, ...(dataEditOnly ? baseInsights : [])]
+      : baseInsights;
+  }, [dataEditOnly, forecastInsights, generatedReport, reportI18n]);
+
+  const displayPlRows = useMemo(
+    () => localizePlRows(reportI18n, plRows),
+    [plRows, reportI18n],
   );
 
   useEffect(() => {
@@ -290,7 +327,9 @@ export function ReportActiveView({
       window.dispatchEvent(
         new CustomEvent("amiio:toast", {
           detail: {
-            message: `“${sectionLabelById[id] ?? "Section"}” removed. Restore it from the Removed list.`,
+            message: ui.t("“{name}” removed. Restore it from the Removed list.", {
+              values: { name: sectionLabelById[id] ?? ui.t("Section") },
+            }),
           },
         }),
       );
@@ -418,7 +457,9 @@ export function ReportActiveView({
       setTemplateOwnership(reportTitle, "organization");
       changeDistributionStatus(
         "pending_approval",
-        `Approval requested from ${request.approverName}.`,
+        ui.t("Approval requested from {name}.", {
+          values: { name: request.approverName },
+        }),
       );
     },
     [reportTitle, changeDistributionStatus],
@@ -427,21 +468,21 @@ export function ReportActiveView({
   const handleApproveDistribution = useCallback(() => {
     clearApprovalRequest(reportTitle);
     setApprovalRequest(null);
-    changeDistributionStatus("approved", "Template approved for distribution.");
+    changeDistributionStatus("approved", ui.t("Template approved for distribution."));
   }, [reportTitle, changeDistributionStatus]);
 
   const handleRejectDistribution = useCallback(() => {
     clearApprovalRequest(reportTitle);
     setApprovalRequest(null);
     setTemplateOwnership(reportTitle, "personal");
-    changeDistributionStatus("draft", "Approval request declined — back to draft.");
+    changeDistributionStatus("draft", ui.t("Approval request declined — back to draft."));
   }, [reportTitle, changeDistributionStatus]);
 
   const handleDistribute = useCallback(
     () =>
       changeDistributionStatus(
         "distributed",
-        "Template distributed to stakeholders.",
+        ui.t("Template distributed to stakeholders."),
       ),
     [changeDistributionStatus],
   );
@@ -449,10 +490,11 @@ export function ReportActiveView({
   const handleNewRevision = useCallback(() => {
     clearApprovalRequest(reportTitle);
     setApprovalRequest(null);
-    changeDistributionStatus("draft", "Started a new revision (draft).");
+    changeDistributionStatus("draft", ui.t("Started a new revision (draft)."));
   }, [reportTitle, changeDistributionStatus]);
 
   const viewerScrollRef = useRef<HTMLDivElement>(null);
+  const documentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const insightAnchorRefs = useRef<Record<string, HTMLElement | null>>({});
   const isProgrammaticScroll = useRef(false);
@@ -630,7 +672,7 @@ export function ReportActiveView({
       window.dispatchEvent(
         new CustomEvent("amiio:toast", {
           detail: {
-            message: "Approve or discard pending edits before switching to preview.",
+            message: ui.t("Approve or discard pending edits before switching to preview."),
           },
         }),
       );
@@ -641,6 +683,28 @@ export function ReportActiveView({
 
   const handleInsightChange = (insightId: string) => {
     scrollToInsight(insightId);
+  };
+
+  const handleDownloadPdf = () => {
+    if (pendingEditCount > 0) {
+      window.dispatchEvent(
+        new CustomEvent("amiio:toast", {
+          detail: { message: ui.t("Approve or discard pending edits before switching to preview.") },
+        }),
+      );
+      return;
+    }
+    setMode("preview");
+    // Let the preview render before cloning it into the print root.
+    window.setTimeout(() => {
+      const node = documentRef.current;
+      if (!node) return;
+      printReportDocument(node, {
+        title: reportTitle,
+        lang: reportLang,
+        dir: reportI18n.dir,
+      });
+    }, 80);
   };
 
   const applyBlockReplacement = (
@@ -664,7 +728,7 @@ export function ReportActiveView({
     clearSectionEditState(target.sectionId);
     window.dispatchEvent(
       new CustomEvent("amiio:toast", {
-        detail: { message: "Section replaced." },
+        detail: { message: ui.t("Section replaced.") },
       }),
     );
     window.setTimeout(() => scrollToSection(target.sectionId), 200);
@@ -684,7 +748,11 @@ export function ReportActiveView({
     setActiveSectionId(section.id);
     window.dispatchEvent(
       new CustomEvent("amiio:toast", {
-        detail: { message: `“${section.title}” added to the ${reportTitle} template.` },
+        detail: {
+          message: ui.t("“{title}” added to the {report} template.", {
+            values: { title: section.title, report: reportTitle },
+          }),
+        },
       }),
     );
     window.setTimeout(() => scrollToSection(section.id), 200);
@@ -698,7 +766,11 @@ export function ReportActiveView({
     setActiveSectionId(custom.id);
     window.dispatchEvent(
       new CustomEvent("amiio:toast", {
-        detail: { message: `“${custom.title}” added from the library.` },
+        detail: {
+          message: ui.t("“{title}” added from the library.", {
+            values: { title: custom.title },
+          }),
+        },
       }),
     );
     window.setTimeout(() => scrollToSection(custom.id), 200);
@@ -718,8 +790,8 @@ export function ReportActiveView({
           onClick={onBackToCollection}
           className="flex w-fit items-center gap-1.5 text-[13px] font-medium leading-[1.24] text-[#65686B] hover:text-[#353638]"
         >
-          <ArrowLeft className="size-4" strokeWidth={1.9} />
-          All templates
+          <ArrowLeft className="size-4 rtl:rotate-180" strokeWidth={1.9} />
+          {ui.t("All templates")}
         </button>
       ) : null}
       <ReportToolbar
@@ -732,6 +804,8 @@ export function ReportActiveView({
         readOnly={false}
         dataEditOnly={dataEditOnly}
         onEditInStudio={onEditInStudio}
+        reportLanguage={generatedReport ? reportLang : undefined}
+        onDownloadPdf={handleDownloadPdf}
         onCreateTemplate={isStudio ? onRequestNewTemplate : undefined}
         canCreateSection={
           isStudio && featureFlags.showReportSectionBuilder && !builderOpen
@@ -770,7 +844,9 @@ export function ReportActiveView({
           sections={navSections}
           activeSectionId={activeSectionId}
           onSectionSelect={scrollToSection}
-          updatedLabel="Updated 23 Nov 2025"
+          updatedLabel={`${ui.t("Updated")} ${ui.fmt.shortDate(
+            generatedReport ? new Date(generatedReport.createdAt) : new Date(2025, 10, 23),
+          )}`}
           collapsed={sectionsCollapsed}
           onToggleCollapse={() => setSectionsCollapsed((value) => !value)}
           editable={
@@ -807,20 +883,26 @@ export function ReportActiveView({
                 mode === "edit" && "bg-[#FAFBFC]",
               )}
             >
-              <div className="min-w-[661px] px-6 py-6 pr-3">
+              <div className="min-w-[661px] px-6 py-6 pe-3">
                 {mode === "preview" ? (
                   <div className="mb-6 inline-flex items-center rounded-full bg-[#F0F2F5] px-3 py-1 text-[12px] font-medium text-[#65686B]">
-                    Preview mode
+                    {ui.t("Preview mode")}
                   </div>
                 ) : null}
                 {mode === "edit" && pendingEditCount > 0 ? (
                   <div className="mb-4 inline-flex items-center rounded-lg bg-[#F0F2F5] px-3 py-2 text-[12px] leading-[1.4] text-[#65686B]">
-                    Approve pending edits with the checkmark before saving.
+                    {ui.t("Approve pending edits with the checkmark before saving.")}
                   </div>
                 ) : null}
+                <div
+                  ref={documentRef}
+                  data-report-document
+                  dir={reportI18n.dir}
+                  lang={reportLang}
+                >
                 <ReportDocument
                   sections={documentSections}
-                  plRows={plRows}
+                  plRows={displayPlRows}
                   editable={mode === "edit"}
                   sectionRefs={sectionRefs}
                   insightAnchorRefs={insightAnchorRefs}
@@ -838,6 +920,7 @@ export function ReportActiveView({
                   onRemoveSection={handleRemoveSection}
                   onForecastRowsChange={handleForecastRowsChange}
                 />
+                </div>
               </div>
             </div>
 
